@@ -1,0 +1,86 @@
+# Implementation Status
+
+Tracks what's actually built against the roadmap in [PLAN.md](PLAN.md). Update this file whenever a phase or task changes status — it should always reflect the real state of the code, not the plan.
+
+Status key: ✅ done · 🚧 in progress · ⬜ not started
+
+## Phase 1 — Foundation ✅
+
+| Task | Status | Notes |
+|---|---|---|
+| Git repo initialized, `.gitignore` updated | ✅ | `docs/VanSalesPro/` ignored; rest of `docs/` tracked |
+| Core dependencies added | ✅ | `flutter_bloc`, `equatable`, `get_it`, `injectable`, `go_router`, `fpdart`, `easy_localization` |
+| `core/errors` (Failure/Exception base types) | ✅ | [lib/core/errors](../lib/core/errors) |
+| `core/usecase` (UseCase base) | ✅ | [lib/core/usecase/usecase.dart](../lib/core/usecase/usecase.dart) |
+| `core/utils/responsive` (breakpoint helper) | ✅ | [lib/core/utils/responsive](../lib/core/utils/responsive) — no screenutil |
+| `shared/theme` (colors, text styles, spacing, light+dark ThemeData) | ✅ | [lib/shared/theme](../lib/shared/theme) — placeholder palette, will be replaced by gunmahalalfood.com-derived colors |
+| `shared/widgets` (first shared widget) | ✅ | [AppLoader](../lib/shared/widgets/loaders/app_loader.dart) only so far — more added as features need them |
+| DI wiring (`get_it` + `injectable`) | ✅ | [lib/config/di](../lib/config/di) |
+| Routing (`go_router`) | ✅ | [lib/config/routes](../lib/config/routes) — 2 routes so far (`/`, `/home`) |
+| Localization (`easy_localization`) | ✅ | [assets/translations/en.json](../assets/translations/en.json) |
+| Template feature: Splash → Home | ✅ | [lib/features/splash](../lib/features/splash) fully wired (data/domain/presentation/DI); [lib/features/home](../lib/features/home) is a bare placeholder |
+| `flutter analyze` clean | ✅ | 0 issues |
+| `flutter test` passing | ✅ | Theme sanity test only — no widget/bloc tests yet |
+| Verified: web build compiles & serves, all modules load, no console errors | ✅ | Pixel-level visual check not possible in the dev sandbox (browser pane doesn't composite frames there); run `flutter run -d chrome` locally to see it render |
+
+**Not created yet, deliberately** (see PLAN.md §4.5): `core/constants/storage_keys.dart`, `config/di/modules/`, dark mode toggle, additional locales. Add these when a feature actually needs them, not before.
+
+## Phase 2 — UI-first customer build 🚧
+
+| Task | Status | Notes |
+|---|---|---|
+| Brand assets (logo, home banner, per-category photos) | ✅ | [assets/images](../assets/images) — logo, home banner, and demo category photos (Most Popular, Meat & Fish) supplied by the client. `CategoryEntity.imageUrl` is null for the rest, which fall back to a generic placeholder until an admin uploads one. |
+| Home page real UI (search bar, banner carousel, category grid) with mock data | ✅ | [lib/features/home](../lib/features/home) — full data/domain/presentation layers over a mock datasource. |
+| Category cards — image-based redesign | ✅ | [category_card.dart](../lib/features/home/presentation/widgets/category_card.dart) + [category_image.dart](../lib/shared/widgets/category_image.dart) — square photo/placeholder + label strip, rotating pastel tile+border+label shades derived from one seed hue per index ([category_palette.dart](../lib/shared/theme/category_palette.dart)), generic placeholder icon (not per-category) until an admin sets a real image. |
+| Subcategories | ✅ | `CategoryEntity.subcategories` (empty for categories without them); Meat & Fish, Frozen Food, and Masala & Spice have some, matching mock products via `ProductEntity.subcategoryId`. Tapping a category with subcategories opens [category_landing_page.dart](../lib/features/home/presentation/pages/category_landing_page.dart) ("Browse All" or pick one); categories without go straight to the product list — same branching logic in [category_navigation.dart](../lib/features/home/presentation/utils/category_navigation.dart) for both the grid and the drawer. |
+| Category drawer (slide-out menu) | ✅ | [category_drawer.dart](../lib/features/home/presentation/widgets/category_drawer.dart) — categories with subcategories use `ExpansionTile` (chevron expands to indented subcategory rows, tapping a subcategory goes straight to its filtered product list); plain rows for categories without. Static About/Contact footer below a divider (`showComingSoonSnackBar` on tap). |
+| Account — moved off bottom nav | ✅ | Dropped the Account tab/branch/page entirely (was dead weight once this changed) — a person icon on the Home top bar (opposite the menu icon) opens [account_sheet.dart](../lib/features/home/presentation/widgets/account_sheet.dart), a bottom sheet mocking signed-out (Log In/Sign Up) and signed-in (name/email, Edit Profile, Address, Logout) states. No real auth yet — "Log In"/"Sign Up" just flip local state to preview both views. |
+| Bottom navigation shell (Home / Category / Wishlist / Bag) | ✅ | [main_bottom_nav_bar.dart](../lib/shared/widgets/navigation/main_bottom_nav_bar.dart) — custom bar, not `NavigationBar`, since "Category" opens the drawer rather than switching branches. 3 real `go_router` branches now (Home, Wishlist, Cart) since Account isn't one. Bag badge count ("1") is still a hardcoded placeholder until Cart is real. |
+| Product listing UI (mock data) | ✅ | [lib/features/product](../lib/features/product) — full data/domain/presentation layers; `GetProductsByCategoryUseCase` takes an optional `subcategoryId` filter. Routed at `/home/category/:categoryId` (and `/browse/:subcategoryId`), nested under the Home branch so the bottom nav stays visible. |
+| Product detail UI (mock data) | ⬜ | Tapping a product currently shows a "coming soon" snackbar; this is the next slice |
+| Cart UI (mock data) | ⬜ | Currently a placeholder page only |
+| Checkout UI (mock data, no real payment) | ⬜ | |
+
+## Phase 3 — Firebase integration ⬜
+
+| Task | Status | Notes |
+|---|---|---|
+| Add Firebase packages, configure per platform (Android/iOS/Web) | ⬜ | `firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_storage` |
+| Firestore data model for products | ⬜ | |
+| Firestore data model for orders | ⬜ | |
+| Firebase Auth (customer + admin/manager roles) | ⬜ | |
+| Swap mock datasources for Firebase-backed ones | ⬜ | Should only touch `data/` layer, per repository-interface design |
+
+## Phase 4 — Customer features end-to-end ⬜
+
+| Task | Status | Notes |
+|---|---|---|
+| Auth feature (login/signup, customer) | ⬜ | |
+| Product catalog (browse/search/filter, real data) | ⬜ | |
+| Cart (real data, persisted) | ⬜ | |
+| Checkout / order placement (real data) | ⬜ | |
+| Order history / order status tracking | ⬜ | |
+
+## Phase 5 — Admin/manager side ⬜
+
+| Task | Status | Notes |
+|---|---|---|
+| Admin/manager auth & role gating | ⬜ | |
+| Admin dashboard | ⬜ | |
+| Product management (CRUD) | ⬜ | |
+| Order management (view, update status) | ⬜ | |
+
+## Phase 6 — Stripe integration ⬜
+
+| Task | Status | Notes |
+|---|---|---|
+| Backend (Cloud Function) to create PaymentIntents | ⬜ | Needed for secure payment — can't do client-side alone |
+| Customer-side payment flow | ⬜ | |
+| Admin-side payment/receipt visibility | ⬜ | |
+
+## Phase 7 — Polish ⬜
+
+| Task | Status | Notes |
+|---|---|---|
+| Dark mode toggle | ⬜ | Theme already supports it (`AppTheme.dark`); just needs a switch wired to `ThemeMode` |
+| Additional locales | ⬜ | Only if requested |

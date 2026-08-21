@@ -1,0 +1,48 @@
+{
+  "app_name": "Everyday Wholesale",
+  "home": {
+    "search_hint": "Search for products...",
+    "explore_categories": "Explore By Categories"
+  },
+  "drawer": {
+    "title": "Categories",
+    "show_all": "Show All",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "product": {
+    "empty": "No products in this category yet."
+  },
+  "common": {
+    "coming_soon": "{feature} is coming soon.",
+    "generic_error": "Something went wrong.",
+    "retry": "Retry"
+  },
+  "nav": {
+    "home": "Home",
+    "category": "Category",
+    "wishlist": "Wishlist",
+    "bag": "Bag"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "empty_title": "Your wishlist is empty",
+    "empty_message": "Save products you love and find them here once wishlists are wired up."
+  },
+  "cart": {
+    "title": "Bag",
+    "empty_title": "Your bag is empty",
+    "empty_message": "Items you add to your bag will show up here once ordering is wired up."
+  },
+  "account": {
+    "signed_out_title": "Welcome",
+    "signed_out_message": "Sign in to track orders, save addresses, and check out faster.",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "guest_name": "Guest User",
+    "guest_email": "guest@example.com",
+    "edit_profile": "Edit Profile",
+    "address": "Address",
+    "logout": "Logout"
+  }
+}
