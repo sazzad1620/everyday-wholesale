@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/constants/asset_paths.dart';
 import '../../domain/entities/product_entity.dart';
+import '../../domain/entities/product_review_entity.dart';
 
 abstract class ProductMockDatasource {
   Future<List<ProductEntity>> getProductsByCategory(String categoryId, {String? subcategoryId});
@@ -12,7 +13,7 @@ abstract class ProductMockDatasource {
 @LazySingleton(as: ProductMockDatasource)
 class ProductMockDatasourceImpl implements ProductMockDatasource {
   static const List<ProductEntity> _allProducts = [
-    // Most Popular
+    // Most Popular — condition/origin shared per category until admin-editable.
     ProductEntity(
       id: 'mp_1',
       name: 'IBADAH Premium Chom Chom Sweet (500g)',
@@ -20,6 +21,16 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '500g',
       categoryId: 'most_popular',
       iconKey: 'most_popular',
+      condition: 'Freshly Prepared',
+      origin: 'Bangladesh',
+      description:
+          'A rich, syrup-soaked Bengali sweet made the traditional way — soft, delicately sweet, and perfect '
+          'for celebrations or an everyday treat.',
+      reviews: [
+        ProductReviewEntity(reviewerName: 'Rashed Karim', rating: 5, comment: 'Tastes just like home. Will order again!'),
+        ProductReviewEntity(reviewerName: 'Nusrat Jahan', rating: 4, comment: 'Sweet and fresh, arrived well packed.'),
+        ProductReviewEntity(reviewerName: 'Imran Hossain', rating: 5, comment: 'Best chom chom I have had in Japan.'),
+      ],
     ),
     ProductEntity(
       id: 'mp_2',
@@ -28,6 +39,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '400g',
       categoryId: 'most_popular',
       iconKey: 'most_popular',
+      condition: 'Freshly Prepared',
+      origin: 'Bangladesh',
+      description: 'One of our best-selling picks, loved by regular customers for its quality and value.',
     ),
     ProductEntity(
       id: 'mp_3',
@@ -36,6 +50,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '10pcs',
       categoryId: 'most_popular',
       iconKey: 'most_popular',
+      condition: 'Freshly Prepared',
+      origin: 'Bangladesh',
+      description: 'One of our best-selling picks, loved by regular customers for its quality and value.',
     ),
     ProductEntity(
       id: 'mp_4',
@@ -44,6 +61,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '10pcs',
       categoryId: 'most_popular',
       iconKey: 'most_popular',
+      condition: 'Freshly Prepared',
+      origin: 'Bangladesh',
+      description: 'One of our best-selling picks, loved by regular customers for its quality and value.',
     ),
 
     // Meat & Fish
@@ -55,6 +75,16 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'meat_fish',
       iconKey: 'meat_fish',
       subcategoryId: 'chicken',
+      condition: 'Fresh',
+      origin: 'Brazil',
+      description:
+          'Halal-certified whole chicken, expertly cut for convenience and sourced from trusted suppliers. Ideal '
+          'for roasting, curries, or grilling, and a favourite among our regular customers.',
+      reviews: [
+        ProductReviewEntity(reviewerName: 'Shakil Ahmed', rating: 5, comment: 'Very fresh and cut exactly as described.'),
+        ProductReviewEntity(reviewerName: 'Maisha Tabassum', rating: 5, comment: 'Great quality, perfect for curry.'),
+        ProductReviewEntity(reviewerName: 'Tanvir Alam', rating: 4, comment: 'Good value for 1kg, delivery was quick.'),
+      ],
     ),
     ProductEntity(
       id: 'mf_2',
@@ -64,6 +94,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'meat_fish',
       iconKey: 'meat_fish',
       subcategoryId: 'beef',
+      condition: 'Fresh',
+      origin: 'Brazil',
+      description: 'Sourced and prepared to strict Halal standards, ready for your favourite recipes.',
     ),
     ProductEntity(
       id: 'mf_3',
@@ -73,6 +106,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'meat_fish',
       iconKey: 'meat_fish',
       subcategoryId: 'fish_seafood',
+      condition: 'Fresh',
+      origin: 'Brazil',
+      description: 'Sourced and prepared to strict Halal standards, ready for your favourite recipes.',
     ),
     ProductEntity(
       id: 'mf_4',
@@ -82,6 +118,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'meat_fish',
       iconKey: 'meat_fish',
       subcategoryId: 'mutton',
+      condition: 'Fresh',
+      origin: 'Brazil',
+      description: 'Sourced and prepared to strict Halal standards, ready for your favourite recipes.',
     ),
 
     // Fruits & Vegetables
@@ -92,6 +131,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '1kg',
       categoryId: 'fruits_vegetables',
       iconKey: 'fruits_vegetables',
+      condition: 'Fresh',
+      origin: 'Bangladesh',
+      description: 'Picked fresh and kept crisp, straight from trusted local suppliers.',
     ),
     ProductEntity(
       id: 'fv_2',
@@ -100,6 +142,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '2kg',
       categoryId: 'fruits_vegetables',
       iconKey: 'fruits_vegetables',
+      condition: 'Fresh',
+      origin: 'Bangladesh',
+      description: 'Picked fresh and kept crisp, straight from trusted local suppliers.',
     ),
     ProductEntity(
       id: 'fv_3',
@@ -108,6 +153,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '2kg',
       categoryId: 'fruits_vegetables',
       iconKey: 'fruits_vegetables',
+      condition: 'Fresh',
+      origin: 'Bangladesh',
+      description: 'Picked fresh and kept crisp, straight from trusted local suppliers.',
     ),
     ProductEntity(
       id: 'fv_4',
@@ -116,6 +164,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '500g',
       categoryId: 'fruits_vegetables',
       iconKey: 'fruits_vegetables',
+      condition: 'Fresh',
+      origin: 'Bangladesh',
+      description: 'Picked fresh and kept crisp, straight from trusted local suppliers.',
     ),
 
     // Frozen Food
@@ -127,6 +178,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'frozen_food',
       iconKey: 'frozen_food',
       subcategoryId: 'frozen_snacks',
+      condition: 'Frozen',
+      origin: 'Bangladesh',
+      description: 'Flash-frozen to lock in freshness — just heat and serve.',
     ),
     ProductEntity(
       id: 'ff_2',
@@ -136,6 +190,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'frozen_food',
       iconKey: 'frozen_food',
       subcategoryId: 'frozen_vegetables',
+      condition: 'Frozen',
+      origin: 'Bangladesh',
+      description: 'Flash-frozen to lock in freshness — just heat and serve.',
     ),
     ProductEntity(
       id: 'ff_3',
@@ -145,6 +202,10 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'frozen_food',
       iconKey: 'frozen_food',
       subcategoryId: 'frozen_snacks',
+      condition: 'Frozen',
+      origin: 'Bangladesh',
+      description: 'Flash-frozen to lock in freshness — just heat and serve.',
+      inStock: false,
     ),
 
     // Beverages
@@ -155,6 +216,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '1L',
       categoryId: 'beverages',
       iconKey: 'beverages',
+      condition: 'Ambient',
+      origin: 'Bangladesh',
+      description: 'A refreshing pick for any time of day, stocked fresh at every restock.',
     ),
     ProductEntity(
       id: 'bv_2',
@@ -163,6 +227,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '800ml',
       categoryId: 'beverages',
       iconKey: 'beverages',
+      condition: 'Ambient',
+      origin: 'Bangladesh',
+      description: 'A refreshing pick for any time of day, stocked fresh at every restock.',
     ),
     ProductEntity(
       id: 'bv_3',
@@ -171,6 +238,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '1.5L x 6',
       categoryId: 'beverages',
       iconKey: 'beverages',
+      condition: 'Ambient',
+      origin: 'Bangladesh',
+      description: 'A refreshing pick for any time of day, stocked fresh at every restock.',
     ),
 
     // Masala & Spice
@@ -182,6 +252,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'masala_spice',
       iconKey: 'masala_spice',
       subcategoryId: 'masala_mixes',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description: 'Carefully sourced and blended for authentic, consistent flavour in every batch.',
     ),
     ProductEntity(
       id: 'ms_2',
@@ -191,6 +264,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'masala_spice',
       iconKey: 'masala_spice',
       subcategoryId: 'masala_mixes',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description: 'Carefully sourced and blended for authentic, consistent flavour in every batch.',
     ),
     ProductEntity(
       id: 'ms_3',
@@ -200,6 +276,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'masala_spice',
       iconKey: 'masala_spice',
       subcategoryId: 'whole_spices',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description: 'Carefully sourced and blended for authentic, consistent flavour in every batch.',
     ),
     ProductEntity(
       id: 'ms_4',
@@ -209,6 +288,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'masala_spice',
       iconKey: 'masala_spice',
       subcategoryId: 'whole_spices',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description: 'Carefully sourced and blended for authentic, consistent flavour in every batch.',
     ),
 
     // Halal Products
@@ -219,6 +301,15 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '250g',
       categoryId: 'halal_products',
       iconKey: 'halal_products',
+      condition: 'Frozen',
+      origin: 'Brazil',
+      description:
+          'Halal-certified beef salami, thinly sliced and ready to serve — great for sandwiches, platters, or a '
+          'quick snack.',
+      reviews: [
+        ProductReviewEntity(reviewerName: 'Farhana Akter', rating: 5, comment: 'Delicious and properly Halal certified.'),
+        ProductReviewEntity(reviewerName: 'Kamal Hasan', rating: 4, comment: 'Nice texture, good for sandwiches.'),
+      ],
     ),
     ProductEntity(
       id: 'hp_2',
@@ -227,6 +318,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '500g',
       categoryId: 'halal_products',
       iconKey: 'halal_products',
+      condition: 'Frozen',
+      origin: 'Brazil',
+      description: 'Halal-certified and prepared to the highest quality standards you can trust.',
     ),
     ProductEntity(
       id: 'hp_3',
@@ -235,6 +329,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '400g',
       categoryId: 'halal_products',
       iconKey: 'halal_products',
+      condition: 'Frozen',
+      origin: 'Brazil',
+      description: 'Halal-certified and prepared to the highest quality standards you can trust.',
     ),
 
     // Rice & Grains
@@ -245,6 +342,16 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '5kg',
       categoryId: 'rice_grains',
       iconKey: 'rice_grains',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description:
+          'Long-grain aromatic Basmati rice, aged for extra fragrance and fluffiness — a pantry essential for '
+          'biryani, pulao, and everyday meals.',
+      reviews: [
+        ProductReviewEntity(reviewerName: 'Sabbir Rahman', rating: 5, comment: 'Excellent aroma, cooks perfectly every time.'),
+        ProductReviewEntity(reviewerName: 'Ayesha Siddika', rating: 4, comment: 'Good quality rice, a bit pricey but worth it.'),
+        ProductReviewEntity(reviewerName: 'Jahid Hasan', rating: 5, comment: 'Best basmati rice available locally.'),
+      ],
     ),
     ProductEntity(
       id: 'rg_2',
@@ -253,6 +360,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '1kg',
       categoryId: 'rice_grains',
       iconKey: 'rice_grains',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description: 'A pantry staple, sourced for consistent quality and great everyday value.',
     ),
     ProductEntity(
       id: 'rg_3',
@@ -261,6 +371,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '1kg',
       categoryId: 'rice_grains',
       iconKey: 'rice_grains',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description: 'A pantry staple, sourced for consistent quality and great everyday value.',
     ),
     ProductEntity(
       id: 'rg_4',
@@ -269,6 +382,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '1kg',
       categoryId: 'rice_grains',
       iconKey: 'rice_grains',
+      condition: 'Dry / Packaged',
+      origin: 'India',
+      description: 'A pantry staple, sourced for consistent quality and great everyday value.',
     ),
 
     // Snacks
@@ -280,6 +396,9 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       categoryId: 'snacks',
       iconKey: 'snacks',
       imageUrl: AssetPaths.demoProductImageVegetableSamosa,
+      condition: 'Ambient',
+      origin: 'Bangladesh',
+      description: 'A tasty, ready-to-cook snack the whole family will enjoy.',
     ),
   ];
 

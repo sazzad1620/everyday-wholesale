@@ -18,7 +18,35 @@
     "contact": "Contact"
   },
   "product": {
-    "empty": "No products in this category yet."
+    "empty": "No products in this category yet.",
+    "add_to_bag": "Add To Bag",
+    "in_stock": "In Stock",
+    "out_of_stock": "Out of Stock",
+    "review_count": "({count} Reviews)",
+    "no_reviews_yet_title": "No reviews yet",
+    "no_reviews_yet_message": "Be the first to share what you think about this product.",
+    "weight_label": "Weight",
+    "condition_label": "Condition",
+    "origin_label": "Origin",
+    "tab_description": "Description",
+    "tab_review": "Review",
+    "tab_faq": "FAQ",
+    "free_delivery_title": "Free Delivery",
+    "free_delivery_message": "Enjoy free delivery on all orders over ¥1,000.",
+    "premium_quality_title": "Premium Quality",
+    "premium_quality_message": "Every product is quality-checked before it reaches you.",
+    "halal_certified_title": "Halal Certified",
+    "halal_certified_message": "Sourced and prepared to strict halal standards.",
+    "faq": {
+      "delivery_q": "How long does delivery take?",
+      "delivery_a": "Orders are typically delivered within 2-4 business days depending on your location.",
+      "halal_q": "Is this product Halal certified?",
+      "halal_a": "Yes, all our meat and prepared food products are Halal certified by a recognized authority.",
+      "payment_q": "What payment methods are accepted?",
+      "payment_a": "We accept major credit/debit cards and cash on delivery.",
+      "returns_q": "Can I return this product?",
+      "returns_a": "Unopened items can be returned within 7 days of delivery for a full refund."
+    }
   },
   "common": {
     "coming_soon": "{feature} is coming soon.",

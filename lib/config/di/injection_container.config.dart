@@ -29,8 +29,12 @@ import 'package:everyday_wholesale/features/product/data/repositories/product_re
     as _i137;
 import 'package:everyday_wholesale/features/product/domain/repositories/product_repository.dart'
     as _i411;
+import 'package:everyday_wholesale/features/product/domain/usecases/get_product_by_id_usecase.dart'
+    as _i682;
 import 'package:everyday_wholesale/features/product/domain/usecases/get_products_by_category_usecase.dart'
     as _i706;
+import 'package:everyday_wholesale/features/product/presentation/bloc/product_detail_bloc.dart'
+    as _i785;
 import 'package:everyday_wholesale/features/product/presentation/bloc/product_list_bloc.dart'
     as _i37;
 import 'package:everyday_wholesale/features/splash/data/datasources/app_readiness_local_datasource.dart'
@@ -86,8 +90,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i674.GetPromoBannersUseCase>(),
       ),
     );
+    gh.factory<_i682.GetProductByIdUseCase>(
+      () => _i682.GetProductByIdUseCase(gh<_i411.ProductRepository>()),
+    );
     gh.factory<_i706.GetProductsByCategoryUseCase>(
       () => _i706.GetProductsByCategoryUseCase(gh<_i411.ProductRepository>()),
+    );
+    gh.factory<_i785.ProductDetailBloc>(
+      () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
     );
     gh.factory<_i105.CheckAppReadyUseCase>(
       () => _i105.CheckAppReadyUseCase(gh<_i246.AppReadinessRepository>()),

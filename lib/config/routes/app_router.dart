@@ -4,6 +4,7 @@ import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/home/domain/entities/category_entity.dart';
 import '../../features/home/presentation/pages/category_landing_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
@@ -45,6 +46,19 @@ final GoRouter appRouter = GoRouter(
                           categoryId: state.pathParameters['categoryId']!,
                           categoryName: extra?.categoryName,
                           subcategoryId: state.pathParameters['subcategoryId'],
+                          subcategoryName: extra?.subcategoryName,
+                        );
+                      },
+                    ),
+                    GoRoute(
+                      path: 'product/:productId',
+                      builder: (context, state) {
+                        final extra = state.extra as ProductDetailExtra?;
+                        return ProductDetailPage(
+                          categoryId: state.pathParameters['categoryId']!,
+                          productId: state.pathParameters['productId']!,
+                          categoryName: extra?.categoryName,
+                          subcategoryId: extra?.subcategoryId,
                           subcategoryName: extra?.subcategoryName,
                         );
                       },

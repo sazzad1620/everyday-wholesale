@@ -8,7 +8,6 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/utils/snack_utils.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
@@ -67,7 +66,13 @@ class ProductListPage extends StatelessWidget {
               BreadcrumbBar(items: breadcrumbItems),
               Expanded(
                 child: BlocBuilder<ProductListBloc, ProductListState>(
-                  builder: (context, state) => _ProductListBody(state: state),
+                  builder: (context, state) => _ProductListBody(
+                    state: state,
+                    categoryId: categoryId,
+                    categoryName: categoryLabel,
+                    subcategoryId: subcategoryId,
+                    subcategoryName: subcategoryName,
+                  ),
                 ),
               ),
             ],
@@ -79,9 +84,19 @@ class ProductListPage extends StatelessWidget {
 }
 
 class _ProductListBody extends StatelessWidget {
-  const _ProductListBody({required this.state});
+  const _ProductListBody({
+    required this.state,
+    required this.categoryId,
+    required this.categoryName,
+    required this.subcategoryId,
+    required this.subcategoryName,
+  });
 
   final ProductListState state;
+  final String categoryId;
+  final String categoryName;
+  final String? subcategoryId;
+  final String? subcategoryName;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +140,13 @@ class _ProductListBody extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final product = products[index];
-        return ProductCard(product: product, onTap: () => showComingSoonSnackBar(context, product.name));
+        return ProductCard(
+          product: product,
+          onTap: () => context.push(
+            RoutePaths.productDetail(categoryId, product.id),
+            extra: (categoryName: categoryName, subcategoryId: subcategoryId, subcategoryName: subcategoryName),
+          ),
+        );
       },
     );
   }
