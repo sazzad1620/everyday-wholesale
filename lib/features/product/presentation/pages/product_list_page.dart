@@ -159,6 +159,14 @@ class _ProductListBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: Text(
+              'product.all_category_products'.tr(namedArgs: {'categoryName': categoryName}),
+              style: AppTextStyles.title,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
         ],
         if (products.isEmpty)
           Padding(

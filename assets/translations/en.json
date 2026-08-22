@@ -19,6 +19,7 @@
   },
   "product": {
     "empty": "No products in this category yet.",
+    "all_category_products": "All {categoryName}",
     "add_to_cart": "Add To Cart",
     "in_stock": "In Stock",
     "out_of_stock": "Out of Stock",
