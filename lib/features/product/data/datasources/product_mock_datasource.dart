@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/constants/asset_paths.dart';
 import '../../domain/entities/product_entity.dart';
 
 abstract class ProductMockDatasource {
@@ -268,6 +269,17 @@ class ProductMockDatasourceImpl implements ProductMockDatasource {
       unit: '1kg',
       categoryId: 'rice_grains',
       iconKey: 'rice_grains',
+    ),
+
+    // Snacks
+    ProductEntity(
+      id: 'sn_1',
+      name: 'Vegetable Samosa 10pcs (IBADAH)',
+      price: 480,
+      unit: '400g',
+      categoryId: 'snacks',
+      iconKey: 'snacks',
+      imageUrl: AssetPaths.demoProductImageVegetableSamosa,
     ),
   ];
 

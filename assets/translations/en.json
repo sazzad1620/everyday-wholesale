@@ -11,7 +11,8 @@
     "explore_categories": "Explore By Categories"
   },
   "drawer": {
-    "title": "Categories",
+    "main_menu_title": "Main Menu",
+    "category_title": "Categories",
     "show_all": "Show All",
     "about": "About",
     "contact": "Contact"

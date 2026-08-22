@@ -9,6 +9,7 @@ class ProductEntity extends Equatable {
     required this.categoryId,
     required this.iconKey,
     this.subcategoryId,
+    this.imageUrl,
   });
 
   final String id;
@@ -24,6 +25,10 @@ class ProductEntity extends Equatable {
   /// not yet assigned to one of their category's subcategories.
   final String? subcategoryId;
 
+  /// Set by the admin when they upload a product photo. Null until then —
+  /// presentation falls back to a generic placeholder.
+  final String? imageUrl;
+
   @override
-  List<Object?> get props => [id, name, price, unit, categoryId, iconKey, subcategoryId];
+  List<Object?> get props => [id, name, price, unit, categoryId, iconKey, subcategoryId, imageUrl];
 }

@@ -14,6 +14,7 @@ const Map<String, IconData> categoryIcons = {
   'masala_spice': Icons.local_fire_department_rounded,
   'halal_products': Icons.verified_rounded,
   'rice_grains': Icons.grain_rounded,
+  'snacks': Icons.bakery_dining_rounded,
 };
 
 IconData iconForCategory(String iconKey) => categoryIcons[iconKey] ?? Icons.category_rounded;

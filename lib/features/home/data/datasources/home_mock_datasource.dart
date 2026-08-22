@@ -62,6 +62,7 @@ class HomeMockDatasourceImpl implements HomeMockDatasource {
       ),
       CategoryEntity(id: 'halal_products', name: 'Halal Products', iconKey: 'halal_products'),
       CategoryEntity(id: 'rice_grains', name: 'Rice & Grains', iconKey: 'rice_grains'),
+      CategoryEntity(id: 'snacks', name: 'Snacks', iconKey: 'snacks'),
     ];
   }
 

@@ -5,10 +5,17 @@ import '../../../config/di/injection_container.dart';
 import '../../../core/usecase/usecase.dart';
 import '../../../features/home/domain/entities/category_entity.dart';
 import '../../../features/home/domain/usecases/get_categories_usecase.dart';
-import '../../../features/home/presentation/widgets/category_drawer.dart';
 import '../../theme/app_colors.dart';
+import 'category_drawer.dart';
 import 'main_bottom_nav_bar.dart';
+import 'main_menu_drawer.dart';
 
+/// Two separate drawers share this one [Scaffold]: [MainMenuDrawer] on the
+/// left (`drawer`, opened by the hamburger icon on every page) and
+/// [CategoryDrawer] on the right (`endDrawer`, opened only from the bottom
+/// nav's "Category" item) — a plain `Scaffold` can only own one of each, so
+/// this is what keeps the two independently triggerable without one page
+/// needing to know about the other's drawer.
 class MainShell extends StatefulWidget {
   const MainShell({super.key, required this.navigationShell});
 
@@ -32,7 +39,8 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: FutureBuilder<List<CategoryEntity>>(
+      drawer: const MainMenuDrawer(),
+      endDrawer: FutureBuilder<List<CategoryEntity>>(
         future: _categoriesFuture,
         builder: (context, snapshot) {
           return CategoryDrawer(categories: snapshot.data ?? const []);
@@ -41,7 +49,7 @@ class _MainShellState extends State<MainShell> {
       body: widget.navigationShell,
       bottomNavigationBar: MainBottomNavBar(
         navigationShell: widget.navigationShell,
-        onCategoryTap: () => _scaffoldKey.currentState?.openDrawer(),
+        onCategoryTap: () => _scaffoldKey.currentState?.openEndDrawer(),
       ),
     );
   }
