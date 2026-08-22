@@ -6,7 +6,6 @@ import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../bloc/splash_bloc.dart';
 import '../bloc/splash_event.dart';
 import '../bloc/splash_state.dart';
@@ -27,14 +26,7 @@ class SplashPage extends StatelessWidget {
         child: Scaffold(
           backgroundColor: AppColors.surface,
           body: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(AssetPaths.logo, width: 180),
-                const SizedBox(height: 32),
-                const AppLoader(size: 28),
-              ],
-            ),
+            child: Image.asset(AssetPaths.logo, width: 180),
           ),
         ),
       ),

@@ -69,11 +69,16 @@ class _ProductCardState extends State<ProductCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      product.name,
-                      style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    SizedBox(
+                      // Reserves space for 2 lines up front so shorter titles
+                      // don't pull the price/rating row up with them.
+                      height: 36,
+                      child: Text(
+                        product.name,
+                        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600, height: 1.3),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
