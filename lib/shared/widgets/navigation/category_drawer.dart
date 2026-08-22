@@ -101,7 +101,10 @@ class _CategoryTileState extends State<_CategoryTile> {
             ),
             onTap: () {
               Navigator.of(context).pop();
-              context.push(RoutePaths.categoryProducts(category.id), extra: category.name);
+              context.push(
+                RoutePaths.categoryProducts(category.id),
+                extra: (categoryName: category.name, subcategories: category.subcategories),
+              );
             },
           ),
           for (final sub in category.subcategories)
@@ -112,7 +115,7 @@ class _CategoryTileState extends State<_CategoryTile> {
                 Navigator.of(context).pop();
                 context.push(
                   RoutePaths.subcategoryProducts(category.id, sub.id),
-                  extra: (categoryName: category.name, subcategoryName: sub.name),
+                  extra: (categoryName: category.name, subcategoryName: sub.name, subcategories: category.subcategories),
                 );
               },
             ),

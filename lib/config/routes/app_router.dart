@@ -1,8 +1,6 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/cart/presentation/pages/cart_page.dart';
-import '../../features/home/domain/entities/category_entity.dart';
-import '../../features/home/presentation/pages/category_landing_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
@@ -29,15 +27,15 @@ final GoRouter appRouter = GoRouter(
               routes: [
                 GoRoute(
                   path: 'category/:categoryId',
-                  builder: (context, state) => ProductListPage(
-                    categoryId: state.pathParameters['categoryId']!,
-                    categoryName: state.extra as String?,
-                  ),
+                  builder: (context, state) {
+                    final extra = state.extra as CategoryProductsExtra?;
+                    return ProductListPage(
+                      categoryId: state.pathParameters['categoryId']!,
+                      categoryName: extra?.categoryName,
+                      subcategories: extra?.subcategories ?? const [],
+                    );
+                  },
                   routes: [
-                    GoRoute(
-                      path: 'browse',
-                      builder: (context, state) => CategoryLandingPage(category: state.extra as CategoryEntity),
-                    ),
                     GoRoute(
                       path: 'browse/:subcategoryId',
                       builder: (context, state) {
@@ -47,6 +45,7 @@ final GoRouter appRouter = GoRouter(
                           categoryName: extra?.categoryName,
                           subcategoryId: state.pathParameters['subcategoryId'],
                           subcategoryName: extra?.subcategoryName,
+                          subcategories: extra?.subcategories ?? const [],
                         );
                       },
                     ),
@@ -60,6 +59,7 @@ final GoRouter appRouter = GoRouter(
                           categoryName: extra?.categoryName,
                           subcategoryId: extra?.subcategoryId,
                           subcategoryName: extra?.subcategoryName,
+                          subcategories: extra?.subcategories ?? const [],
                         );
                       },
                     ),

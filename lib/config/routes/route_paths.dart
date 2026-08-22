@@ -6,8 +6,6 @@ abstract final class RoutePaths {
 
   static String categoryProducts(String categoryId) => '$home/category/$categoryId';
 
-  static String categoryBrowse(String categoryId) => '$home/category/$categoryId/browse';
-
   static String subcategoryProducts(String categoryId, String subcategoryId) =>
       '$home/category/$categoryId/browse/$subcategoryId';
 

@@ -11,6 +11,7 @@ import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../account/presentation/widgets/account_sheet.dart';
+import '../../../home/domain/entities/subcategory_entity.dart';
 import '../bloc/product_detail_bloc.dart';
 import '../bloc/product_detail_event.dart';
 import '../bloc/product_detail_state.dart';
@@ -19,7 +20,12 @@ import '../widgets/product_detail_content.dart';
 /// What `extra` carries on the `product/:productId` route — display-only
 /// data needed to reconstruct the breadcrumb trail, since the URL only
 /// carries ids. Mirrors `ProductListExtra`.
-typedef ProductDetailExtra = ({String? categoryName, String? subcategoryId, String? subcategoryName});
+typedef ProductDetailExtra = ({
+  String? categoryName,
+  String? subcategoryId,
+  String? subcategoryName,
+  List<SubcategoryEntity> subcategories,
+});
 
 class ProductDetailPage extends StatelessWidget {
   const ProductDetailPage({
@@ -29,6 +35,7 @@ class ProductDetailPage extends StatelessWidget {
     this.categoryName,
     this.subcategoryId,
     this.subcategoryName,
+    this.subcategories = const [],
   });
 
   final String categoryId;
@@ -36,6 +43,7 @@ class ProductDetailPage extends StatelessWidget {
   final String? categoryName;
   final String? subcategoryId;
   final String? subcategoryName;
+  final List<SubcategoryEntity> subcategories;
 
   @override
   Widget build(BuildContext context) {
@@ -51,14 +59,21 @@ class ProductDetailPage extends StatelessWidget {
               final breadcrumbItems = [
                 BreadcrumbItem(
                   label: categoryLabel,
-                  onTap: () => context.pushReplacement(RoutePaths.categoryProducts(categoryId), extra: categoryLabel),
+                  onTap: () => context.pushReplacement(
+                    RoutePaths.categoryProducts(categoryId),
+                    extra: (categoryName: categoryLabel, subcategories: subcategories),
+                  ),
                 ),
                 if (subcategoryId != null)
                   BreadcrumbItem(
                     label: subcategoryName ?? subcategoryId!,
                     onTap: () => context.pushReplacement(
                       RoutePaths.subcategoryProducts(categoryId, subcategoryId!),
-                      extra: (categoryName: categoryLabel, subcategoryName: subcategoryName ?? subcategoryId!),
+                      extra: (
+                        categoryName: categoryLabel,
+                        subcategoryName: subcategoryName ?? subcategoryId!,
+                        subcategories: subcategories,
+                      ),
                     ),
                   ),
                 BreadcrumbItem(

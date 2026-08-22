@@ -12,14 +12,22 @@ import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../account/presentation/widgets/account_sheet.dart';
+import '../../../home/domain/entities/subcategory_entity.dart';
+import '../../../home/presentation/widgets/subcategory_grid.dart';
 import '../bloc/product_list_bloc.dart';
 import '../bloc/product_list_event.dart';
 import '../bloc/product_list_state.dart';
 import '../widgets/product_card.dart';
 
+/// What `extra` carries on the `category/:categoryId` route.
+typedef CategoryProductsExtra = ({String? categoryName, List<SubcategoryEntity> subcategories});
+
 /// What `extra` carries on the `browse/:subcategoryId` route — both names
-/// are needed there since the path only has ids.
-typedef ProductListExtra = ({String categoryName, String subcategoryName});
+/// are needed there since the path only has ids. `subcategories` is the
+/// filtered-out page's siblings, carried along purely so a "back to
+/// category" breadcrumb tap can restore the merged subcategory+product view
+/// without re-fetching the category.
+typedef ProductListExtra = ({String categoryName, String subcategoryName, List<SubcategoryEntity> subcategories});
 
 class ProductListPage extends StatelessWidget {
   const ProductListPage({
@@ -28,12 +36,21 @@ class ProductListPage extends StatelessWidget {
     this.categoryName,
     this.subcategoryId,
     this.subcategoryName,
+    this.subcategories = const [],
   });
 
   final String categoryId;
   final String? categoryName;
   final String? subcategoryId;
   final String? subcategoryName;
+
+  /// The category's subcategories — shown as a card grid above the products
+  /// when `subcategoryId` is null (the top-level category view), so browsing
+  /// a category and picking a subcategory happen on the same page instead of
+  /// a separate landing page. Still threaded through even when filtered to
+  /// one subcategory, purely so navigating back to the category restores
+  /// that merged view (see [ProductListExtra]).
+  final List<SubcategoryEntity> subcategories;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +63,7 @@ class ProductListPage extends StatelessWidget {
               label: categoryLabel,
               onTap: () => context.pushReplacement(
                 RoutePaths.categoryProducts(categoryId),
-                extra: categoryLabel,
+                extra: (categoryName: categoryLabel, subcategories: subcategories),
               ),
             ),
             BreadcrumbItem(label: subcategoryName ?? subcategoryId!, onTap: () {}, isCurrent: true),
@@ -72,6 +89,7 @@ class ProductListPage extends StatelessWidget {
                     categoryName: categoryLabel,
                     subcategoryId: subcategoryId,
                     subcategoryName: subcategoryName,
+                    subcategories: subcategories,
                   ),
                 ),
               ),
@@ -90,6 +108,7 @@ class _ProductListBody extends StatelessWidget {
     required this.categoryName,
     required this.subcategoryId,
     required this.subcategoryName,
+    required this.subcategories,
   });
 
   final ProductListState state;
@@ -97,6 +116,7 @@ class _ProductListBody extends StatelessWidget {
   final String categoryName;
   final String? subcategoryId;
   final String? subcategoryName;
+  final List<SubcategoryEntity> subcategories;
 
   @override
   Widget build(BuildContext context) {
@@ -122,32 +142,62 @@ class _ProductListBody extends StatelessWidget {
     }
 
     final products = (state as ProductListLoaded).products;
+    // Only the unfiltered, top-level category view shows the subcategory
+    // grid — a subcategory-filtered view carries the same list along (see
+    // [ProductListExtra]) purely for breadcrumb "back" navigation, not display.
+    final showSubcategories = subcategoryId == null && subcategories.isNotEmpty;
 
-    if (products.isEmpty) {
-      return Center(
-        child: Text('product.empty'.tr(), style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
-      );
-    }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      itemCount: products.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: AppSpacing.sm,
-        crossAxisSpacing: AppSpacing.sm,
-        childAspectRatio: 0.6,
-      ),
-      itemBuilder: (context, index) {
-        final product = products[index];
-        return ProductCard(
-          product: product,
-          onTap: () => context.push(
-            RoutePaths.productDetail(categoryId, product.id),
-            extra: (categoryName: categoryName, subcategoryId: subcategoryId, subcategoryName: subcategoryName),
+    return ListView(
+      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.lg),
+      children: [
+        if (showSubcategories) ...[
+          SubcategoryGrid(
+            subcategories: subcategories,
+            onSubcategoryTap: (sub) => context.push(
+              RoutePaths.subcategoryProducts(categoryId, sub.id),
+              extra: (categoryName: categoryName, subcategoryName: sub.name, subcategories: subcategories),
+            ),
           ),
-        );
-      },
+          const SizedBox(height: AppSpacing.lg),
+        ],
+        if (products.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: Center(
+              child: Text('product.empty'.tr(), style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: products.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: AppSpacing.sm,
+                crossAxisSpacing: AppSpacing.sm,
+                childAspectRatio: 0.6,
+              ),
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return ProductCard(
+                  product: product,
+                  onTap: () => context.push(
+                    RoutePaths.productDetail(categoryId, product.id),
+                    extra: (
+                      categoryName: categoryName,
+                      subcategoryId: subcategoryId,
+                      subcategoryName: subcategoryName,
+                      subcategories: subcategories,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 }
