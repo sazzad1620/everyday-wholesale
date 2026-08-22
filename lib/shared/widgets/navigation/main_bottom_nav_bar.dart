@@ -61,9 +61,9 @@ class MainBottomNavBar extends StatelessWidget {
                 onTap: () => goBranch(1),
               ),
               _NavItem(
-                icon: Icons.shopping_bag_outlined,
-                selectedIcon: Icons.shopping_bag_rounded,
-                label: 'nav.bag'.tr(),
+                icon: Icons.shopping_cart_outlined,
+                selectedIcon: Icons.shopping_cart_rounded,
+                label: 'nav.cart'.tr(),
                 selected: currentBranchIndex == 2,
                 onTap: () => goBranch(2),
                 badgeCount: 1,

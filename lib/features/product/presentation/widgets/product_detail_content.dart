@@ -43,15 +43,9 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3)),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: AspectRatio(aspectRatio: 1.3, child: ProductImage(imageUrl: product.imageUrl)),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: AspectRatio(aspectRatio: 1, child: ProductImage(imageUrl: product.imageUrl)),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(product.name, style: AppTextStyles.headline),
@@ -82,7 +76,7 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
             children: [
               QuantityStepper(quantity: _quantity, onIncrement: _increment, onDecrement: _decrement),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(child: _AddToBagButton(onTap: () => showComingSoonSnackBar(context, 'Bag'))),
+              Expanded(child: _AddToCartButton(onTap: () => showComingSoonSnackBar(context, 'Cart'))),
               const SizedBox(width: AppSpacing.sm),
               _WishlistIconButton(onTap: () => showComingSoonSnackBar(context, 'Wishlist')),
             ],
@@ -123,8 +117,8 @@ class _StockPill extends StatelessWidget {
   }
 }
 
-class _AddToBagButton extends StatelessWidget {
-  const _AddToBagButton({required this.onTap});
+class _AddToCartButton extends StatelessWidget {
+  const _AddToCartButton({required this.onTap});
 
   final VoidCallback onTap;
 
@@ -148,10 +142,10 @@ class _AddToBagButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 18),
+              const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 18),
               const SizedBox(width: AppSpacing.xs),
               Text(
-                'product.add_to_bag'.tr(),
+                'product.add_to_cart'.tr(),
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
               ),
             ],
@@ -177,7 +171,7 @@ class _WishlistIconButton extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.2)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       child: Material(

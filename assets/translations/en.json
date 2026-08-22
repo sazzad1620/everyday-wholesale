@@ -19,7 +19,7 @@
   },
   "product": {
     "empty": "No products in this category yet.",
-    "add_to_bag": "Add To Bag",
+    "add_to_cart": "Add To Cart",
     "in_stock": "In Stock",
     "out_of_stock": "Out of Stock",
     "review_count": "({count} Reviews)",
@@ -32,7 +32,7 @@
     "tab_review": "Review",
     "tab_faq": "FAQ",
     "free_delivery_title": "Free Delivery",
-    "free_delivery_message": "Enjoy free delivery on all orders over ¥1,000.",
+    "free_delivery_message": "Enjoy free delivery on all orders over ¥10,000.",
     "premium_quality_title": "Premium Quality",
     "premium_quality_message": "Every product is quality-checked before it reaches you.",
     "halal_certified_title": "Halal Certified",
@@ -57,7 +57,7 @@
     "home": "Home",
     "category": "Category",
     "wishlist": "Wishlist",
-    "bag": "Bag"
+    "cart": "Cart"
   },
   "wishlist": {
     "title": "Wishlist",
@@ -65,9 +65,9 @@
     "empty_message": "Save products you love and find them here once wishlists are wired up."
   },
   "cart": {
-    "title": "Bag",
-    "empty_title": "Your bag is empty",
-    "empty_message": "Items you add to your bag will show up here once ordering is wired up."
+    "title": "Cart",
+    "empty_title": "Your cart is empty",
+    "empty_message": "Items you add to your cart will show up here once ordering is wired up."
   },
   "account": {
     "signed_out_title": "Welcome",

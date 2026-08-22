@@ -11,7 +11,7 @@ class CartPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('cart.title'.tr())),
       body: ComingSoonView(
-        icon: Icons.shopping_bag_outlined,
+        icon: Icons.shopping_cart_outlined,
         title: 'cart.empty_title'.tr(),
         message: 'cart.empty_message'.tr(),
       ),

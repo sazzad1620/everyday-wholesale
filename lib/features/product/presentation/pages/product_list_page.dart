@@ -136,7 +136,7 @@ class _ProductListBody extends StatelessWidget {
         crossAxisCount: 2,
         mainAxisSpacing: AppSpacing.sm,
         crossAxisSpacing: AppSpacing.sm,
-        childAspectRatio: 0.64,
+        childAspectRatio: 0.6,
       ),
       itemBuilder: (context, index) {
         final product = products[index];

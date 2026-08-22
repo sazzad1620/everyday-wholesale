@@ -37,7 +37,7 @@ class _ProductCardState extends State<ProductCard> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -52,7 +52,7 @@ class _ProductCardState extends State<ProductCard> {
                 clipBehavior: Clip.none,
                 children: [
                   AspectRatio(
-                    aspectRatio: 1.15,
+                    aspectRatio: 1,
                     child: ProductImage(imageUrl: product.imageUrl),
                   ),
                   Positioned(
