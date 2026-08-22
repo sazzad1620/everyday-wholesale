@@ -9,6 +9,8 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:everyday_wholesale/features/account/presentation/bloc/account_bloc.dart'
+    as _i1047;
 import 'package:everyday_wholesale/features/home/data/datasources/home_mock_datasource.dart'
     as _i589;
 import 'package:everyday_wholesale/features/home/data/repositories/home_repository_impl.dart'
@@ -51,6 +53,7 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
+    gh.lazySingleton<_i1047.AccountBloc>(() => _i1047.AccountBloc());
     gh.lazySingleton<_i589.HomeMockDatasource>(
       () => _i589.HomeMockDatasourceImpl(),
     );

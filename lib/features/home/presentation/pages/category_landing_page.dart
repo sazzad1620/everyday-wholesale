@@ -5,6 +5,9 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
+import '../../../account/presentation/widgets/account_sheet.dart';
 import '../../domain/entities/category_entity.dart';
 
 /// Shown for categories that have subcategories — lets the user either
@@ -18,32 +21,44 @@ class CategoryLandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(category.name)),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        children: [
-          _LandingTile(
-            label: 'Browse All ${category.name}',
-            highlighted: true,
-            onTap: () => context.push(RoutePaths.categoryProducts(category.id), extra: category.name),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('Shop by Subcategory', style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.sm),
-          for (final sub in category.subcategories)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: _LandingTile(
-                label: sub.name,
-                onTap: () => context.push(
-                  RoutePaths.subcategoryProducts(category.id, sub.id),
-                  extra: sub.name,
-                ),
+    return ColoredBox(
+      color: AppColors.background,
+      child: SafeArea(
+        child: Column(
+          children: [
+            AppHeader(
+              onMenuTap: () => Scaffold.of(context).openDrawer(),
+              onAccountTap: () => showAccountSheet(context),
+            ),
+            BreadcrumbBar(items: [BreadcrumbItem(label: category.name, onTap: () {}, isCurrent: true)]),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                children: [
+                  _LandingTile(
+                    label: 'Browse All ${category.name}',
+                    highlighted: true,
+                    onTap: () => context.push(RoutePaths.categoryProducts(category.id), extra: category.name),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text('Shop by Subcategory', style: AppTextStyles.title),
+                  const SizedBox(height: AppSpacing.sm),
+                  for (final sub in category.subcategories)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: _LandingTile(
+                        label: sub.name,
+                        onTap: () => context.push(
+                          RoutePaths.subcategoryProducts(category.id, sub.id),
+                          extra: (categoryName: category.name, subcategoryName: sub.name),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

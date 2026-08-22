@@ -120,7 +120,10 @@ class _CategoryTileState extends State<_CategoryTile> {
               title: Text(sub.name, style: AppTextStyles.body),
               onTap: () {
                 Navigator.of(context).pop();
-                context.push(RoutePaths.subcategoryProducts(category.id, sub.id), extra: sub.name);
+                context.push(
+                  RoutePaths.subcategoryProducts(category.id, sub.id),
+                  extra: (categoryName: category.name, subcategoryName: sub.name),
+                );
               },
             ),
         ],

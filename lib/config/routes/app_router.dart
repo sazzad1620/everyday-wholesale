@@ -39,11 +39,15 @@ final GoRouter appRouter = GoRouter(
                     ),
                     GoRoute(
                       path: 'browse/:subcategoryId',
-                      builder: (context, state) => ProductListPage(
-                        categoryId: state.pathParameters['categoryId']!,
-                        subcategoryId: state.pathParameters['subcategoryId'],
-                        subcategoryName: state.extra as String?,
-                      ),
+                      builder: (context, state) {
+                        final extra = state.extra as ProductListExtra?;
+                        return ProductListPage(
+                          categoryId: state.pathParameters['categoryId']!,
+                          categoryName: extra?.categoryName,
+                          subcategoryId: state.pathParameters['subcategoryId'],
+                          subcategoryName: extra?.subcategoryName,
+                        );
+                      },
                     ),
                   ],
                 ),

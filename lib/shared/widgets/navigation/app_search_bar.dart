@@ -1,34 +1,27 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_spacing.dart';
-import '../../../../shared/utils/snack_utils.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_input_style.dart';
+import '../../theme/app_spacing.dart';
+import '../../utils/snack_utils.dart';
 
-class HomeSearchBar extends StatelessWidget {
-  const HomeSearchBar({super.key});
+/// Lives inside [AppHeader]. Uses [AppInputStyle] — the same flat, ash,
+/// borderless treatment every real text field will use later.
+class AppSearchBar extends StatelessWidget {
+  const AppSearchBar({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        decoration: AppInputStyle.boxDecoration(),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(AppInputStyle.radius),
           child: InkWell(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppInputStyle.radius),
             onTap: () => showComingSoonSnackBar(context, 'Search'),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),

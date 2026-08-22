@@ -7,15 +7,14 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
+import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../account/presentation/widgets/account_sheet.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
 import '../utils/category_navigation.dart';
-import '../widgets/account_sheet.dart';
 import '../widgets/category_grid.dart';
 import '../widgets/home_promo_carousel.dart';
-import '../widgets/home_search_bar.dart';
-import '../widgets/home_top_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -39,7 +38,7 @@ class _HomeView extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            HomeTopBar(
+            AppHeader(
               onMenuTap: () => Scaffold.of(context).openDrawer(),
               onAccountTap: () => showAccountSheet(context),
             ),
@@ -90,10 +89,8 @@ class _HomeBody extends StatelessWidget {
     final loaded = state as HomeLoaded;
 
     return ListView(
-      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.lg),
+      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.lg),
       children: [
-        const HomeSearchBar(),
-        const SizedBox(height: AppSpacing.md),
         HomePromoCarousel(banners: loaded.promoBanners),
         const SizedBox(height: AppSpacing.lg),
         Padding(

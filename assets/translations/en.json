@@ -1,5 +1,11 @@
 {
   "app_name": "Everyday Wholesale",
+  "header": {
+    "brand_primary": "EVERYDAY",
+    "brand_secondary": "WHOLESALE",
+    "greeting_guest": "Hi, Guest",
+    "greeting_named": "Hi, {name}"
+  },
   "home": {
     "search_hint": "Search for products...",
     "explore_categories": "Explore By Categories"

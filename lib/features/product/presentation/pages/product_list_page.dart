@@ -1,17 +1,26 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
+import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/snack_utils.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
+import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
+import '../../../account/presentation/widgets/account_sheet.dart';
 import '../bloc/product_list_bloc.dart';
 import '../bloc/product_list_event.dart';
 import '../bloc/product_list_state.dart';
 import '../widgets/product_card.dart';
+
+/// What `extra` carries on the `browse/:subcategoryId` route — both names
+/// are needed there since the path only has ids.
+typedef ProductListExtra = ({String categoryName, String subcategoryName});
 
 class ProductListPage extends StatelessWidget {
   const ProductListPage({
@@ -29,14 +38,40 @@ class ProductListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final categoryLabel = categoryName ?? categoryId;
+
+    final breadcrumbItems = subcategoryId == null
+        ? [BreadcrumbItem(label: categoryLabel, onTap: () {}, isCurrent: true)]
+        : [
+            BreadcrumbItem(
+              label: categoryLabel,
+              onTap: () => context.pushReplacement(
+                RoutePaths.categoryProducts(categoryId),
+                extra: categoryLabel,
+              ),
+            ),
+            BreadcrumbItem(label: subcategoryName ?? subcategoryId!, onTap: () {}, isCurrent: true),
+          ];
+
     return BlocProvider(
-      create: (_) => getIt<ProductListBloc>()
-        ..add(ProductListStarted(categoryId, subcategoryId: subcategoryId)),
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(title: Text(subcategoryName ?? categoryName ?? categoryId)),
-        body: BlocBuilder<ProductListBloc, ProductListState>(
-          builder: (context, state) => _ProductListBody(state: state),
+      create: (_) => getIt<ProductListBloc>()..add(ProductListStarted(categoryId, subcategoryId: subcategoryId)),
+      child: ColoredBox(
+        color: AppColors.background,
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppHeader(
+                onMenuTap: () => Scaffold.of(context).openDrawer(),
+                onAccountTap: () => showAccountSheet(context),
+              ),
+              BreadcrumbBar(items: breadcrumbItems),
+              Expanded(
+                child: BlocBuilder<ProductListBloc, ProductListState>(
+                  builder: (context, state) => _ProductListBody(state: state),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
