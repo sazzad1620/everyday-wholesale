@@ -89,6 +89,7 @@ Every new feature replicates the `data/domain/presentation` structure shown by t
 - Stripe integration.
 - Real Home UI with product data (currently a bare placeholder).
 - `auth`, `product`/`catalog`, `cart`, `checkout`, `orders` features (customer side).
+- Login/signup, address management, and order-history UI (currently inline mock buttons / "coming soon" stubs / no entry point in `account_sheet.dart`) — see Phase 2.
 - `admin` feature group: dashboard, product management, order management (manager side).
 - Dark mode toggle (theme exists, not wired to a switch).
 - Additional locales beyond English.
@@ -96,7 +97,7 @@ Every new feature replicates the `data/domain/presentation` structure shown by t
 ## 5. Roadmap (phases)
 
 1. **Foundation** ✅ — project structure, dependencies, DI/router/theme/localization boilerplate, one fully-wired template feature (Splash → Home placeholder). See [IMPLEMENTATION.md](IMPLEMENTATION.md) for status.
-2. **UI-first customer build** — real Home page UI with mock/hardcoded product data, no backend. Likely also product listing/detail, cart, and checkout screens as static UI against mock data, built from gunmahalalfood.com screenshots.
+2. **UI-first customer build** — real Home page UI with mock/hardcoded product data, no backend. Also product listing/detail, cart, and checkout screens, plus login/signup and account sub-pages (address management, edit profile, order history) as static UI against mock data, built from gunmahalalfood.com screenshots.
 3. **Firebase integration** — Firestore data models for products/orders/users, Firebase Auth for customer + admin/manager login, Firebase Storage for product images. Mock data sources swapped for Firebase-backed ones behind the existing repository interfaces (no presentation-layer changes needed, by design).
 4. **Customer features end-to-end** — auth, product catalog, cart, checkout, order placement, order history/status — wired to real Firebase data.
 5. **Admin/manager side** — dashboard, product management (CRUD), order management, order status updates.
