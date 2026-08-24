@@ -1,113 +1,132 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../config/di/injection_container.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/snack_utils.dart';
 import '../../../../shared/widgets/product_image.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
+import '../../../cart/presentation/bloc/cart_event.dart';
+import '../../../cart/presentation/bloc/cart_state.dart';
 import '../../domain/entities/product_entity.dart';
 
-/// Quantity here is local to the card — not backed by a shared cart yet.
-/// Once the real Cart feature lands, swap the local `_quantity` state for
-/// `CartBloc` state without touching the rest of this widget.
-class ProductCard extends StatefulWidget {
+int _quantityInCart(CartState state, String productId) {
+  for (final item in state.items) {
+    if (item.product.id == productId) return item.quantity;
+  }
+  return 0;
+}
+
+class ProductCard extends StatelessWidget {
   const ProductCard({super.key, required this.product, required this.onTap});
 
   final ProductEntity product;
   final VoidCallback onTap;
 
   @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  int _quantity = 0;
-
-  void _increment() => setState(() => _quantity++);
-
-  void _decrement() => setState(() => _quantity = _quantity > 0 ? _quantity - 1 : 0);
-
-  @override
   Widget build(BuildContext context) {
-    final product = widget.product;
+    final cartBloc = getIt<CartBloc>();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: widget.onTap,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    // The floating cart button straddles the image/content boundary and
+    // must be a *sibling* of the card's tap-to-detail InkWell, not a
+    // descendant of it — otherwise part of the button falls outside the
+    // inner Stack's own hit-test bounds (since that Stack only reports the
+    // image's height) and taps there fall through to the card's onTap
+    // instead of the button's. LayoutBuilder gives the image's rendered
+    // height (card width, since it's a 1:1 square) so the button can be
+    // positioned in the *outer* Stack, which is sized by the full card and
+    // has no such gap.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final imageHeight = constraints.maxWidth;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  AspectRatio(
-                    aspectRatio: 1,
-                    child: ProductImage(imageUrl: product.imageUrl),
-                  ),
-                  Positioned(
-                    right: AppSpacing.sm,
-                    bottom: -18,
-                    child: _quantity == 0
-                        ? _AddToCartButton(onTap: _increment)
-                        : _QuantityPill(quantity: _quantity, onIncrement: _increment, onDecrement: _decrement),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.md + 8, AppSpacing.sm, AppSpacing.sm),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      // Reserves space for 2 lines up front so shorter titles
-                      // don't pull the price/rating row up with them.
-                      height: 36,
-                      child: Text(
-                        product.name,
-                        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600, height: 1.3),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatYen(product.price),
-                      style: AppTextStyles.title.copyWith(color: AppColors.primary, fontSize: 16),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      children: [
-                        for (var i = 0; i < 5; i++)
-                          const Icon(Icons.star_border_rounded, size: 15, color: AppColors.textSecondary),
-                        const Spacer(),
-                        InkWell(
-                          borderRadius: BorderRadius.circular(14),
-                          onTap: () => showComingSoonSnackBar(context, 'Wishlist'),
-                          child: const Padding(
-                            padding: EdgeInsets.all(2),
-                            child: Icon(Icons.favorite_border_rounded, size: 18, color: AppColors.textSecondary),
-                          ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onTap,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: imageHeight, child: ProductImage(imageUrl: product.imageUrl)),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.md + 8, AppSpacing.sm, AppSpacing.sm),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              // Reserves space for 2 lines up front so shorter
+                              // titles don't pull the price/rating row up with them.
+                              height: 36,
+                              child: Text(
+                                product.name,
+                                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600, height: 1.3),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              formatYen(product.price),
+                              style: AppTextStyles.title.copyWith(color: AppColors.primary, fontSize: 16),
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Row(
+                              children: [
+                                for (var i = 0; i < 5; i++)
+                                  const Icon(Icons.star_border_rounded, size: 15, color: AppColors.textSecondary),
+                                const Spacer(),
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: () => showComingSoonSnackBar(context, 'Wishlist'),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(2),
+                                    child: Icon(Icons.favorite_border_rounded, size: 18, color: AppColors.textSecondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                right: AppSpacing.sm,
+                top: imageHeight - 18,
+                child: BlocBuilder<CartBloc, CartState>(
+                  bloc: cartBloc,
+                  builder: (context, state) {
+                    final quantity = _quantityInCart(state, product.id);
+                    return quantity == 0
+                        ? _AddToCartButton(onTap: () => cartBloc.add(CartItemAdded(product, 1)))
+                        : _QuantityPill(
+                            quantity: quantity,
+                            onIncrement: () => cartBloc.add(CartQuantityChanged(product.id, quantity + 1)),
+                            onDecrement: () => cartBloc.add(CartQuantityChanged(product.id, quantity - 1)),
+                          );
+                  },
                 ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

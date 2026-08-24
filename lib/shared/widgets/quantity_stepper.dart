@@ -15,11 +15,11 @@ class QuantityStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      height: 34,
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -27,11 +27,11 @@ class QuantityStepper extends StatelessWidget {
         children: [
           _StepperButton(icon: Icons.remove_rounded, onTap: onDecrement),
           SizedBox(
-            width: 28,
+            width: 24,
             child: Text(
               '$quantity',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary, fontSize: 15),
+              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary, fontSize: 13),
             ),
           ),
           _StepperButton(icon: Icons.add_rounded, onTap: onIncrement),
@@ -56,8 +56,8 @@ class _StepperButton extends StatelessWidget {
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Icon(icon, color: AppColors.primary, size: 18),
+          padding: const EdgeInsets.all(6),
+          child: Icon(icon, color: AppColors.primary, size: 16),
         ),
       ),
     );

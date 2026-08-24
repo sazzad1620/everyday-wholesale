@@ -3,6 +3,8 @@ abstract final class RoutePaths {
   static const String home = '/home';
   static const String wishlist = '/wishlist';
   static const String cart = '/cart';
+  static const String checkout = '/checkout';
+  static const String orderConfirmation = '/order-confirmation';
 
   static String categoryProducts(String categoryId) => '$home/category/$categoryId';
 

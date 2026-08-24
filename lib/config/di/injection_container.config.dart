@@ -11,6 +11,22 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:everyday_wholesale/features/account/presentation/bloc/account_bloc.dart'
     as _i1047;
+import 'package:everyday_wholesale/features/cart/data/datasources/cart_local_datasource.dart'
+    as _i951;
+import 'package:everyday_wholesale/features/cart/data/repositories/cart_repository_impl.dart'
+    as _i184;
+import 'package:everyday_wholesale/features/cart/domain/repositories/cart_repository.dart'
+    as _i175;
+import 'package:everyday_wholesale/features/cart/domain/usecases/add_to_cart_usecase.dart'
+    as _i430;
+import 'package:everyday_wholesale/features/cart/domain/usecases/clear_cart_usecase.dart'
+    as _i883;
+import 'package:everyday_wholesale/features/cart/domain/usecases/remove_from_cart_usecase.dart'
+    as _i931;
+import 'package:everyday_wholesale/features/cart/domain/usecases/update_cart_quantity_usecase.dart'
+    as _i900;
+import 'package:everyday_wholesale/features/cart/presentation/bloc/cart_bloc.dart'
+    as _i632;
 import 'package:everyday_wholesale/features/home/data/datasources/home_mock_datasource.dart'
     as _i589;
 import 'package:everyday_wholesale/features/home/data/repositories/home_repository_impl.dart'
@@ -64,11 +80,29 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i585.ProductMockDatasource>(
       () => _i585.ProductMockDatasourceImpl(),
     );
+    gh.lazySingleton<_i951.CartLocalDatasource>(
+      () => _i951.CartLocalDatasourceImpl(),
+    );
     gh.lazySingleton<_i204.AppReadinessLocalDatasource>(
       () => _i204.AppReadinessLocalDatasourceImpl(),
     );
     gh.lazySingleton<_i339.HomeRepository>(
       () => _i734.HomeRepositoryImpl(gh<_i589.HomeMockDatasource>()),
+    );
+    gh.lazySingleton<_i175.CartRepository>(
+      () => _i184.CartRepositoryImpl(gh<_i951.CartLocalDatasource>()),
+    );
+    gh.factory<_i430.AddToCartUseCase>(
+      () => _i430.AddToCartUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i883.ClearCartUseCase>(
+      () => _i883.ClearCartUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i931.RemoveFromCartUseCase>(
+      () => _i931.RemoveFromCartUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i900.UpdateCartQuantityUseCase>(
+      () => _i900.UpdateCartQuantityUseCase(gh<_i175.CartRepository>()),
     );
     gh.factory<_i353.GetCategoriesUseCase>(
       () => _i353.GetCategoriesUseCase(gh<_i339.HomeRepository>()),
@@ -98,6 +132,14 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i785.ProductDetailBloc>(
       () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
+    );
+    gh.lazySingleton<_i632.CartBloc>(
+      () => _i632.CartBloc(
+        gh<_i430.AddToCartUseCase>(),
+        gh<_i900.UpdateCartQuantityUseCase>(),
+        gh<_i931.RemoveFromCartUseCase>(),
+        gh<_i883.ClearCartUseCase>(),
+      ),
     );
     gh.factory<_i105.CheckAppReadyUseCase>(
       () => _i105.CheckAppReadyUseCase(gh<_i246.AppReadinessRepository>()),

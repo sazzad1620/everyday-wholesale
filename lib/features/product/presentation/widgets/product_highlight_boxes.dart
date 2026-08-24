@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/pricing_constants.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -18,7 +20,9 @@ class ProductHighlightBoxes extends StatelessWidget {
         _HighlightCard(
           icon: Icons.local_shipping_outlined,
           title: 'product.free_delivery_title'.tr(),
-          message: 'product.free_delivery_message'.tr(),
+          message: 'product.free_delivery_message'.tr(
+            namedArgs: {'amount': formatYen(PricingConstants.freeDeliveryThresholdYen)},
+          ),
           axis: Axis.horizontal,
         ),
         const SizedBox(height: AppSpacing.sm),

@@ -1,6 +1,9 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/cart/presentation/pages/cart_page.dart';
+import '../../features/checkout/presentation/pages/checkout_page.dart';
+import '../../features/checkout/presentation/pages/order_confirmation_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
@@ -9,7 +12,13 @@ import '../../features/wishlist/presentation/pages/wishlist_page.dart';
 import '../../shared/widgets/navigation/main_shell.dart';
 import 'route_paths.dart';
 
+/// Lets checkout/order-confirmation push on the root navigator instead of
+/// the shell's nested one, so they render full-screen without the bottom
+/// nav bar.
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final GoRouter appRouter = GoRouter(
+  navigatorKey: rootNavigatorKey,
   initialLocation: RoutePaths.splash,
   routes: [
     GoRoute(
@@ -76,6 +85,16 @@ final GoRouter appRouter = GoRouter(
           routes: [GoRoute(path: RoutePaths.cart, builder: (context, state) => const CartPage())],
         ),
       ],
+    ),
+    GoRoute(
+      path: RoutePaths.checkout,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const CheckoutPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.orderConfirmation,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const OrderConfirmationPage(),
     ),
   ],
 );

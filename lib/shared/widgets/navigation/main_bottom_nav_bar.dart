@@ -1,7 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/di/injection_container.dart';
+import '../../../features/cart/presentation/bloc/cart_bloc.dart';
+import '../../../features/cart/presentation/bloc/cart_state.dart';
 import '../../theme/app_colors.dart';
 
 /// Custom bottom bar rather than Flutter's built-in [NavigationBar] because
@@ -60,13 +64,16 @@ class MainBottomNavBar extends StatelessWidget {
                 selected: currentBranchIndex == 1,
                 onTap: () => goBranch(1),
               ),
-              _NavItem(
-                icon: Icons.shopping_cart_outlined,
-                selectedIcon: Icons.shopping_cart_rounded,
-                label: 'nav.cart'.tr(),
-                selected: currentBranchIndex == 2,
-                onTap: () => goBranch(2),
-                badgeCount: 1,
+              BlocBuilder<CartBloc, CartState>(
+                bloc: getIt<CartBloc>(),
+                builder: (context, cartState) => _NavItem(
+                  icon: Icons.shopping_cart_outlined,
+                  selectedIcon: Icons.shopping_cart_rounded,
+                  label: 'nav.cart'.tr(),
+                  selected: currentBranchIndex == 2,
+                  onTap: () => goBranch(2),
+                  badgeCount: cartState.itemCount,
+                ),
               ),
             ],
           ),

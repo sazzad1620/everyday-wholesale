@@ -1,23 +1,26 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../config/di/injection_container.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/snack_utils.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/product_image.dart';
 import '../../../../shared/widgets/quantity_stepper.dart';
 import '../../../../shared/widgets/star_rating.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
+import '../../../cart/presentation/bloc/cart_event.dart';
 import '../../domain/entities/product_entity.dart';
 import 'product_detail_tabs.dart';
 import 'product_highlight_boxes.dart';
 import 'product_info_row.dart';
 
-/// Quantity here is local to the page — not backed by a shared cart yet.
-/// Once the real Cart feature lands, swap the local `_quantity` state for
-/// `CartBloc` state, matching the same placeholder pattern used by the
-/// product card's floating add-to-cart control.
+/// `_quantity` here is how many to add on the next tap — not the cart's own
+/// count for this product (that lives in `CartBloc`). Tapping "Add to Cart"
+/// dispatches into the shared cart and resets this back to 1.
 class ProductDetailContent extends StatefulWidget {
   const ProductDetailContent({super.key, required this.product});
 
@@ -33,6 +36,12 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
   void _increment() => setState(() => _quantity++);
 
   void _decrement() => setState(() => _quantity = _quantity > 1 ? _quantity - 1 : 1);
+
+  void _addToCart(BuildContext context, ProductEntity product) {
+    getIt<CartBloc>().add(CartItemAdded(product, _quantity));
+    showSnackMessage(context, 'product.added_to_cart'.tr());
+    setState(() => _quantity = 1);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +85,13 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
             children: [
               QuantityStepper(quantity: _quantity, onIncrement: _increment, onDecrement: _decrement),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(child: _AddToCartButton(onTap: () => showComingSoonSnackBar(context, 'Cart'))),
+              Expanded(
+                child: PrimaryButton(
+                  label: 'product.add_to_cart'.tr(),
+                  icon: Icons.shopping_cart_outlined,
+                  onTap: () => _addToCart(context, product),
+                ),
+              ),
               const SizedBox(width: AppSpacing.sm),
               _WishlistIconButton(onTap: () => showComingSoonSnackBar(context, 'Wishlist')),
             ],
@@ -112,45 +127,6 @@ class _StockPill extends StatelessWidget {
             style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.w600),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AddToCartButton extends StatelessWidget {
-  const _AddToCartButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 8, offset: const Offset(0, 3)),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 18),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                'product.add_to_cart'.tr(),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
