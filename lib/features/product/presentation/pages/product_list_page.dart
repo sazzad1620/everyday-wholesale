@@ -78,7 +78,7 @@ class ProductListPage extends StatelessWidget {
             children: [
               AppHeader(
                 onMenuTap: () => Scaffold.of(context).openDrawer(),
-                onAccountTap: () => showAccountSheet(context),
+                onAccountTap: () => openAccountMenu(context),
               ),
               BreadcrumbBar(items: breadcrumbItems),
               Expanded(

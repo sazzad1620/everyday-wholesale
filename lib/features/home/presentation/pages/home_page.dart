@@ -40,7 +40,7 @@ class _HomeView extends StatelessWidget {
           children: [
             AppHeader(
               onMenuTap: () => Scaffold.of(context).openDrawer(),
-              onAccountTap: () => showAccountSheet(context),
+              onAccountTap: () => openAccountMenu(context),
             ),
             Expanded(
               child: BlocBuilder<HomeBloc, HomeState>(

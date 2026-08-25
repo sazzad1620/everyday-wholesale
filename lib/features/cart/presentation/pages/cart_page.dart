@@ -31,7 +31,7 @@ class CartPage extends StatelessWidget {
           children: [
             AppHeader(
               onMenuTap: () => Scaffold.of(context).openDrawer(),
-              onAccountTap: () => showAccountSheet(context),
+              onAccountTap: () => openAccountMenu(context),
             ),
             BreadcrumbBar(items: [BreadcrumbItem(label: 'cart.title'.tr(), onTap: () {}, isCurrent: true)]),
             Expanded(

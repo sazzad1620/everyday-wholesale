@@ -1,20 +1,29 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/injection_container.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/snack_utils.dart';
+import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
 import '../bloc/account_bloc.dart';
 import '../bloc/account_event.dart';
-import '../bloc/account_state.dart';
 
-/// Mock-only for now — no real auth exists yet, so "Log In"/"Sign Up" just
-/// flip [AccountBloc] to the signed-in state to preview both views, and
-/// "Logout" flips back. Wire this up to Firebase Auth in the
-/// backend-integration phase.
+/// Single entry point for the header's account icon — routes to the
+/// signed-in account menu (bottom sheet) or the sign-in dialog depending on
+/// [AccountBloc] state, so call sites don't need to branch themselves.
+void openAccountMenu(BuildContext context) {
+  final isLoggedIn = getIt<AccountBloc>().state.isLoggedIn;
+  if (isLoggedIn) {
+    showAccountSheet(context);
+  } else {
+    showSignInDialog(context);
+  }
+}
+
+/// Only ever shown signed-in (see [openAccountMenu]) — "Logout" closes the
+/// sheet and flips [AccountBloc] back to signed-out.
 void showAccountSheet(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
@@ -42,55 +51,13 @@ class _AccountSheet extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: BlocBuilder<AccountBloc, AccountState>(
-          bloc: getIt<AccountBloc>(),
-          builder: (context, state) {
-            return state.isLoggedIn
-                ? _LoggedInView(onLogout: () => getIt<AccountBloc>().add(const AccountLoggedOut()))
-                : _SignedOutView(onContinue: () => getIt<AccountBloc>().add(const AccountLoggedIn()));
+        child: _LoggedInView(
+          onLogout: () {
+            Navigator.of(context).pop();
+            getIt<AccountBloc>().add(const AccountLoggedOut());
           },
         ),
       ),
-    );
-  }
-}
-
-class _SignedOutView extends StatelessWidget {
-  const _SignedOutView({required this.onContinue});
-
-  final VoidCallback onContinue;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const _SheetHandle(),
-        const SizedBox(height: AppSpacing.md),
-        CircleAvatar(
-          radius: 32,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          child: const Icon(Icons.person_outline_rounded, size: 34, color: AppColors.primary),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Text('account.signed_out_title'.tr(), style: AppTextStyles.headline),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          'account.signed_out_message'.tr(),
-          textAlign: TextAlign.center,
-          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(onPressed: onContinue, child: Text('account.login'.tr())),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(onPressed: onContinue, child: Text('account.signup'.tr())),
-        ),
-      ],
     );
   }
 }

@@ -102,14 +102,23 @@
     "continue_shopping": "Continue Shopping"
   },
   "account": {
-    "signed_out_title": "Welcome",
-    "signed_out_message": "Sign in to track orders, save addresses, and check out faster.",
-    "login": "Log In",
-    "signup": "Sign Up",
     "guest_name": "Guest User",
     "guest_email": "guest@example.com",
     "edit_profile": "Edit Profile",
     "address": "Address",
     "logout": "Logout"
+  },
+  "auth": {
+    "sign_in_title": "Sign In",
+    "sign_in_subtitle": "Sign in to track orders, save addresses, and check out faster.",
+    "sign_up_title": "Create Account",
+    "sign_up_subtitle": "Sign up to start ordering with us.",
+    "name_hint": "Full name",
+    "email_hint": "Email address",
+    "password_hint": "Password",
+    "sign_in_action": "Sign In",
+    "sign_up_action": "Sign Up",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?"
   }
 }
