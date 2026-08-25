@@ -9,7 +9,7 @@ import '../../theme/app_input_style.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
 import '../buttons/primary_button.dart';
-import 'blurred_dialog.dart';
+import 'dialog_shell.dart';
 import 'sign_up_dialog.dart';
 
 /// Mock-only for now — no real auth exists yet, so "Sign In" just flips
@@ -17,7 +17,7 @@ import 'sign_up_dialog.dart';
 /// to Firebase Auth in the backend-integration phase.
 ///
 /// Entry point for the header's account icon when signed out — see
-/// `openAccountMenu` in `account_sheet.dart`.
+/// `openAccountMenu` in `account_page.dart`.
 Future<void> showSignInDialog(BuildContext context) {
   return showBlurredDialog(
     context: context,

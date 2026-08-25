@@ -10,7 +10,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
-import '../../../account/presentation/widgets/account_sheet.dart';
+import '../../../account/presentation/pages/account_page.dart';
 import '../bloc/cart_bloc.dart';
 import '../bloc/cart_event.dart';
 import '../bloc/cart_state.dart';

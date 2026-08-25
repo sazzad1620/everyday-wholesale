@@ -9,7 +9,7 @@ import '../../theme/app_input_style.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
 import '../buttons/primary_button.dart';
-import 'blurred_dialog.dart';
+import 'dialog_shell.dart';
 import 'sign_in_dialog.dart';
 
 /// Mock-only for now — no real auth exists yet, so "Sign Up" just flips

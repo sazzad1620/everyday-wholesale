@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/account/presentation/pages/account_page.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/checkout/presentation/pages/order_confirmation_page.dart';
@@ -85,6 +86,11 @@ final GoRouter appRouter = GoRouter(
           routes: [GoRoute(path: RoutePaths.cart, builder: (context, state) => const CartPage())],
         ),
       ],
+    ),
+    GoRoute(
+      path: RoutePaths.account,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const AccountPage(),
     ),
     GoRoute(
       path: RoutePaths.checkout,

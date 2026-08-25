@@ -1,6 +1,7 @@
 abstract final class RoutePaths {
   static const String splash = '/';
   static const String home = '/home';
+  static const String account = '/account';
   static const String wishlist = '/wishlist';
   static const String cart = '/cart';
   static const String checkout = '/checkout';

@@ -16,10 +16,18 @@ import 'app_search_bar.dart';
 /// between it and the row above, so the whole thing reads as one header.
 /// Reused as-is by Home, the category landing page, and product listings.
 class AppHeader extends StatelessWidget {
-  const AppHeader({super.key, required this.onMenuTap, required this.onAccountTap});
+  const AppHeader({
+    super.key,
+    required this.onMenuTap,
+    required this.onAccountTap,
+    this.showSearchBar = true,
+  });
 
   final VoidCallback onMenuTap;
   final VoidCallback onAccountTap;
+
+  /// Hidden on pages that don't need product search (e.g. the account page).
+  final bool showSearchBar;
 
   @override
   Widget build(BuildContext context) {
@@ -98,8 +106,10 @@ class AppHeader extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            const AppSearchBar(),
+            if (showSearchBar) ...[
+              const SizedBox(height: AppSpacing.sm),
+              const AppSearchBar(),
+            ],
             const SizedBox(height: AppSpacing.sm),
           ],
         ),

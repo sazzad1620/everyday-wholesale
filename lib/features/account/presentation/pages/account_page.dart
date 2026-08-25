@@ -1,80 +1,85 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
+import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/snack_utils.dart';
 import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
+import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../../shared/widgets/navigation/main_menu_drawer.dart';
 import '../bloc/account_bloc.dart';
 import '../bloc/account_event.dart';
 
 /// Single entry point for the header's account icon — routes to the
-/// signed-in account menu (bottom sheet) or the sign-in dialog depending on
-/// [AccountBloc] state, so call sites don't need to branch themselves.
+/// signed-in [AccountPage] or the sign-in dialog depending on [AccountBloc]
+/// state, so call sites don't need to branch themselves.
 void openAccountMenu(BuildContext context) {
   final isLoggedIn = getIt<AccountBloc>().state.isLoggedIn;
   if (isLoggedIn) {
-    showAccountSheet(context);
+    context.push(RoutePaths.account);
   } else {
     showSignInDialog(context);
   }
 }
 
-/// Only ever shown signed-in (see [openAccountMenu]) — "Logout" closes the
-/// sheet and flips [AccountBloc] back to signed-out.
-void showAccountSheet(BuildContext context) {
-  showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => const _AccountSheet(),
-  );
-}
-
-class _AccountSheet extends StatelessWidget {
-  const _AccountSheet();
+/// Full-screen account page, pushed outside the bottom-nav shell (see
+/// `app_router.dart`'s root `navigatorKey`/`parentNavigatorKey`) — no bottom
+/// nav bar, and the header's search bar is dropped since it isn't relevant
+/// here. Only ever reached signed-in (see [openAccountMenu]).
+class AccountPage extends StatelessWidget {
+  const AccountPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.lg + MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SafeArea(
-        top: false,
-        child: _LoggedInView(
-          onLogout: () {
-            Navigator.of(context).pop();
-            getIt<AccountBloc>().add(const AccountLoggedOut());
-          },
-        ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      drawer: const MainMenuDrawer(),
+      body: const _AccountView(),
+    );
+  }
+}
+
+class _AccountView extends StatelessWidget {
+  const _AccountView();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          AppHeader(
+            showSearchBar: false,
+            onMenuTap: () => Scaffold.of(context).openDrawer(),
+            onAccountTap: () => openAccountMenu(context),
+          ),
+          Expanded(
+            child: _AccountBody(
+              onLogout: () {
+                getIt<AccountBloc>().add(const AccountLoggedOut());
+                context.go(RoutePaths.home);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _LoggedInView extends StatelessWidget {
-  const _LoggedInView({required this.onLogout});
+class _AccountBody extends StatelessWidget {
+  const _AccountBody({required this.onLogout});
 
   final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        const _SheetHandle(),
-        const SizedBox(height: AppSpacing.md),
         Row(
           children: [
             const CircleAvatar(
@@ -131,22 +136,6 @@ class _AccountRow extends StatelessWidget {
       leading: Icon(icon, color: isDestructive ? AppColors.error : AppColors.textSecondary),
       title: Text(label, style: AppTextStyles.body.copyWith(color: color, fontWeight: FontWeight.w600)),
       onTap: onTap,
-    );
-  }
-}
-
-class _SheetHandle extends StatelessWidget {
-  const _SheetHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 4,
-      decoration: BoxDecoration(
-        color: AppColors.textSecondary.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(2),
-      ),
     );
   }
 }
