@@ -71,6 +71,8 @@
     "empty_title": "Your cart is empty",
     "empty_message": "Items you add to your cart will show up here.",
     "unit_label": "Unit: {unit}",
+    "free_shipping_progress": "Add {amount} more to get FREE shipping!",
+    "free_shipping_unlocked": "You've unlocked FREE shipping!",
     "voucher_label": "Voucher",
     "voucher_hint": "Enter voucher code here...",
     "voucher_apply": "Apply",

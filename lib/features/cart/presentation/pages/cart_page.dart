@@ -14,6 +14,7 @@ import '../../../account/presentation/widgets/account_sheet.dart';
 import '../bloc/cart_bloc.dart';
 import '../bloc/cart_event.dart';
 import '../bloc/cart_state.dart';
+import '../widgets/cart_free_shipping_bar.dart';
 import '../widgets/cart_item_card.dart';
 import '../widgets/cart_summary_card.dart';
 import '../widgets/cart_voucher_card.dart';
@@ -66,6 +67,8 @@ class _CartBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
+        CartFreeShippingBar(itemTotal: state.itemTotal),
+        const SizedBox(height: AppSpacing.sm),
         for (final item in state.items) ...[
           CartItemCard(
             item: item,
