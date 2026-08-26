@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "339861351370",
+    "project_id": "everyday-wholesale",
+    "storage_bucket": "everyday-wholesale.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339861351370:android:6512b973e8555461ce3d33",
+        "android_client_info": {
+          "package_name": "com.example.everyday_wholesale"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsNFb4qFWIfERv59NTm-TV4muKBL6b0JE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

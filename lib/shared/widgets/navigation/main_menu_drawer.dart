@@ -10,7 +10,8 @@ import 'drawer_header_bar.dart';
 /// Opened from the hamburger menu icon on every page's [AppHeader] — always
 /// the same drawer regardless of which page/tab you're on. Distinct from
 /// [CategoryDrawer], which only opens from the bottom nav's "Category" item.
-/// Just About/Contact for now; more entries land here later.
+/// Account-specific items (Order History, Address, etc.) live under the
+/// account page instead — this stays app-level/informational.
 class MainMenuDrawer extends StatelessWidget {
   const MainMenuDrawer({super.key});
 
@@ -30,9 +31,14 @@ class MainMenuDrawer extends StatelessWidget {
               onTap: () => showComingSoonSnackBar(context, 'drawer.about'.tr()),
             ),
             _MenuTile(
-              icon: Icons.call_outlined,
-              label: 'drawer.contact'.tr(),
-              onTap: () => showComingSoonSnackBar(context, 'drawer.contact'.tr()),
+              icon: Icons.policy_outlined,
+              label: 'drawer.terms_privacy'.tr(),
+              onTap: () => showComingSoonSnackBar(context, 'drawer.terms_privacy'.tr()),
+            ),
+            _MenuTile(
+              icon: Icons.star_outline_rounded,
+              label: 'drawer.rate_app'.tr(),
+              onTap: () => showComingSoonSnackBar(context, 'drawer.rate_app'.tr()),
             ),
           ],
         ),

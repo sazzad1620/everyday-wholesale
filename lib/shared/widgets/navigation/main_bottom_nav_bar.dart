@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/di/injection_container.dart';
+import '../../../config/routes/route_paths.dart';
 import '../../../features/cart/presentation/bloc/cart_bloc.dart';
 import '../../../features/cart/presentation/bloc/cart_state.dart';
 import '../../theme/app_colors.dart';
@@ -19,15 +20,24 @@ class MainBottomNavBar extends StatelessWidget {
     required this.onCategoryTap,
   });
 
-  final StatefulNavigationShell navigationShell;
+  /// Null on full-screen pages pushed on the root navigator (e.g. the
+  /// account and order-history pages) — they aren't one of the shell's
+  /// branches, so nothing renders selected and taps fall back to
+  /// `context.go` instead of [StatefulNavigationShell.goBranch].
+  final StatefulNavigationShell? navigationShell;
   final VoidCallback onCategoryTap;
 
   @override
   Widget build(BuildContext context) {
-    final currentBranchIndex = navigationShell.currentIndex;
+    final currentBranchIndex = navigationShell?.currentIndex ?? -1;
 
-    void goBranch(int index) {
-      navigationShell.goBranch(index, initialLocation: index == currentBranchIndex);
+    void goBranch(int index, String path) {
+      final shell = navigationShell;
+      if (shell != null) {
+        shell.goBranch(index, initialLocation: index == currentBranchIndex);
+      } else {
+        context.go(path);
+      }
     }
 
     return DecoratedBox(
@@ -48,7 +58,7 @@ class MainBottomNavBar extends StatelessWidget {
                 selectedIcon: Icons.home_rounded,
                 label: 'nav.home'.tr(),
                 selected: currentBranchIndex == 0,
-                onTap: () => goBranch(0),
+                onTap: () => goBranch(0, RoutePaths.home),
               ),
               _NavItem(
                 icon: Icons.category_outlined,
@@ -62,7 +72,7 @@ class MainBottomNavBar extends StatelessWidget {
                 selectedIcon: Icons.favorite_rounded,
                 label: 'nav.wishlist'.tr(),
                 selected: currentBranchIndex == 1,
-                onTap: () => goBranch(1),
+                onTap: () => goBranch(1, RoutePaths.wishlist),
               ),
               BlocBuilder<CartBloc, CartState>(
                 bloc: getIt<CartBloc>(),
@@ -71,7 +81,7 @@ class MainBottomNavBar extends StatelessWidget {
                   selectedIcon: Icons.shopping_cart_rounded,
                   label: 'nav.cart'.tr(),
                   selected: currentBranchIndex == 2,
-                  onTap: () => goBranch(2),
+                  onTap: () => goBranch(2, RoutePaths.cart),
                   badgeCount: cartState.itemCount,
                 ),
               ),

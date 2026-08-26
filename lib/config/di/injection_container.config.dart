@@ -63,6 +63,18 @@ import 'package:everyday_wholesale/features/splash/domain/usecases/check_app_rea
     as _i105;
 import 'package:everyday_wholesale/features/splash/presentation/bloc/splash_bloc.dart'
     as _i86;
+import 'package:everyday_wholesale/features/wishlist/data/datasources/wishlist_local_datasource.dart'
+    as _i51;
+import 'package:everyday_wholesale/features/wishlist/data/repositories/wishlist_repository_impl.dart'
+    as _i609;
+import 'package:everyday_wholesale/features/wishlist/domain/repositories/wishlist_repository.dart'
+    as _i93;
+import 'package:everyday_wholesale/features/wishlist/domain/usecases/add_to_wishlist_usecase.dart'
+    as _i305;
+import 'package:everyday_wholesale/features/wishlist/domain/usecases/remove_from_wishlist_usecase.dart'
+    as _i574;
+import 'package:everyday_wholesale/features/wishlist/presentation/bloc/wishlist_bloc.dart'
+    as _i863;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
@@ -89,6 +101,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i339.HomeRepository>(
       () => _i734.HomeRepositoryImpl(gh<_i589.HomeMockDatasource>()),
     );
+    gh.lazySingleton<_i51.WishlistLocalDatasource>(
+      () => _i51.WishlistLocalDatasourceImpl(),
+    );
+    gh.lazySingleton<_i93.WishlistRepository>(
+      () => _i609.WishlistRepositoryImpl(gh<_i51.WishlistLocalDatasource>()),
+    );
     gh.lazySingleton<_i175.CartRepository>(
       () => _i184.CartRepositoryImpl(gh<_i951.CartLocalDatasource>()),
     );
@@ -103,6 +121,18 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i900.UpdateCartQuantityUseCase>(
       () => _i900.UpdateCartQuantityUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i305.AddToWishlistUseCase>(
+      () => _i305.AddToWishlistUseCase(gh<_i93.WishlistRepository>()),
+    );
+    gh.factory<_i574.RemoveFromWishlistUseCase>(
+      () => _i574.RemoveFromWishlistUseCase(gh<_i93.WishlistRepository>()),
+    );
+    gh.lazySingleton<_i863.WishlistBloc>(
+      () => _i863.WishlistBloc(
+        gh<_i305.AddToWishlistUseCase>(),
+        gh<_i574.RemoveFromWishlistUseCase>(),
+      ),
     );
     gh.factory<_i353.GetCategoriesUseCase>(
       () => _i353.GetCategoriesUseCase(gh<_i339.HomeRepository>()),

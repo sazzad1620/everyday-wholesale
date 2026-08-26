@@ -14,8 +14,9 @@
     "main_menu_title": "Main Menu",
     "category_title": "Categories",
     "show_all": "Show All",
-    "about": "About",
-    "contact": "Contact"
+    "about": "About Us",
+    "terms_privacy": "Terms & Privacy",
+    "rate_app": "Rate the App"
   },
   "product": {
     "empty": "No products in this category yet.",
@@ -62,9 +63,8 @@
     "cart": "Cart"
   },
   "wishlist": {
-    "title": "Wishlist",
     "empty_title": "Your wishlist is empty",
-    "empty_message": "Save products you love and find them here once wishlists are wired up."
+    "empty_message": "Tap the heart on any product to save it here."
   },
   "cart": {
     "title": "Cart",
@@ -106,7 +106,18 @@
     "guest_email": "guest@example.com",
     "edit_profile": "Edit Profile",
     "address": "Address",
+    "order_history": "Order History",
     "logout": "Logout"
+  },
+  "order_history": {
+    "title": "Order History",
+    "empty_title": "No orders yet",
+    "empty_message": "Orders you place will show up here.",
+    "order_id": "Order ID",
+    "order_date": "Order Date",
+    "order_status": "Order Status",
+    "payment_method": "Payment Method",
+    "total": "Total"
   },
   "auth": {
     "sign_in_title": "Sign In",

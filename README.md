@@ -11,12 +11,13 @@ A grocery ordering app — customers browse products and order; admins/managers 
 - **Routing**: `go_router`
 - **Error handling**: `fpdart` (`Either<Failure, T>`)
 - **Localization**: `easy_localization` (`assets/translations/`)
-- **Backend**: Firebase (not yet integrated — see `docs/IMPLEMENTATION.md`)
+- **Backend**: Firebase (Auth + Firestore) + Cloudinary (product images) + Netlify Functions (Stripe payments) — integration in progress, see `docs/IMPLEMENTATION.md`
 
 ## Project docs
 
 - [`docs/PLAN.md`](docs/PLAN.md) — requirements, architecture decisions, tech-stack rationale, roadmap
 - [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) — what's built vs. what's next, phase by phase
+- [`docs/BACKEND_SETUP.md`](docs/BACKEND_SETUP.md) — beginner-friendly, phase-by-phase setup guide for Firebase, Cloudinary, and Netlify/Stripe
 
 ## Getting started
 

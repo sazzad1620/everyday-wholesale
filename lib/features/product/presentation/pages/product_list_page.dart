@@ -11,13 +11,13 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
+import '../../../../shared/widgets/product_card.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../../../home/domain/entities/subcategory_entity.dart';
 import '../../../home/presentation/widgets/subcategory_grid.dart';
 import '../bloc/product_list_bloc.dart';
 import '../bloc/product_list_event.dart';
 import '../bloc/product_list_state.dart';
-import '../widgets/product_card.dart';
 
 /// What `extra` carries on the `category/:categoryId` route.
 typedef CategoryProductsExtra = ({String? categoryName, List<SubcategoryEntity> subcategories});

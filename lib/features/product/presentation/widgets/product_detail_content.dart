@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/injection_container.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -13,6 +14,9 @@ import '../../../../shared/widgets/quantity_stepper.dart';
 import '../../../../shared/widgets/star_rating.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../cart/presentation/bloc/cart_event.dart';
+import '../../../wishlist/presentation/bloc/wishlist_bloc.dart';
+import '../../../wishlist/presentation/bloc/wishlist_event.dart';
+import '../../../wishlist/presentation/bloc/wishlist_state.dart';
 import '../../domain/entities/product_entity.dart';
 import 'product_detail_tabs.dart';
 import 'product_highlight_boxes.dart';
@@ -93,7 +97,7 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              _WishlistIconButton(onTap: () => showComingSoonSnackBar(context, 'Wishlist')),
+              _WishlistIconButton(product: product),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -133,12 +137,14 @@ class _StockPill extends StatelessWidget {
 }
 
 class _WishlistIconButton extends StatelessWidget {
-  const _WishlistIconButton({required this.onTap});
+  const _WishlistIconButton({required this.product});
 
-  final VoidCallback onTap;
+  final ProductEntity product;
 
   @override
   Widget build(BuildContext context) {
+    final wishlistBloc = getIt<WishlistBloc>();
+
     return Container(
       width: 48,
       height: 48,
@@ -153,10 +159,22 @@ class _WishlistIconButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: const Icon(Icons.favorite_border_rounded, color: AppColors.textSecondary, size: 20),
+        child: BlocBuilder<WishlistBloc, WishlistState>(
+          bloc: wishlistBloc,
+          builder: (context, state) {
+            final isWishlisted = state.contains(product.id);
+            return InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => isWishlisted
+                  ? wishlistBloc.add(WishlistItemRemoved(product.id))
+                  : wishlistBloc.add(WishlistItemAdded(product)),
+              child: Icon(
+                isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                color: isWishlisted ? AppColors.primary : AppColors.textSecondary,
+                size: 20,
+              ),
+            );
+          },
         ),
       ),
     );

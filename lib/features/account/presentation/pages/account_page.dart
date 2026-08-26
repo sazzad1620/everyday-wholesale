@@ -10,7 +10,7 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/snack_utils.dart';
 import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
-import '../../../../shared/widgets/navigation/main_menu_drawer.dart';
+import '../../../../shared/widgets/navigation/standalone_shell_scaffold.dart';
 import '../bloc/account_bloc.dart';
 import '../bloc/account_event.dart';
 
@@ -26,20 +26,18 @@ void openAccountMenu(BuildContext context) {
   }
 }
 
-/// Full-screen account page, pushed outside the bottom-nav shell (see
-/// `app_router.dart`'s root `navigatorKey`/`parentNavigatorKey`) — no bottom
-/// nav bar, and the header's search bar is dropped since it isn't relevant
-/// here. Only ever reached signed-in (see [openAccountMenu]).
+/// Full-screen account page, pushed outside the shell's nested navigator
+/// (see `app_router.dart`'s root `navigatorKey`/`parentNavigatorKey`) since
+/// "Account" isn't one of [MainShell]'s branches — it still gets the same
+/// drawer/end-drawer/bottom-nav chrome via [StandaloneShellScaffold]. The
+/// header's search bar is dropped since it isn't relevant here. Only ever
+/// reached signed-in (see [openAccountMenu]).
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      drawer: const MainMenuDrawer(),
-      body: const _AccountView(),
-    );
+    return const StandaloneShellScaffold(body: _AccountView());
   }
 }
 
@@ -113,6 +111,11 @@ class _AccountBody extends StatelessWidget {
           icon: Icons.location_on_outlined,
           label: 'account.address'.tr(),
           onTap: () => showComingSoonSnackBar(context, 'account.address'.tr()),
+        ),
+        _AccountRow(
+          icon: Icons.receipt_long_outlined,
+          label: 'account.order_history'.tr(),
+          onTap: () => context.push(RoutePaths.orderHistory),
         ),
         _AccountRow(icon: Icons.logout_rounded, label: 'account.logout'.tr(), onTap: onLogout, isDestructive: true),
       ],

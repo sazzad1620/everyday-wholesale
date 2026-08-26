@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../config/di/injection_container.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_spacing.dart';
-import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/utils/snack_utils.dart';
-import '../../../../shared/widgets/product_image.dart';
-import '../../../cart/presentation/bloc/cart_bloc.dart';
-import '../../../cart/presentation/bloc/cart_event.dart';
-import '../../../cart/presentation/bloc/cart_state.dart';
-import '../../domain/entities/product_entity.dart';
+import '../../config/di/injection_container.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../../features/cart/presentation/bloc/cart_bloc.dart';
+import '../../features/cart/presentation/bloc/cart_event.dart';
+import '../../features/cart/presentation/bloc/cart_state.dart';
+import '../../features/product/domain/entities/product_entity.dart';
+import '../../features/wishlist/presentation/bloc/wishlist_bloc.dart';
+import '../../features/wishlist/presentation/bloc/wishlist_event.dart';
+import '../../features/wishlist/presentation/bloc/wishlist_state.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import 'product_image.dart';
 
 int _quantityInCart(CartState state, String productId) {
   for (final item in state.items) {
@@ -20,6 +22,9 @@ int _quantityInCart(CartState state, String productId) {
   return 0;
 }
 
+/// The product tile used by both the product-list grid and the wishlist
+/// grid — the two features share this instead of each keeping their own
+/// copy, same reasoning as `CartTotalsBreakdown` living in `shared/`.
 class ProductCard extends StatelessWidget {
   const ProductCard({super.key, required this.product, required this.onTap});
 
@@ -29,6 +34,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cartBloc = getIt<CartBloc>();
+    final wishlistBloc = getIt<WishlistBloc>();
 
     // The floating cart button straddles the image/content boundary and
     // must be a *sibling* of the card's tap-to-detail InkWell, not a
@@ -89,13 +95,25 @@ class ProductCard extends StatelessWidget {
                                 for (var i = 0; i < 5; i++)
                                   const Icon(Icons.star_border_rounded, size: 15, color: AppColors.textSecondary),
                                 const Spacer(),
-                                InkWell(
-                                  borderRadius: BorderRadius.circular(14),
-                                  onTap: () => showComingSoonSnackBar(context, 'Wishlist'),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.favorite_border_rounded, size: 18, color: AppColors.textSecondary),
-                                  ),
+                                BlocBuilder<WishlistBloc, WishlistState>(
+                                  bloc: wishlistBloc,
+                                  builder: (context, wishlistState) {
+                                    final isWishlisted = wishlistState.contains(product.id);
+                                    return InkWell(
+                                      borderRadius: BorderRadius.circular(14),
+                                      onTap: () => isWishlisted
+                                          ? wishlistBloc.add(WishlistItemRemoved(product.id))
+                                          : wishlistBloc.add(WishlistItemAdded(product)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(2),
+                                        child: Icon(
+                                          isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                          size: 18,
+                                          color: isWishlisted ? AppColors.primary : AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),

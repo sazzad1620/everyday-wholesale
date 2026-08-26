@@ -45,11 +45,11 @@ Status key: ✅ done · 🚧 in progress · ⬜ not started
 | Edit profile UI (mock data) | ⬜ | "Edit Profile" row in `account_sheet.dart` is currently a "coming soon" snackbar |
 | Order history / My Orders UI (mock data) | ⬜ | No entry point yet — needs adding to `account_sheet.dart` plus a mock orders list/detail |
 
-## Phase 3 — Firebase integration ⬜
+## Phase 3 — Firebase integration 🚧
 
 | Task | Status | Notes |
 |---|---|---|
-| Add Firebase packages, configure per platform (Android/iOS/Web) | ⬜ | `firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_storage` |
+| Add Firebase packages, configure per platform (Android/iOS/Web) | ✅ | `firebase_core`, `firebase_auth`, `cloud_firestore` added to `pubspec.yaml` — no `firebase_storage` (deliberately, see [PLAN.md §4.3](PLAN.md)); `Firebase.initializeApp()` wired into [lib/app/bootstrap.dart](../lib/app/bootstrap.dart), verified booting cleanly on web (all 3 SDKs initialize, no console errors). Android Gradle plugin wiring was already added by `flutterfire configure`; iOS/Web need no manual wiring. Auth enabled, Firestore database created. See [BACKEND_SETUP.md](BACKEND_SETUP.md) |
 | Firestore data model for products | ⬜ | |
 | Firestore data model for orders | ⬜ | |
 | Firebase Auth (customer + admin/manager roles) | ⬜ | |
@@ -78,7 +78,7 @@ Status key: ✅ done · 🚧 in progress · ⬜ not started
 
 | Task | Status | Notes |
 |---|---|---|
-| Backend (Cloud Function) to create PaymentIntents | ⬜ | Needed for secure payment — can't do client-side alone |
+| Backend (Netlify Function, not Firebase Cloud Function) to create PaymentIntents | ⬜ | Needed for secure payment — can't do client-side alone; hosted on Netlify to keep Firebase on the free Spark plan, see [PLAN.md §4.3](PLAN.md) |
 | Customer-side payment flow | ⬜ | |
 | Admin-side payment/receipt visibility | ⬜ | |
 
