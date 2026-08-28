@@ -15,6 +15,19 @@ const Map<String, IconData> categoryIcons = {
   'halal_products': Icons.verified_rounded,
   'rice_grains': Icons.grain_rounded,
   'snacks': Icons.bakery_dining_rounded,
+  // General-purpose grocery icons available for new categories created from
+  // the admin panel (not tied to an existing category id).
+  'dairy_eggs': Icons.egg_rounded,
+  'bakery': Icons.cake_rounded,
+  'household': Icons.cleaning_services_rounded,
+  'personal_care': Icons.spa_rounded,
+  'baby_care': Icons.child_care_rounded,
+  'health_wellness': Icons.favorite_rounded,
+  'pantry_staples': Icons.kitchen_rounded,
+  'canned_goods': Icons.inventory_rounded,
+  'condiments_sauces': Icons.liquor_rounded,
+  'breakfast': Icons.free_breakfast_rounded,
+  'organic': Icons.energy_savings_leaf_rounded,
 };
 
 IconData iconForCategory(String iconKey) => categoryIcons[iconKey] ?? Icons.category_rounded;

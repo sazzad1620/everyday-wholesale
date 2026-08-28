@@ -3,13 +3,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/account/presentation/pages/account_page.dart';
 import '../../features/account/presentation/pages/order_history_page.dart';
+import '../../features/admin/presentation/pages/admin_category_form_page.dart';
+import '../../features/admin/presentation/pages/admin_product_form_page.dart';
 import '../../features/admin/presentation/pages/admin_shell_page.dart';
 import '../../features/auth/presentation/bloc/account_bloc.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/checkout/presentation/pages/order_confirmation_page.dart';
+import '../../features/home/domain/entities/category_entity.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/order/domain/entities/order_entity.dart';
+import '../../features/product/domain/entities/product_entity.dart';
 import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
@@ -111,6 +115,16 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.admin,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const AdminShellPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.adminCategoryForm,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => AdminCategoryFormPage(initial: state.extra as CategoryEntity?),
+    ),
+    GoRoute(
+      path: RoutePaths.adminProductForm,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => AdminProductFormPage(initial: state.extra as ProductEntity?),
     ),
     GoRoute(
       path: RoutePaths.orderHistory,
