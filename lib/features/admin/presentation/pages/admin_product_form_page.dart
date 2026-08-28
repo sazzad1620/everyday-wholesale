@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../config/di/injection_container.dart';
 import '../../../../core/usecase/usecase.dart';
@@ -14,18 +15,15 @@ import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../home/domain/entities/category_entity.dart';
 import '../../../home/domain/usecases/get_categories_usecase.dart';
 import '../../../product/domain/entities/product_entity.dart';
+import '../../domain/usecases/upload_product_image_usecase.dart';
 import '../bloc/admin_product_form_bloc.dart';
 import '../bloc/admin_product_form_event.dart';
 import '../bloc/admin_product_form_state.dart';
+import '../widgets/product_image_picker.dart';
 
 /// Add/edit form for a single product — pushed full-screen (root
 /// navigator), same reasoning as [AdminCategoryFormPage]. `initial: null`
 /// means add mode; a non-null [ProductEntity] means edit mode.
-///
-/// Image upload isn't wired yet (Phase 5's second pass, once Firebase
-/// Storage rules are in place) — `imageUrl` just carries over unchanged from
-/// [initial], and new products are created without one (same placeholder
-/// [ProductImage] shows for any product with a null `imageUrl` already).
 class AdminProductFormPage extends StatelessWidget {
   const AdminProductFormPage({super.key, this.initial});
 
@@ -61,6 +59,8 @@ class _ProductFormViewState extends State<_ProductFormView> {
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
   late bool _inStock = widget.initial?.inStock ?? true;
+  late String? _imageUrl = widget.initial?.imageUrl;
+  bool _isUploadingImage = false;
 
   List<CategoryEntity> _categories = [];
   bool _loadingCategories = true;
@@ -73,6 +73,27 @@ class _ProductFormViewState extends State<_ProductFormView> {
     _selectedCategoryId = widget.initial?.categoryId;
     _selectedSubcategoryId = widget.initial?.subcategoryId;
     _loadCategories();
+  }
+
+  Future<void> _pickAndUploadImage(BuildContext context) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600, imageQuality: 85);
+    if (picked == null || !mounted) return;
+
+    final bytes = await picked.readAsBytes();
+    final extension = picked.name.contains('.') ? picked.name.split('.').last : 'jpg';
+    if (!mounted) return;
+
+    setState(() => _isUploadingImage = true);
+    final result = await getIt<UploadProductImageUseCase>()(
+      UploadProductImageParams(bytes: bytes, fileExtension: extension),
+    );
+    if (!mounted) return;
+    setState(() => _isUploadingImage = false);
+
+    result.match(
+      (failure) => AppToast.show(context, failure.message, type: ToastType.error),
+      (url) => setState(() => _imageUrl = url),
+    );
   }
 
   Future<void> _loadCategories() async {
@@ -133,7 +154,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
       condition: _conditionController.text.trim(),
       origin: _originController.text.trim(),
       subcategoryId: _selectedSubcategoryId,
-      imageUrl: widget.initial?.imageUrl,
+      imageUrl: _imageUrl,
       inStock: _inStock,
       reviews: widget.initial?.reviews ?? const [],
     );
@@ -172,6 +193,12 @@ class _ProductFormViewState extends State<_ProductFormView> {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.md),
               children: [
+                ProductImagePicker(
+                  imageUrl: _imageUrl,
+                  isUploading: _isUploadingImage,
+                  onTap: () => _pickAndUploadImage(context),
+                ),
+                const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: _nameController,
                   decoration: AppInputStyle.decoration(hintText: 'admin.product_name_hint'.tr(), radius: 14),

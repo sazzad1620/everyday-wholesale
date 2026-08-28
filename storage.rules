@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Cross-service read into Firestore — same `role: admin` check
+    // `firestore.rules`' isAdmin() does, just called from Storage rules.
+    function isAdmin() {
+      return isSignedIn() &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Product photos — publicly readable (they're shown in the customer
+    // catalog), only an admin can upload/replace/delete one. Capped at 5MB
+    // and image-only content types as a sanity check against accidental
+    // huge/wrong-type uploads, not a real attack surface (only admins can
+    // write here at all).
+    match /product_images/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

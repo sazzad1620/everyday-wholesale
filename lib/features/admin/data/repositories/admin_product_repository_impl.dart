@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
 
@@ -47,6 +49,15 @@ class AdminProductRepositoryImpl implements AdminProductRepository {
     try {
       await _datasource.deleteProduct(productId);
       return const Right(null);
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadProductImage(Uint8List bytes, String fileExtension) async {
+    try {
+      return Right(await _datasource.uploadProductImage(bytes, fileExtension));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

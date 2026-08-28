@@ -22,7 +22,7 @@ import 'package:everyday_wholesale/features/admin/data/repositories/admin_catego
 import 'package:everyday_wholesale/features/admin/data/repositories/admin_dashboard_repository_impl.dart'
     as _i702;
 import 'package:everyday_wholesale/features/admin/data/repositories/admin_product_repository_impl.dart'
-    as _i403;
+    as _i402;
 import 'package:everyday_wholesale/features/admin/domain/repositories/admin_category_repository.dart'
     as _i271;
 import 'package:everyday_wholesale/features/admin/domain/repositories/admin_dashboard_repository.dart'
@@ -45,6 +45,8 @@ import 'package:everyday_wholesale/features/admin/domain/usecases/update_categor
     as _i412;
 import 'package:everyday_wholesale/features/admin/domain/usecases/update_product_usecase.dart'
     as _i955;
+import 'package:everyday_wholesale/features/admin/domain/usecases/upload_product_image_usecase.dart'
+    as _i38;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_product_form_bloc.dart'
     as _i676;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_product_list_bloc.dart'
@@ -58,7 +60,7 @@ import 'package:everyday_wholesale/features/admin/presentation/bloc/dashboard_bl
 import 'package:everyday_wholesale/features/auth/data/datasources/auth_remote_datasource.dart'
     as _i965;
 import 'package:everyday_wholesale/features/auth/data/repositories/auth_repository_impl.dart'
-    as _i402;
+    as _i403;
 import 'package:everyday_wholesale/features/auth/domain/repositories/auth_repository.dart'
     as _i870;
 import 'package:everyday_wholesale/features/auth/domain/usecases/is_phone_registered_usecase.dart'
@@ -162,6 +164,7 @@ import 'package:everyday_wholesale/features/wishlist/domain/usecases/remove_from
 import 'package:everyday_wholesale/features/wishlist/presentation/bloc/wishlist_bloc.dart'
     as _i863;
 import 'package:firebase_auth/firebase_auth.dart' as _i59;
+import 'package:firebase_storage/firebase_storage.dart' as _i457;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
@@ -177,11 +180,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i974.FirebaseFirestore>(
       () => firebaseModule.firebaseFirestore,
     );
+    gh.lazySingleton<_i457.FirebaseStorage>(
+      () => firebaseModule.firebaseStorage,
+    );
     gh.lazySingleton<_i204.AppReadinessLocalDatasource>(
       () => _i204.AppReadinessLocalDatasourceImpl(),
     );
     gh.lazySingleton<_i940.HomeLocalDatasource>(
       () => _i940.HomeLocalDatasourceImpl(),
+    );
+    gh.lazySingleton<_i1029.AdminProductRemoteDatasource>(
+      () => _i1029.AdminProductRemoteDatasourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i457.FirebaseStorage>(),
+      ),
     );
     gh.lazySingleton<_i51.WishlistLocalDatasource>(
       () => _i51.WishlistLocalDatasourceImpl(),
@@ -195,8 +207,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.FirebaseFirestore>(),
       ),
     );
+    gh.lazySingleton<_i205.AdminProductRepository>(
+      () => _i402.AdminProductRepositoryImpl(
+        gh<_i1029.AdminProductRemoteDatasource>(),
+      ),
+    );
     gh.lazySingleton<_i870.AuthRepository>(
-      () => _i402.AuthRepositoryImpl(gh<_i965.AuthRemoteDatasource>()),
+      () => _i403.AuthRepositoryImpl(gh<_i965.AuthRemoteDatasource>()),
     );
     gh.lazySingleton<_i581.ProductRemoteDatasource>(
       () => _i581.ProductRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
@@ -217,11 +234,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i980.AdminCategoryRemoteDatasource>(
       () => _i980.AdminCategoryRemoteDatasourceImpl(
-        gh<_i974.FirebaseFirestore>(),
-      ),
-    );
-    gh.lazySingleton<_i1029.AdminProductRemoteDatasource>(
-      () => _i1029.AdminProductRemoteDatasourceImpl(
         gh<_i974.FirebaseFirestore>(),
       ),
     );
@@ -278,6 +290,21 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i59.FirebaseAuth>(),
       ),
     );
+    gh.factory<_i291.CreateProductUseCase>(
+      () => _i291.CreateProductUseCase(gh<_i205.AdminProductRepository>()),
+    );
+    gh.factory<_i634.DeleteProductUseCase>(
+      () => _i634.DeleteProductUseCase(gh<_i205.AdminProductRepository>()),
+    );
+    gh.factory<_i598.GetAllProductsUseCase>(
+      () => _i598.GetAllProductsUseCase(gh<_i205.AdminProductRepository>()),
+    );
+    gh.factory<_i955.UpdateProductUseCase>(
+      () => _i955.UpdateProductUseCase(gh<_i205.AdminProductRepository>()),
+    );
+    gh.factory<_i38.UploadProductImageUseCase>(
+      () => _i38.UploadProductImageUseCase(gh<_i205.AdminProductRepository>()),
+    );
     gh.factory<_i188.IsPhoneRegisteredUseCase>(
       () => _i188.IsPhoneRegisteredUseCase(gh<_i870.AuthRepository>()),
     );
@@ -308,11 +335,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i504.PlaceOrderUseCase>(
       () => _i504.PlaceOrderUseCase(gh<_i193.OrderRepository>()),
     );
-    gh.lazySingleton<_i205.AdminProductRepository>(
-      () => _i403.AdminProductRepositoryImpl(
-        gh<_i1029.AdminProductRemoteDatasource>(),
-      ),
-    );
     gh.factory<_i105.CheckAppReadyUseCase>(
       () => _i105.CheckAppReadyUseCase(gh<_i246.AppReadinessRepository>()),
     );
@@ -326,6 +348,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i175.CartRepository>(
       () => _i184.CartRepositoryImpl(gh<_i490.CartRemoteDatasource>()),
+    );
+    gh.factory<_i676.AdminProductFormBloc>(
+      () => _i676.AdminProductFormBloc(
+        gh<_i291.CreateProductUseCase>(),
+        gh<_i955.UpdateProductUseCase>(),
+      ),
     );
     gh.factory<_i1031.GetDashboardStatsUseCase>(
       () =>
@@ -342,6 +370,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i188.IsPhoneRegisteredUseCase>(),
         gh<_i877.SignInWithGoogleUseCase>(),
         gh<_i577.SendPasswordResetEmailUseCase>(),
+      ),
+    );
+    gh.factory<_i568.AdminProductListBloc>(
+      () => _i568.AdminProductListBloc(
+        gh<_i598.GetAllProductsUseCase>(),
+        gh<_i634.DeleteProductUseCase>(),
       ),
     );
     gh.factory<_i297.DashboardBloc>(
@@ -361,18 +395,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i785.ProductDetailBloc>(
       () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
-    );
-    gh.factory<_i291.CreateProductUseCase>(
-      () => _i291.CreateProductUseCase(gh<_i205.AdminProductRepository>()),
-    );
-    gh.factory<_i634.DeleteProductUseCase>(
-      () => _i634.DeleteProductUseCase(gh<_i205.AdminProductRepository>()),
-    );
-    gh.factory<_i598.GetAllProductsUseCase>(
-      () => _i598.GetAllProductsUseCase(gh<_i205.AdminProductRepository>()),
-    );
-    gh.factory<_i955.UpdateProductUseCase>(
-      () => _i955.UpdateProductUseCase(gh<_i205.AdminProductRepository>()),
     );
     gh.factory<_i695.CreateCategoryUseCase>(
       () => _i695.CreateCategoryUseCase(gh<_i271.AdminCategoryRepository>()),
@@ -404,12 +426,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i891.DeleteCategoryUseCase>(),
       ),
     );
-    gh.factory<_i676.AdminProductFormBloc>(
-      () => _i676.AdminProductFormBloc(
-        gh<_i291.CreateProductUseCase>(),
-        gh<_i955.UpdateProductUseCase>(),
-      ),
-    );
     gh.factory<_i363.CategoryFormBloc>(
       () => _i363.CategoryFormBloc(
         gh<_i695.CreateCategoryUseCase>(),
@@ -418,12 +434,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i37.ProductListBloc>(
       () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),
-    );
-    gh.factory<_i568.AdminProductListBloc>(
-      () => _i568.AdminProductListBloc(
-        gh<_i598.GetAllProductsUseCase>(),
-        gh<_i634.DeleteProductUseCase>(),
-      ),
     );
     gh.lazySingleton<_i632.CartBloc>(
       () => _i632.CartBloc(

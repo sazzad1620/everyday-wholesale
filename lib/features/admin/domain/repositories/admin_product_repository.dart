@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/errors/failures.dart';
@@ -14,4 +16,10 @@ abstract class AdminProductRepository {
   Future<Either<Failure, void>> updateProduct(ProductEntity product);
 
   Future<Either<Failure, void>> deleteProduct(String productId);
+
+  /// Uploads a picked photo to Firebase Storage and returns its public
+  /// download URL — the caller is responsible for saving that URL onto the
+  /// product afterwards (via [createProduct]/[updateProduct]), same
+  /// two-step flow `BACKEND_SETUP.md` Part B4 describes.
+  Future<Either<Failure, String>> uploadProductImage(Uint8List bytes, String fileExtension);
 }

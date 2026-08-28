@@ -113,9 +113,9 @@ Firebase Local Emulator Suite (`firebase init emulators` / `firebase emulators:s
 
 ## Part B — Firebase Cloud Storage: Product Images
 
-**Status: ⬜ not started.** Not urgent today — the app currently uses local placeholder images, and admin photo upload doesn't exist yet (roadmap Phase 5, see [PLAN.md](PLAN.md)).
+**Status: 🚧 code done, needs your console steps.** Admin product photo upload is wired end-to-end in the app (roadmap Phase 5, see [PLAN.md](PLAN.md)) — it just can't actually write anything until Storage is enabled and the rules below are published.
 
-### Phase B1 — Enable Cloud Storage (console)
+### Phase B1 — Enable Cloud Storage (console) ← **next up for you**
 
 1. **Build → Storage → Get started**.
 2. Choose the **same region** as Firestore.
@@ -125,20 +125,20 @@ This was previously blocked without Blaze; now available directly.
 
 ### Phase B2 — (Optional) Auto-resize images on upload
 
-Cloudinary's earlier appeal was resizing one upload into thumbnail/card/detail sizes automatically. Firebase has an official equivalent: the **["Resize Images" Extension](https://extensions.dev/extensions/firebase/storage-resize-images)** — install it from **Build → Extensions** in the console, point it at the Storage bucket, and it automatically generates resized copies whenever an image is uploaded. Optional — can be added later without changing the upload code, skip for now if not needed immediately.
+Cloudinary's earlier appeal was resizing one upload into thumbnail/card/detail sizes automatically. Firebase has an official equivalent: the **["Resize Images" Extension](https://extensions.dev/extensions/firebase/storage-resize-images)** — install it from **Build → Extensions** in the console, point it at the Storage bucket, and it automatically generates resized copies whenever an image is uploaded. Optional — can be added later without changing the upload code, skip for now if not needed immediately. Still not done; not blocking anything.
 
-### Phase B3 — Storage security rules (my part, you paste them in)
+### Phase B3 — Storage security rules ✅ written, ← **paste into console for you**
 
-Only signed-in users with `role: admin` (same Firestore-backed role check as Firestore rules) can upload; anyone can read (product photos are public). I'll write the exact rule text for **Storage → Rules**, same pattern as Phase A7.
+Written to [storage.rules](../storage.rules) at the project root, same pattern as `firestore.rules`: anyone can read under `product_images/`, only a signed-in `role: admin` user can write there (checked via a cross-service `firestore.get()` read into the `users/{uid}` doc — Storage rules can read Firestore directly, no separate role storage needed), capped at 5MB and image content types only as a sanity check. Paste this into **Storage → Rules** in the console the same way you did `firestore.rules` for Phase A7 — Storage denies all reads/writes until this is published, same as Firestore does.
 
-### Phase B4 — Wire uploads into the app (my part, later)
+### Phase B4 — Wire uploads into the app ✅ done
 
-Simpler than the old Cloudinary/Netlify plan — no signing server needed, since Firebase Storage checks the upload directly against Security Rules using the signed-in user's role:
-1. Admin picks a photo (standard image picker).
-2. App uploads directly to Firebase Storage using the `firebase_storage` package — Storage Rules verify the uploader is an admin.
-3. The resulting download URL is saved on the product's Firestore document (`imageUrl` field).
+No signing server needed — Firebase Storage checks the upload directly against Security Rules using the signed-in user's role:
+1. Admin taps the photo picker on the product form (`image_picker` package — works on Web/Android/iOS) and picks a photo.
+2. App uploads the bytes straight to Firebase Storage (`product_images/{timestamp}.{ext}`) via the `firebase_storage` package — Storage Rules verify the uploader is an admin.
+3. The resulting download URL is set on the form's local state immediately (shown in the picker preview) and saved onto the product's Firestore document (`imageUrl` field) when the form is submitted — same two-step flow as any other product field, no separate "save photo" action.
 
-Nothing to build yet — this is the plan for when admin product management (roadmap Phase 5) starts.
+`flutter analyze`/`flutter build web`/`flutter test` all verified clean; a live-browser check confirmed the app boots with the new `firebase_storage`/`image_picker` dependencies and every new file loads without error. The actual upload itself couldn't be exercised end-to-end in this session — it needs Storage enabled (Phase B1) and the rules published (Phase B3) first, both still pending on your side.
 
 ---
 
@@ -205,10 +205,10 @@ The 89-day trial credit shown in the console absorbs all of this many times over
 - [ ] A7 — Security rules written ([firestore.rules](../firestore.rules)) ← **paste into console or deploy — next up for you, changed again (phone_index)**
 - [ ] Flip your test account's `role` to `admin` (after your first real signup through the app)
 
-**Part B — Firebase Storage (before admin product management):**
-- [ ] B1 — Enable Cloud Storage
+**Part B — Firebase Storage (code done, needs your console steps):**
+- [ ] B1 — Enable Cloud Storage ← **next up for you**
 - [ ] B2 — (optional) Install Resize Images extension
-- [ ] B3 — Storage security rules
+- [ ] B3 — Storage security rules ([storage.rules](../storage.rules)) ← **paste into console or deploy, same as A7**
 
 **Part C — Cloud Functions + Stripe (later, Stripe phase):**
 - [ ] C1 — Create Stripe account (test mode)
