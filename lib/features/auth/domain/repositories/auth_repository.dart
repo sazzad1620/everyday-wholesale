@@ -35,5 +35,9 @@ abstract class AuthRepository {
   /// using Google Sign-In behaves.
   Future<Either<Failure, UserEntity>> signInWithGoogle();
 
+  /// Firebase sends the reset email and hosts the "enter a new password"
+  /// page itself once the user clicks the link — nothing else to build.
+  Future<Either<Failure, Unit>> sendPasswordResetEmail(String email);
+
   Future<Either<Failure, Unit>> signOut();
 }

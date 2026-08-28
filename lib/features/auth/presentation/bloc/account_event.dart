@@ -76,3 +76,12 @@ class AccountPhoneOtpVerifyRequested extends AccountEvent {
 class AccountGoogleSignInRequested extends AccountEvent {
   const AccountGoogleSignInRequested();
 }
+
+class AccountPasswordResetRequested extends AccountEvent {
+  const AccountPasswordResetRequested(this.email);
+
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+}

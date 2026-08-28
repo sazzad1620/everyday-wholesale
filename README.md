@@ -18,6 +18,7 @@ A grocery ordering app — customers browse products and order; admins/managers 
 - [`docs/PLAN.md`](docs/PLAN.md) — requirements, architecture decisions, tech-stack rationale, roadmap
 - [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) — what's built vs. what's next, phase by phase
 - [`docs/BACKEND_SETUP.md`](docs/BACKEND_SETUP.md) — beginner-friendly, phase-by-phase Firebase backend setup guide
+- [`docs/IOS_SETUP.md`](docs/IOS_SETUP.md) — exact checklist for what's blocked on Mac/Xcode access (Google Sign-In's iOS config, first-build verification, App Store prep)
 
 ## Getting started
 

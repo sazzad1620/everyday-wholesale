@@ -29,6 +29,8 @@ abstract class AuthRemoteDatasource {
 
   Future<UserModel> signInWithGoogle();
 
+  Future<void> sendPasswordResetEmail(String email);
+
   Future<void> signOut();
 }
 
@@ -146,6 +148,15 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   Future<bool> isPhoneRegistered(String phoneNumber) async {
     final doc = await _firestore.collection(_phoneIndexCollection).doc(phoneNumber).get();
     return doc.exists;
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageForCode(e.code));
+    }
   }
 
   @override

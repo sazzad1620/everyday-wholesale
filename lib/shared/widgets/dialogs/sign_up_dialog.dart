@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../config/di/injection_container.dart';
+import '../../../config/routes/route_paths.dart';
 import '../../../features/auth/presentation/bloc/account_bloc.dart';
 import '../../../features/auth/presentation/bloc/account_event.dart';
 import '../../../features/auth/presentation/bloc/account_state.dart';
@@ -108,6 +110,12 @@ class _SignUpDialogState extends State<SignUpDialog> {
           AppToast.show(context, state.errorMessage!, type: ToastType.error);
         } else if (state.isLoggedIn) {
           Navigator.of(context).pop();
+          // Temporary proof-of-concept redirect — see AdminDashboardPage's
+          // doc comment. Will move to a proper post-login redirect once the
+          // real admin dashboard (roadmap Phase 5) exists.
+          if (state.user!.isAdmin) {
+            context.push(RoutePaths.admin);
+          }
         } else if (state.phoneVerificationId != null && !_codeSent) {
           setState(() => _codeSent = true);
         }

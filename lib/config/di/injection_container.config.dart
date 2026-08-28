@@ -19,6 +19,8 @@ import 'package:everyday_wholesale/features/auth/domain/repositories/auth_reposi
     as _i870;
 import 'package:everyday_wholesale/features/auth/domain/usecases/is_phone_registered_usecase.dart'
     as _i188;
+import 'package:everyday_wholesale/features/auth/domain/usecases/send_password_reset_email_usecase.dart'
+    as _i577;
 import 'package:everyday_wholesale/features/auth/domain/usecases/send_phone_otp_usecase.dart'
     as _i309;
 import 'package:everyday_wholesale/features/auth/domain/usecases/sign_in_usecase.dart'
@@ -202,6 +204,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i188.IsPhoneRegisteredUseCase>(
       () => _i188.IsPhoneRegisteredUseCase(gh<_i870.AuthRepository>()),
     );
+    gh.factory<_i577.SendPasswordResetEmailUseCase>(
+      () => _i577.SendPasswordResetEmailUseCase(gh<_i870.AuthRepository>()),
+    );
     gh.factory<_i309.SendPhoneOtpUseCase>(
       () => _i309.SendPhoneOtpUseCase(gh<_i870.AuthRepository>()),
     );
@@ -231,12 +236,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i105.CheckAppReadyUseCase>(
       () => _i105.CheckAppReadyUseCase(gh<_i246.AppReadinessRepository>()),
     );
-    gh.factory<_i37.ProductListBloc>(
-      () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),
-    );
-    gh.factory<_i86.SplashBloc>(
-      () => _i86.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),
-    );
     gh.lazySingleton<_i569.AccountBloc>(
       () => _i569.AccountBloc(
         gh<_i870.AuthRepository>(),
@@ -247,7 +246,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i133.VerifyPhoneOtpUseCase>(),
         gh<_i188.IsPhoneRegisteredUseCase>(),
         gh<_i877.SignInWithGoogleUseCase>(),
+        gh<_i577.SendPasswordResetEmailUseCase>(),
       ),
+    );
+    gh.factory<_i37.ProductListBloc>(
+      () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),
+    );
+    gh.factory<_i86.SplashBloc>(
+      () => _i86.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),
     );
     return this;
   }

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/presentation/pages/account_page.dart';
+import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/account/presentation/pages/order_history_page.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
@@ -92,6 +93,11 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.account,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const AccountPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.admin,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const AdminDashboardPage(),
     ),
     GoRoute(
       path: RoutePaths.orderHistory,

@@ -7,6 +7,7 @@ import '../../../../core/usecase/usecase.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/is_phone_registered_usecase.dart';
+import '../../domain/usecases/send_password_reset_email_usecase.dart';
 import '../../domain/usecases/send_phone_otp_usecase.dart';
 import '../../domain/usecases/sign_in_usecase.dart';
 import '../../domain/usecases/sign_in_with_google_usecase.dart';
@@ -32,6 +33,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     this._verifyPhoneOtpUseCase,
     this._isPhoneRegisteredUseCase,
     this._signInWithGoogleUseCase,
+    this._sendPasswordResetEmailUseCase,
   ) : super(const AccountState.guest()) {
     on<AccountAuthStateChanged>((event, emit) => emit(AccountState(user: event.user)));
     on<AccountSignInRequested>(_onSignInRequested);
@@ -40,6 +42,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     on<AccountPhoneOtpRequested>(_onPhoneOtpRequested);
     on<AccountPhoneOtpVerifyRequested>(_onPhoneOtpVerifyRequested);
     on<AccountGoogleSignInRequested>(_onGoogleSignInRequested);
+    on<AccountPasswordResetRequested>(_onPasswordResetRequested);
 
     _authSubscription = _authRepository.authStateChanges.listen((user) => add(AccountAuthStateChanged(user)));
   }
@@ -52,6 +55,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final VerifyPhoneOtpUseCase _verifyPhoneOtpUseCase;
   final IsPhoneRegisteredUseCase _isPhoneRegisteredUseCase;
   final SignInWithGoogleUseCase _signInWithGoogleUseCase;
+  final SendPasswordResetEmailUseCase _sendPasswordResetEmailUseCase;
 
   late final StreamSubscription<UserEntity?> _authSubscription;
 
@@ -132,6 +136,15 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     result.match(
       (failure) => emit(AccountState(user: state.user, errorMessage: failure.message)),
       (user) => emit(AccountState(user: user)),
+    );
+  }
+
+  Future<void> _onPasswordResetRequested(AccountPasswordResetRequested event, Emitter<AccountState> emit) async {
+    emit(AccountState(user: state.user, isSubmitting: true));
+    final result = await _sendPasswordResetEmailUseCase(event.email);
+    result.match(
+      (failure) => emit(AccountState(user: state.user, errorMessage: failure.message)),
+      (_) => emit(AccountState(user: state.user, passwordResetEmailSent: true)),
     );
   }
 

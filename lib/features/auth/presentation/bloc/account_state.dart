@@ -3,7 +3,13 @@ import 'package:equatable/equatable.dart';
 import '../../domain/entities/user_entity.dart';
 
 class AccountState extends Equatable {
-  const AccountState({this.user, this.isSubmitting = false, this.errorMessage, this.phoneVerificationId});
+  const AccountState({
+    this.user,
+    this.isSubmitting = false,
+    this.errorMessage,
+    this.phoneVerificationId,
+    this.passwordResetEmailSent = false,
+  });
 
   const AccountState.guest() : this();
 
@@ -24,8 +30,15 @@ class AccountState extends Equatable {
   /// the user-entered code in [AccountPhoneOtpVerifyRequested].
   final String? phoneVerificationId;
 
+  /// True for one state right after [AccountPasswordResetRequested] succeeds
+  /// — the dialog shows a confirmation toast on this, same as it does for
+  /// [phoneVerificationId] becoming non-null. Every other action constructs
+  /// a fresh [AccountState] without passing this, so it resets to false on
+  /// its own once anything else happens.
+  final bool passwordResetEmailSent;
+
   bool get isLoggedIn => user != null;
 
   @override
-  List<Object?> get props => [user, isSubmitting, errorMessage, phoneVerificationId];
+  List<Object?> get props => [user, isSubmitting, errorMessage, phoneVerificationId, passwordResetEmailSent];
 }

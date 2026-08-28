@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../config/di/injection_container.dart';
+import '../../../config/routes/route_paths.dart';
 import '../../../features/auth/presentation/bloc/account_bloc.dart';
 import '../../../features/auth/presentation/bloc/account_event.dart';
 import '../../../features/auth/presentation/bloc/account_state.dart';
@@ -91,6 +93,15 @@ class _SignInDialogState extends State<SignInDialog> {
     );
   }
 
+  void _forgotPassword() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      AppToast.show(context, 'auth.error_email_invalid'.tr(), type: ToastType.error);
+      return;
+    }
+    getIt<AccountBloc>().add(AccountPasswordResetRequested(email));
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AccountBloc, AccountState>(
@@ -101,8 +112,16 @@ class _SignInDialogState extends State<SignInDialog> {
           AppToast.show(context, state.errorMessage!, type: ToastType.error);
         } else if (state.isLoggedIn) {
           Navigator.of(context).pop();
+          // Temporary proof-of-concept redirect — see AdminDashboardPage's
+          // doc comment. Will move to a proper post-login redirect once the
+          // real admin dashboard (roadmap Phase 5) exists.
+          if (state.user!.isAdmin) {
+            context.push(RoutePaths.admin);
+          }
         } else if (state.phoneVerificationId != null && !_codeSent) {
           setState(() => _codeSent = true);
+        } else if (state.passwordResetEmailSent) {
+          AppToast.show(context, 'auth.password_reset_sent'.tr(), type: ToastType.success);
         }
       },
       builder: (context, state) {
@@ -160,7 +179,18 @@ class _SignInDialogState extends State<SignInDialog> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.xs),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: _forgotPassword,
+                      child: Text(
+                        'auth.forgot_password'.tr(),
+                        style: AppTextStyles.caption.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                   PrimaryButton(
                     label: 'auth.sign_in_action'.tr(),
                     isLoading: state.isSubmitting,

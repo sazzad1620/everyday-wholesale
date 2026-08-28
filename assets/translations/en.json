@@ -145,6 +145,8 @@
     "error_email_required": "Please enter your email.",
     "error_email_invalid": "Please enter a valid email address.",
     "error_password_required": "Please enter your password.",
-    "error_password_weak": "Password must be at least 6 characters."
+    "error_password_weak": "Password must be at least 6 characters.",
+    "forgot_password": "Forgot password?",
+    "password_reset_sent": "Check your email for a link to reset your password."
   }
 }
