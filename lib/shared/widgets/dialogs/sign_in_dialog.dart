@@ -12,6 +12,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
 import '../../utils/toast.dart';
 import '../buttons/primary_button.dart';
+import '../buttons/secondary_button.dart';
 import 'auth_method_toggle.dart';
 import 'dialog_shell.dart';
 import 'phone_auth_steps.dart';
@@ -183,6 +184,26 @@ class _SignInDialogState extends State<SignInDialog> {
                     onChangeNumber: () => setState(() => _codeSent = false),
                   ),
                 ],
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: AppColors.textSecondary.withValues(alpha: 0.2))),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                      child: Text(
+                        'auth.or_divider'.tr(),
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: AppColors.textSecondary.withValues(alpha: 0.2))),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                SecondaryButton(
+                  label: 'auth.continue_with_google'.tr(),
+                  isLoading: state.isSubmitting,
+                  onTap: () => getIt<AccountBloc>().add(const AccountGoogleSignInRequested()),
+                ),
                 const SizedBox(height: AppSpacing.md),
                 Center(
                   child: Wrap(

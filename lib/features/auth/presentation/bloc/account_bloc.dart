@@ -9,6 +9,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/is_phone_registered_usecase.dart';
 import '../../domain/usecases/send_phone_otp_usecase.dart';
 import '../../domain/usecases/sign_in_usecase.dart';
+import '../../domain/usecases/sign_in_with_google_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/sign_up_usecase.dart';
 import '../../domain/usecases/verify_phone_otp_usecase.dart';
@@ -30,6 +31,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     this._sendPhoneOtpUseCase,
     this._verifyPhoneOtpUseCase,
     this._isPhoneRegisteredUseCase,
+    this._signInWithGoogleUseCase,
   ) : super(const AccountState.guest()) {
     on<AccountAuthStateChanged>((event, emit) => emit(AccountState(user: event.user)));
     on<AccountSignInRequested>(_onSignInRequested);
@@ -37,6 +39,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     on<AccountSignOutRequested>(_onSignOutRequested);
     on<AccountPhoneOtpRequested>(_onPhoneOtpRequested);
     on<AccountPhoneOtpVerifyRequested>(_onPhoneOtpVerifyRequested);
+    on<AccountGoogleSignInRequested>(_onGoogleSignInRequested);
 
     _authSubscription = _authRepository.authStateChanges.listen((user) => add(AccountAuthStateChanged(user)));
   }
@@ -48,6 +51,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final SendPhoneOtpUseCase _sendPhoneOtpUseCase;
   final VerifyPhoneOtpUseCase _verifyPhoneOtpUseCase;
   final IsPhoneRegisteredUseCase _isPhoneRegisteredUseCase;
+  final SignInWithGoogleUseCase _signInWithGoogleUseCase;
 
   late final StreamSubscription<UserEntity?> _authSubscription;
 
@@ -118,6 +122,15 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       (failure) => emit(
         AccountState(user: state.user, errorMessage: failure.message, phoneVerificationId: state.phoneVerificationId),
       ),
+      (user) => emit(AccountState(user: user)),
+    );
+  }
+
+  Future<void> _onGoogleSignInRequested(AccountGoogleSignInRequested event, Emitter<AccountState> emit) async {
+    emit(AccountState(user: state.user, isSubmitting: true));
+    final result = await _signInWithGoogleUseCase(const NoParams());
+    result.match(
+      (failure) => emit(AccountState(user: state.user, errorMessage: failure.message)),
       (user) => emit(AccountState(user: user)),
     );
   }

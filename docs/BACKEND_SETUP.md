@@ -8,7 +8,7 @@ Everyday Wholesale's entire backend runs on **Firebase** — Auth (email + phone
 
 | Service | Handles | Status |
 |---|---|---|
-| Firebase Auth | Email/password login, phone (SMS OTP) login | ✅ Both done — Part A |
+| Firebase Auth | Email/password, phone (SMS OTP), Google Sign-In | ✅ All three done — Part A (Google's iOS piece still blocked on Mac access) |
 | Firestore | Products, categories, orders, users | 🚧 Database created, data models not built — Part A |
 | Firebase Cloud Storage | Product images (admin-uploaded) | ⬜ Not started — Part B |
 | Firebase Cloud Functions | Creating Stripe PaymentIntents securely | ⬜ Not started — Part C |
@@ -201,7 +201,8 @@ The 89-day trial credit shown in the console absorbs all of this many times over
 - [x] Blaze plan enabled
 - [x] Real email/password auth wired into the app (sign-in/sign-up dialogs, `AccountBloc`, `account_page.dart`, header greeting)
 - [x] A10 — Phone Authentication enabled in console (Android SHA added) + real code wiring done
-- [ ] A7 — Security rules written ([firestore.rules](../firestore.rules)) ← **paste into console or deploy — next up for you**
+- [x] Google Sign-In enabled in console (support email set, `google-services.json` refreshed) + real code wiring done for Android/Web (iOS blocked on Mac access)
+- [ ] A7 — Security rules written ([firestore.rules](../firestore.rules)) ← **paste into console or deploy — next up for you, changed again (phone_index)**
 - [ ] Flip your test account's `role` to `admin` (after your first real signup through the app)
 
 **Part B — Firebase Storage (before admin product management):**

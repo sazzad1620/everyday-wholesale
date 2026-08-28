@@ -139,6 +139,8 @@
     "verify_sign_up": "Verify & Sign Up",
     "no_account": "Don't have an account?",
     "have_account": "Already have an account?",
+    "or_divider": "OR",
+    "continue_with_google": "Continue with Google",
     "error_name_required": "Please enter your name.",
     "error_email_required": "Please enter your email.",
     "error_email_invalid": "Please enter a valid email address.",

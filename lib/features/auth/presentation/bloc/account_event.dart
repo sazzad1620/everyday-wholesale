@@ -72,3 +72,7 @@ class AccountPhoneOtpVerifyRequested extends AccountEvent {
   @override
   List<Object?> get props => [verificationId, smsCode, name];
 }
+
+class AccountGoogleSignInRequested extends AccountEvent {
+  const AccountGoogleSignInRequested();
+}

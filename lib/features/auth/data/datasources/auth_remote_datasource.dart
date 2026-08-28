@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/exceptions.dart';
@@ -24,6 +26,8 @@ abstract class AuthRemoteDatasource {
   /// phone → uid (not the full `users` doc), since this needs to be publicly
   /// readable pre-auth without exposing any real profile data.
   Future<bool> isPhoneRegistered(String phoneNumber);
+
+  Future<UserModel> signInWithGoogle();
 
   Future<void> signOut();
 }
@@ -145,7 +149,59 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   }
 
   @override
-  Future<void> signOut() => _firebaseAuth.signOut();
+  Future<UserModel> signInWithGoogle() async {
+    try {
+      final User? user;
+
+      if (kIsWeb) {
+        // The google_sign_in package's web implementation requires its own
+        // rendered button widget and throws if `.authenticate()` is called
+        // imperatively — Firebase's own popup flow avoids that entirely,
+        // and lets the button stay a normal custom-styled one like the rest
+        // of the app.
+        final userCredential = await _firebaseAuth.signInWithPopup(GoogleAuthProvider());
+        user = userCredential.user;
+      } else {
+        final account = await GoogleSignIn.instance.authenticate();
+        final credential = GoogleAuthProvider.credential(idToken: account.authentication.idToken);
+        final userCredential = await _firebaseAuth.signInWithCredential(credential);
+        user = userCredential.user;
+      }
+      if (user == null) throw const AuthException();
+
+      final docRef = _firestore.collection(_usersCollection).doc(user.uid);
+      final snapshot = await docRef.get();
+      if (snapshot.exists) {
+        return UserModel.fromMap(snapshot.data()!, uid: user.uid);
+      }
+
+      final model = UserModel(
+        uid: user.uid,
+        email: user.email ?? '',
+        name: user.displayName ?? '',
+        phone: user.phoneNumber,
+      );
+      await docRef.set(model.toMap());
+      return model;
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageForCode(e.code));
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        throw const AuthException('Sign-in was cancelled.');
+      }
+      throw const AuthException('Google sign-in failed. Please try again.');
+    }
+  }
+
+  @override
+  Future<void> signOut() async {
+    await _firebaseAuth.signOut();
+    // Also clears the cached Google session, so the next sign-in shows the
+    // account picker again instead of silently reusing this one.
+    if (!kIsWeb) {
+      await GoogleSignIn.instance.signOut();
+    }
+  }
 
   /// Reads the `users/{uid}` doc for role/name; falls back to the Auth
   /// profile if the doc is somehow missing (shouldn't happen — created on

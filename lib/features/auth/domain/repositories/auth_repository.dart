@@ -29,5 +29,11 @@ abstract class AuthRepository {
 
   Future<Either<Failure, bool>> isPhoneRegistered(String phoneNumber);
 
+  /// One unified flow — signs in if the Google account already has a
+  /// `users/{uid}` doc, creates it (name/email from the Google profile)
+  /// otherwise. No separate sign-in/sign-up split, matching how every app
+  /// using Google Sign-In behaves.
+  Future<Either<Failure, UserEntity>> signInWithGoogle();
+
   Future<Either<Failure, Unit>> signOut();
 }
