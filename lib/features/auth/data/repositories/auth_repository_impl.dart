@@ -43,6 +43,43 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, String>> sendPhoneOtp(String phoneNumber) async {
+    try {
+      return Right(await _remoteDatasource.sendPhoneOtp(phoneNumber));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> verifyPhoneOtp({
+    required String verificationId,
+    required String smsCode,
+    String? name,
+  }) async {
+    try {
+      return Right(await _remoteDatasource.verifyPhoneOtp(verificationId: verificationId, smsCode: smsCode, name: name));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> isPhoneRegistered(String phoneNumber) async {
+    try {
+      return Right(await _remoteDatasource.isPhoneRegistered(phoneNumber));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> signOut() async {
     try {
       await _remoteDatasource.signOut();

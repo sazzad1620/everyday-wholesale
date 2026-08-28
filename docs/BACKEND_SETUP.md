@@ -8,7 +8,7 @@ Everyday Wholesale's entire backend runs on **Firebase** — Auth (email + phone
 
 | Service | Handles | Status |
 |---|---|---|
-| Firebase Auth | Email/password login, phone (SMS OTP) login | 🚧 Email/password done, phone not started — Part A |
+| Firebase Auth | Email/password login, phone (SMS OTP) login | ✅ Both done — Part A |
 | Firestore | Products, categories, orders, users | 🚧 Database created, data models not built — Part A |
 | Firebase Cloud Storage | Product images (admin-uploaded) | ⬜ Not started — Part B |
 | Firebase Cloud Functions | Creating Stripe PaymentIntents securely | ⬜ Not started — Part C |
@@ -75,9 +75,11 @@ No manual "create table" step — collections (`users`, `products`, `categories`
 
 ### Phase A7 — Security rules (written — you paste them in)
 
-**Status: ✅ written, ⬜ not yet applied to the live project — one thing left for you to do.**
+**Status: ✅ written, ⬜ not yet applied/republished — one thing left for you to do.**
 
-Rules are in [firestore.rules](../firestore.rules) at the project root: anyone can read `products`/`categories` (public catalog); signed-in users can read/write only their own `users/{uid}` doc and their own orders; only `role: admin` can write `products`/`categories`, read/manage any order, or change anyone's role.
+Rules are in [firestore.rules](../firestore.rules) at the project root: anyone can read `products`/`categories` (public catalog); signed-in users can read/write only their own `users/{uid}` doc and their own orders; only `role: admin` can write `products`/`categories`, read/manage any order, or change anyone's role; plus a `phone_index` collection (phone → uid, public read, owner-only write) backing the "does this number already have an account" check before sending an OTP.
+
+**If you already published an earlier version:** the file changed again to add `phone_index` — republish is required, or phone sign-up will start failing (the new existence-check write gets denied without it).
 
 **To apply them (either way works):**
 - **Console (simplest):** open [firestore.rules](../firestore.rules), copy its contents, paste into **Firestore → Rules** tab in the console, click **Publish**.
@@ -97,14 +99,15 @@ Firebase Local Emulator Suite (`firebase init emulators` / `firebase emulators:s
 
 ### Phase A10 — Enable Phone Authentication (console) — needs Blaze ✅ now available
 
-**Status: ⬜ not started — blocked on this console step.** Confirmed with the client: real SMS-verified OTP (not phone-as-password). The app-side UI scaffold already exists (`AuthMethodToggle`, `PhoneNumberStep`, `OtpVerificationStep` in `lib/shared/widgets/dialogs/`), with the phone tab's "Verify" currently showing a coming-soon message. Once this console step is done, I'll wire it for real.
+**Status: ✅ done — console step enabled by you, code wiring done by me.** Confirmed with the client: real SMS-verified OTP (not phone-as-password).
 
-1. **Authentication → Sign-in method → Phone → Enable**.
-2. Android: add your debug/release **SHA-1 and SHA-256 fingerprints** (Project settings → your Android app → Add fingerprint) — required for Firebase to verify the app is legitimate before sending SMS.
-3. Web: phone auth uses an invisible reCAPTCHA check — no extra console setup, handled by the SDK.
-4. iOS: uses silent push notifications for verification when possible, falling back to reCAPTCHA — no extra console setup for development.
+1. **Authentication → Sign-in method → Phone → Enable**. ✅
+2. Android: SHA-1/SHA-256 fingerprint added (via `cd android && ./gradlew signingReport` → Project settings → your Android app → Add fingerprint). ✅
+3. Web: uses an invisible reCAPTCHA check automatically, no setup needed.
+4. iOS: no APNs key added yet — falls back to a reCAPTCHA challenge instead of silent verification (one extra tap for the user); real SMS still sends either way. Add the APNs key later when doing real iOS device testing, for the smoother silent-verification path.
+5. Test phone numbers (optional, console → same Phone provider screen → "Phone numbers for testing") — added for you and the client, useful for trying the flow without incurring real SMS or needing the rest of the platform config finished.
 
-Ping me once this is enabled and I'll add `sendPhoneOtp`/`verifyPhoneOtp` to `AuthRepository` plus two new `AccountBloc` events, and wire the existing UI to them.
+**Code side:** `AuthRepository`/`AuthRemoteDatasource` gained `sendPhoneOtp`/`verifyPhoneOtp`, two new `AccountBloc` events (`AccountPhoneOtpRequested`, `AccountPhoneOtpVerifyRequested`), and `AccountState` gained `phoneVerificationId`. The existing `PhoneNumberStep`/`OtpVerificationStep` UI is now wired to them — Send Code triggers a real SMS, Verify checks the real code, Resend actually re-sends (not just resetting the local cooldown timer). First-time phone sign-in creates a `users/{uid}` doc the same way email sign-up does (`role: 'customer'`, plus a `phone` field). `flutter analyze`/`flutter test`/`flutter build web` all verified clean.
 
 ---
 
@@ -197,8 +200,8 @@ The 89-day trial credit shown in the console absorbs all of this many times over
 - [x] A6 — Create Firestore database
 - [x] Blaze plan enabled
 - [x] Real email/password auth wired into the app (sign-in/sign-up dialogs, `AccountBloc`, `account_page.dart`, header greeting)
+- [x] A10 — Phone Authentication enabled in console (Android SHA added) + real code wiring done
 - [ ] A7 — Security rules written ([firestore.rules](../firestore.rules)) ← **paste into console or deploy — next up for you**
-- [ ] A10 — Enable Phone Authentication in console (client confirmed: real OTP) ← **next up for you**
 - [ ] Flip your test account's `role` to `admin` (after your first real signup through the app)
 
 **Part B — Firebase Storage (before admin product management):**
@@ -210,4 +213,4 @@ The 89-day trial credit shown in the console absorbs all of this many times over
 - [ ] C1 — Create Stripe account (test mode)
 - [ ] C2 — `firebase init functions`
 
-Ping me for A7 (security rules) or A10 (phone auth) whenever you're ready to continue.
+Ping me once A7's security rules are published — that's the one thing standing between "code is done" and "auth fully works end to end" (Firestore denies reads/writes until they're applied).

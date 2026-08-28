@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_input_style.dart';
@@ -19,12 +20,16 @@ class PhoneNumberStep extends StatelessWidget {
     required this.phoneController,
     required this.actionLabel,
     required this.onSendCode,
+    this.isLoading = false,
   });
 
   final Widget? leading;
   final TextEditingController phoneController;
   final String actionLabel;
   final VoidCallback onSendCode;
+
+  /// True while the OTP send request is in flight.
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +47,7 @@ class PhoneNumberStep extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        PrimaryButton(label: actionLabel, onTap: onSendCode),
+        PrimaryButton(label: actionLabel, isLoading: isLoading, onTap: onSendCode),
       ],
     );
   }
@@ -59,6 +64,8 @@ class OtpVerificationStep extends StatefulWidget {
     required this.verifyLabel,
     required this.onVerify,
     required this.onChangeNumber,
+    required this.onResend,
+    this.isLoading = false,
   });
 
   final String phone;
@@ -66,6 +73,13 @@ class OtpVerificationStep extends StatefulWidget {
   final String verifyLabel;
   final VoidCallback onVerify;
   final VoidCallback onChangeNumber;
+
+  /// Re-sends the OTP to the same number — actual resend, not just the
+  /// local cooldown reset (that still happens too, in [_startCountdown]).
+  final VoidCallback onResend;
+
+  /// True while a verify (or resend) request is in flight.
+  final bool isLoading;
 
   @override
   State<OtpVerificationStep> createState() => _OtpVerificationStepState();
@@ -115,14 +129,8 @@ class _OtpVerificationStepState extends State<OtpVerificationStep> {
           style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.sm),
-        TextField(
-          controller: widget.codeController,
-          keyboardType: TextInputType.number,
-          maxLength: 6,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: 8),
-          decoration: AppInputStyle.decoration(hintText: 'auth.otp_hint'.tr(), radius: 14).copyWith(counterText: ''),
-        ),
+        _OtpCodeBoxes(controller: widget.codeController),
+        const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
             GestureDetector(
@@ -134,7 +142,12 @@ class _OtpVerificationStepState extends State<OtpVerificationStep> {
             ),
             const Spacer(),
             GestureDetector(
-              onTap: canResend ? _startCountdown : null,
+              onTap: canResend
+                  ? () {
+                      widget.onResend();
+                      _startCountdown();
+                    }
+                  : null,
               child: Text(
                 canResend ? 'auth.resend_code'.tr() : 'auth.resend_in'.tr(namedArgs: {'seconds': '$_secondsRemaining'}),
                 style: AppTextStyles.caption.copyWith(
@@ -146,8 +159,86 @@ class _OtpVerificationStepState extends State<OtpVerificationStep> {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        PrimaryButton(label: widget.verifyLabel, onTap: widget.onVerify),
+        PrimaryButton(label: widget.verifyLabel, isLoading: widget.isLoading, onTap: widget.onVerify),
       ],
+    );
+  }
+}
+
+/// Six individual single-digit boxes instead of one text field — keeps
+/// [controller] (read by the dialogs for verification) in sync as the
+/// combined string on every keystroke. Deliberately minimal: no placeholder
+/// digits, no per-box borders beyond the fill, just a focus highlight.
+class _OtpCodeBoxes extends StatefulWidget {
+  const _OtpCodeBoxes({required this.controller});
+
+  final TextEditingController controller;
+
+  static const _length = 6;
+
+  @override
+  State<_OtpCodeBoxes> createState() => _OtpCodeBoxesState();
+}
+
+class _OtpCodeBoxesState extends State<_OtpCodeBoxes> {
+  late final _digitControllers = List.generate(_OtpCodeBoxes._length, (_) => TextEditingController());
+  late final _focusNodes = List.generate(_OtpCodeBoxes._length, (_) => FocusNode());
+
+  @override
+  void dispose() {
+    for (final controller in _digitControllers) {
+      controller.dispose();
+    }
+    for (final node in _focusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _onDigitChanged(int index, String value) {
+    if (value.isNotEmpty && index < _OtpCodeBoxes._length - 1) {
+      _focusNodes[index + 1].requestFocus();
+    } else if (value.isEmpty && index > 0) {
+      _focusNodes[index - 1].requestFocus();
+    }
+    widget.controller.text = _digitControllers.map((c) => c.text).join();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(_OtpCodeBoxes._length, (index) {
+        return SizedBox(
+          width: 44,
+          height: 52,
+          child: TextField(
+            controller: _digitControllers[index],
+            focusNode: _focusNodes[index],
+            textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            maxLength: 1,
+            style: AppTextStyles.headline.copyWith(fontSize: 20),
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              counterText: '',
+              filled: true,
+              fillColor: AppColors.inputFill,
+              contentPadding: EdgeInsets.zero,
+              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)), borderSide: BorderSide.none),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+            ),
+            onChanged: (value) => _onDigitChanged(index, value),
+          ),
+        );
+      }),
     );
   }
 }

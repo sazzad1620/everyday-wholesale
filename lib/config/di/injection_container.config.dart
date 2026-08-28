@@ -17,12 +17,18 @@ import 'package:everyday_wholesale/features/auth/data/repositories/auth_reposito
     as _i402;
 import 'package:everyday_wholesale/features/auth/domain/repositories/auth_repository.dart'
     as _i870;
+import 'package:everyday_wholesale/features/auth/domain/usecases/is_phone_registered_usecase.dart'
+    as _i188;
+import 'package:everyday_wholesale/features/auth/domain/usecases/send_phone_otp_usecase.dart'
+    as _i309;
 import 'package:everyday_wholesale/features/auth/domain/usecases/sign_in_usecase.dart'
     as _i456;
 import 'package:everyday_wholesale/features/auth/domain/usecases/sign_out_usecase.dart'
     as _i736;
 import 'package:everyday_wholesale/features/auth/domain/usecases/sign_up_usecase.dart'
     as _i260;
+import 'package:everyday_wholesale/features/auth/domain/usecases/verify_phone_otp_usecase.dart'
+    as _i133;
 import 'package:everyday_wholesale/features/auth/presentation/bloc/account_bloc.dart'
     as _i569;
 import 'package:everyday_wholesale/features/cart/data/datasources/cart_local_datasource.dart'
@@ -191,6 +197,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i785.ProductDetailBloc>(
       () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
     );
+    gh.factory<_i188.IsPhoneRegisteredUseCase>(
+      () => _i188.IsPhoneRegisteredUseCase(gh<_i870.AuthRepository>()),
+    );
+    gh.factory<_i309.SendPhoneOtpUseCase>(
+      () => _i309.SendPhoneOtpUseCase(gh<_i870.AuthRepository>()),
+    );
     gh.factory<_i456.SignInUseCase>(
       () => _i456.SignInUseCase(gh<_i870.AuthRepository>()),
     );
@@ -199,6 +211,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i260.SignUpUseCase>(
       () => _i260.SignUpUseCase(gh<_i870.AuthRepository>()),
+    );
+    gh.factory<_i133.VerifyPhoneOtpUseCase>(
+      () => _i133.VerifyPhoneOtpUseCase(gh<_i870.AuthRepository>()),
     );
     gh.lazySingleton<_i632.CartBloc>(
       () => _i632.CartBloc(
@@ -211,16 +226,19 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i105.CheckAppReadyUseCase>(
       () => _i105.CheckAppReadyUseCase(gh<_i246.AppReadinessRepository>()),
     );
-    gh.factory<_i37.ProductListBloc>(
-      () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),
-    );
     gh.lazySingleton<_i569.AccountBloc>(
       () => _i569.AccountBloc(
         gh<_i870.AuthRepository>(),
         gh<_i456.SignInUseCase>(),
         gh<_i260.SignUpUseCase>(),
         gh<_i736.SignOutUseCase>(),
+        gh<_i309.SendPhoneOtpUseCase>(),
+        gh<_i133.VerifyPhoneOtpUseCase>(),
+        gh<_i188.IsPhoneRegisteredUseCase>(),
       ),
+    );
+    gh.factory<_i37.ProductListBloc>(
+      () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),
     );
     gh.factory<_i86.SplashBloc>(
       () => _i86.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),

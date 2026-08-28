@@ -128,7 +128,6 @@
     "email_hint": "Email address",
     "password_hint": "Password",
     "phone_hint": "Phone number",
-    "otp_hint": "6-digit code",
     "send_otp": "Send Code",
     "otp_sent_message": "We sent a 6-digit code to {phone}.",
     "change_number": "Change number",

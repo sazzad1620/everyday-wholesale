@@ -79,8 +79,22 @@ class _SignUpDialogState extends State<SignUpDialog> {
     );
   }
 
+  void _sendPhoneOtp() {
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) return;
+    getIt<AccountBloc>().add(AccountPhoneOtpRequested(phone, isSignUp: true));
+  }
+
   void _verifyPhoneCode() {
-    showComingSoonToast(context, 'auth.phone_tab'.tr());
+    final verificationId = getIt<AccountBloc>().state.phoneVerificationId;
+    if (verificationId == null) return;
+    getIt<AccountBloc>().add(
+      AccountPhoneOtpVerifyRequested(
+        verificationId: verificationId,
+        smsCode: _codeController.text.trim(),
+        name: _nameController.text.trim(),
+      ),
+    );
   }
 
   @override
@@ -93,6 +107,8 @@ class _SignUpDialogState extends State<SignUpDialog> {
           AppToast.show(context, state.errorMessage!, type: ToastType.error);
         } else if (state.isLoggedIn) {
           Navigator.of(context).pop();
+        } else if (state.phoneVerificationId != null && !_codeSent) {
+          setState(() => _codeSent = true);
         }
       },
       builder: (context, state) {
@@ -175,14 +191,17 @@ class _SignUpDialogState extends State<SignUpDialog> {
                     ),
                     phoneController: _phoneController,
                     actionLabel: 'auth.send_otp'.tr(),
-                    onSendCode: () => setState(() => _codeSent = true),
+                    isLoading: state.isSubmitting,
+                    onSendCode: _sendPhoneOtp,
                   ),
                 ] else ...[
                   OtpVerificationStep(
                     phone: _phoneController.text,
                     codeController: _codeController,
                     verifyLabel: 'auth.verify_sign_up'.tr(),
+                    isLoading: state.isSubmitting,
                     onVerify: _verifyPhoneCode,
+                    onResend: _sendPhoneOtp,
                     onChangeNumber: () => setState(() => _codeSent = false),
                   ),
                 ],

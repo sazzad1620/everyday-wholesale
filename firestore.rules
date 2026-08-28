@@ -25,6 +25,17 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Minimal phone -> uid index, used to check "does an account already
+    // exist for this number" before sending an OTP (publicly readable by
+    // design — it exposes only that fact, not any profile data). Only the
+    // verified owner of a phone number can create its own entry; a Firebase
+    // ID token from phone sign-in carries the verified number as a claim.
+    match /phone_index/{phoneNumber} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.auth.token.phone_number == phoneNumber;
+      allow update, delete: if false;
+    }
+
     // Public catalog — anyone can browse, only admins manage it.
     match /categories/{categoryId} {
       allow read: if true;

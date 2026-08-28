@@ -46,3 +46,29 @@ class AccountSignUpRequested extends AccountEvent {
 class AccountSignOutRequested extends AccountEvent {
   const AccountSignOutRequested();
 }
+
+class AccountPhoneOtpRequested extends AccountEvent {
+  const AccountPhoneOtpRequested(this.phoneNumber, {required this.isSignUp});
+
+  final String phoneNumber;
+
+  /// True from the sign-up dialog, false from sign-in — only sign-in
+  /// pre-checks whether the number is registered before sending an OTP.
+  final bool isSignUp;
+
+  @override
+  List<Object?> get props => [phoneNumber, isSignUp];
+}
+
+class AccountPhoneOtpVerifyRequested extends AccountEvent {
+  const AccountPhoneOtpVerifyRequested({required this.verificationId, required this.smsCode, this.name});
+
+  final String verificationId;
+  final String smsCode;
+
+  /// Only passed by the sign-up dialog's phone tab.
+  final String? name;
+
+  @override
+  List<Object?> get props => [verificationId, smsCode, name];
+}
