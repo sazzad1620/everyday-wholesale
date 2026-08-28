@@ -4,13 +4,13 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../domain/repositories/product_repository.dart';
-import '../datasources/product_mock_datasource.dart';
+import '../datasources/product_remote_datasource.dart';
 
 @LazySingleton(as: ProductRepository)
 class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl(this._datasource);
 
-  final ProductMockDatasource _datasource;
+  final ProductRemoteDatasource _datasource;
 
   @override
   Future<Either<Failure, List<ProductEntity>>> getProductsByCategory(

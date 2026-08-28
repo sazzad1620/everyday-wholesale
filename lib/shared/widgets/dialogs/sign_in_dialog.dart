@@ -112,9 +112,9 @@ class _SignInDialogState extends State<SignInDialog> {
           AppToast.show(context, state.errorMessage!, type: ToastType.error);
         } else if (state.isLoggedIn) {
           Navigator.of(context).pop();
-          // Temporary proof-of-concept redirect — see AdminDashboardPage's
-          // doc comment. Will move to a proper post-login redirect once the
-          // real admin dashboard (roadmap Phase 5) exists.
+          // The route itself is also guarded (see app_router.dart's
+          // `redirect`) — this push is just so a fresh admin sign-in lands
+          // there immediately instead of wherever the dialog was opened from.
           if (state.user!.isAdmin) {
             context.push(RoutePaths.admin);
           }

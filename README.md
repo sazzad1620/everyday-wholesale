@@ -11,12 +11,11 @@ A grocery ordering app — customers browse products and order; admins/managers 
 - **Routing**: `go_router`
 - **Error handling**: `fpdart` (`Either<Failure, T>`)
 - **Localization**: `easy_localization` (`assets/translations/`)
-- **Backend**: Firebase (Auth, Firestore, Cloud Storage, Cloud Functions for Stripe) on the Blaze plan — integration in progress, see `docs/IMPLEMENTATION.md`
+- **Backend**: Firebase (Auth, Firestore, Cloud Storage, Cloud Functions for Stripe) on the Blaze plan — integration in progress, see `docs/PLAN.md`
 
 ## Project docs
 
-- [`docs/PLAN.md`](docs/PLAN.md) — requirements, architecture decisions, tech-stack rationale, roadmap
-- [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) — what's built vs. what's next, phase by phase
+- [`docs/PLAN.md`](docs/PLAN.md) — requirements, architecture decisions, tech-stack rationale, roadmap and current build status (single source of truth — phase checklist at the bottom)
 - [`docs/BACKEND_SETUP.md`](docs/BACKEND_SETUP.md) — beginner-friendly, phase-by-phase Firebase backend setup guide
 - [`docs/IOS_SETUP.md`](docs/IOS_SETUP.md) — exact checklist for what's blocked on Mac/Xcode access (Google Sign-In's iOS config, first-build verification, App Store prep)
 

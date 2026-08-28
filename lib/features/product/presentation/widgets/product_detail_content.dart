@@ -12,6 +12,8 @@ import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/product_image.dart';
 import '../../../../shared/widgets/quantity_stepper.dart';
 import '../../../../shared/widgets/star_rating.dart';
+import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
+import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../cart/presentation/bloc/cart_event.dart';
 import '../../../wishlist/presentation/bloc/wishlist_bloc.dart';
@@ -42,6 +44,11 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
   void _decrement() => setState(() => _quantity = _quantity > 1 ? _quantity - 1 : 1);
 
   void _addToCart(BuildContext context, ProductEntity product) {
+    if (!getIt<AccountBloc>().state.isLoggedIn) {
+      AppToast.show(context, 'cart.sign_in_required'.tr(), type: ToastType.error);
+      showSignInDialog(context);
+      return;
+    }
     getIt<CartBloc>().add(CartItemAdded(product, _quantity));
     AppToast.show(context, 'product.added_to_cart'.tr(), type: ToastType.success);
     setState(() => _quantity = 1);

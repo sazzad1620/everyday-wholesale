@@ -7,9 +7,12 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../order/domain/entities/order_entity.dart';
 
 class OrderConfirmationPage extends StatelessWidget {
-  const OrderConfirmationPage({super.key});
+  const OrderConfirmationPage({this.order, super.key});
+
+  final OrderEntity? order;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +39,13 @@ class OrderConfirmationPage extends StatelessWidget {
                 style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
+              if (order != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'checkout.confirmation_order_id'.tr(namedArgs: {'id': order!.id}),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                ),
+              ],
               const SizedBox(height: AppSpacing.xl),
               PrimaryButton(label: 'checkout.continue_shopping'.tr(), onTap: () => context.go(RoutePaths.home)),
             ],

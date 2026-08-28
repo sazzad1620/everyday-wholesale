@@ -4,7 +4,7 @@ Everyday Wholesale's entire backend runs on **Firebase** — Auth (email + phone
 
 > **Revision note:** an earlier version of this guide split the backend across Firebase + Cloudinary + Netlify, specifically to avoid Firebase's paid **Blaze** plan (which needs a card). The project has since **upgraded to Blaze**, so that split is no longer needed — everything below consolidates into Firebase. See [PLAN.md §4.3](PLAN.md) for the full history of that decision.
 
-> Companion docs: [PLAN.md](PLAN.md) (why these decisions) and [IMPLEMENTATION.md](IMPLEMENTATION.md) (what's actually built so far).
+> Companion docs: [PLAN.md](PLAN.md) (why these decisions, and §7 for what's actually built so far).
 
 | Service | Handles | Status |
 |---|---|---|
@@ -113,7 +113,7 @@ Firebase Local Emulator Suite (`firebase init emulators` / `firebase emulators:s
 
 ## Part B — Firebase Cloud Storage: Product Images
 
-**Status: ⬜ not started.** Not urgent today — the app currently uses local placeholder images ([IMPLEMENTATION.md](IMPLEMENTATION.md)), and admin photo upload doesn't exist yet (roadmap Phase 5).
+**Status: ⬜ not started.** Not urgent today — the app currently uses local placeholder images, and admin photo upload doesn't exist yet (roadmap Phase 5, see [PLAN.md](PLAN.md)).
 
 ### Phase B1 — Enable Cloud Storage (console)
 

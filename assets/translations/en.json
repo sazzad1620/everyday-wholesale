@@ -83,18 +83,21 @@
     "sub_total": "Sub Total",
     "total": "Total",
     "checkout": "Proceed to Checkout",
-    "return_to_shopping": "Return to Shopping"
+    "return_to_shopping": "Return to Shopping",
+    "sign_in_required": "Please sign in to add items to your cart."
   },
   "checkout": {
     "delivery_address_title": "Delivery Address",
     "edit": "Edit",
     "mock_address_line": "Saitama-ken, Hanyu-shi, Chuo 3-Chome 3-19",
     "mock_address_phone": "048-577-5313",
+    "mock_payment_method": "Cash on Delivery",
     "order_summary_title": "Order Summary",
     "payment_title": "Payment Method",
     "payment_message": "Card payments via Stripe will be available soon.",
     "place_order": "Place Order",
     "confirmation_title": "Order Placed!",
+    "confirmation_order_id": "Order ID: {id}",
     "confirmation_message": "Thanks for your order. We'll get it ready for delivery soon.",
     "continue_shopping": "Continue Shopping"
   },
@@ -148,5 +151,19 @@
     "error_password_weak": "Password must be at least 6 characters.",
     "forgot_password": "Forgot password?",
     "password_reset_sent": "Check your email for a link to reset your password."
+  },
+  "admin": {
+    "panel_title": "Admin Panel",
+    "logout": "Logout",
+    "nav_dashboard": "Dashboard",
+    "nav_products": "Products",
+    "nav_categories": "Categories",
+    "nav_orders": "Orders",
+    "section_coming_soon": "Coming soon.",
+    "dashboard_greeting": "Welcome, {name}",
+    "stat_products": "Products",
+    "stat_categories": "Categories",
+    "stat_orders": "Orders",
+    "stat_pending_orders": "Pending Orders"
   }
 }

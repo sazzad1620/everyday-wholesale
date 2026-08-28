@@ -23,6 +23,11 @@ service cloud.firestore {
       allow create: if isOwner(uid) && request.resource.data.role == 'customer';
       allow update: if (isOwner(uid) && request.resource.data.role == resource.data.role) || isAdmin();
       allow delete: if isAdmin();
+
+      // Per-user cart — only its own owner ever reads or writes it.
+      match /cart/{productId} {
+        allow read, write: if isOwner(uid);
+      }
     }
 
     // Minimal phone -> uid index, used to check "does an account already

@@ -41,3 +41,15 @@ class CartItemRemoved extends CartEvent {
 class CartCleared extends CartEvent {
   const CartCleared();
 }
+
+/// Fired internally by the auth-state subscription — not dispatched
+/// directly by UI code. Reloads the cart from Firestore on sign-in, empties
+/// it on sign-out (each account has its own cart).
+class CartAuthStateChanged extends CartEvent {
+  const CartAuthStateChanged({required this.isSignedIn});
+
+  final bool isSignedIn;
+
+  @override
+  List<Object?> get props => [isSignedIn];
+}

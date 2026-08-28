@@ -1,15 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../config/di/injection_container.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/toast.dart';
+import '../../../auth/presentation/bloc/account_bloc.dart';
 
-/// Static mock address — there's no real saved-address data anywhere yet
-/// (the account sheet's own "Address" entry is already just a coming-soon
-/// placeholder), so this shows one fixed address rather than a picker.
-/// Swap this for a real selector once accounts/Firestore exist.
+/// Name is the real signed-in user's; the address line/phone are still
+/// static mock text — real address management is a Phase 4 follow-up (see
+/// PLAN.md), no saved-address data exists yet to show instead.
 class DeliveryAddressCard extends StatelessWidget {
   const DeliveryAddressCard({super.key});
 
@@ -46,7 +47,10 @@ class DeliveryAddressCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text('account.guest_name'.tr(), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+          Text(
+            getIt<AccountBloc>().state.user?.name ?? 'account.guest_name'.tr(),
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 2),
           Text(
             'checkout.mock_address_line'.tr(),

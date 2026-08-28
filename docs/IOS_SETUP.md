@@ -2,7 +2,7 @@
 
 Everything iOS-related has been written in the Dart code (Firebase Auth, Firestore, Phone Auth, Google Sign-In all work identically across platforms at the code level), but **none of it has ever been built, run, or tested on iOS** — that fundamentally requires Xcode, which only runs on macOS. This doc is the exact checklist for when you get Mac access, ordered so the important stuff comes first.
 
-> Companion docs: [BACKEND_SETUP.md](BACKEND_SETUP.md) (the full backend setup this continues), [IMPLEMENTATION.md](IMPLEMENTATION.md) (current build status).
+> Companion docs: [BACKEND_SETUP.md](BACKEND_SETUP.md) (the full backend setup this continues), [PLAN.md](PLAN.md) (current build status — §7 Roadmap & Status).
 
 ---
 

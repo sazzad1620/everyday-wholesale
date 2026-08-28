@@ -11,6 +11,16 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:everyday_wholesale/config/di/firebase_module.dart' as _i301;
+import 'package:everyday_wholesale/features/admin/data/datasources/admin_dashboard_remote_datasource.dart'
+    as _i660;
+import 'package:everyday_wholesale/features/admin/data/repositories/admin_dashboard_repository_impl.dart'
+    as _i702;
+import 'package:everyday_wholesale/features/admin/domain/repositories/admin_dashboard_repository.dart'
+    as _i444;
+import 'package:everyday_wholesale/features/admin/domain/usecases/get_dashboard_stats_usecase.dart'
+    as _i1031;
+import 'package:everyday_wholesale/features/admin/presentation/bloc/dashboard_bloc.dart'
+    as _i297;
 import 'package:everyday_wholesale/features/auth/data/datasources/auth_remote_datasource.dart'
     as _i965;
 import 'package:everyday_wholesale/features/auth/data/repositories/auth_repository_impl.dart'
@@ -35,8 +45,8 @@ import 'package:everyday_wholesale/features/auth/domain/usecases/verify_phone_ot
     as _i133;
 import 'package:everyday_wholesale/features/auth/presentation/bloc/account_bloc.dart'
     as _i569;
-import 'package:everyday_wholesale/features/cart/data/datasources/cart_local_datasource.dart'
-    as _i951;
+import 'package:everyday_wholesale/features/cart/data/datasources/cart_remote_datasource.dart'
+    as _i490;
 import 'package:everyday_wholesale/features/cart/data/repositories/cart_repository_impl.dart'
     as _i184;
 import 'package:everyday_wholesale/features/cart/domain/repositories/cart_repository.dart'
@@ -45,14 +55,20 @@ import 'package:everyday_wholesale/features/cart/domain/usecases/add_to_cart_use
     as _i430;
 import 'package:everyday_wholesale/features/cart/domain/usecases/clear_cart_usecase.dart'
     as _i883;
+import 'package:everyday_wholesale/features/cart/domain/usecases/get_cart_usecase.dart'
+    as _i30;
 import 'package:everyday_wholesale/features/cart/domain/usecases/remove_from_cart_usecase.dart'
     as _i931;
 import 'package:everyday_wholesale/features/cart/domain/usecases/update_cart_quantity_usecase.dart'
     as _i900;
 import 'package:everyday_wholesale/features/cart/presentation/bloc/cart_bloc.dart'
     as _i632;
-import 'package:everyday_wholesale/features/home/data/datasources/home_mock_datasource.dart'
-    as _i589;
+import 'package:everyday_wholesale/features/checkout/presentation/bloc/checkout_bloc.dart'
+    as _i441;
+import 'package:everyday_wholesale/features/home/data/datasources/home_local_datasource.dart'
+    as _i940;
+import 'package:everyday_wholesale/features/home/data/datasources/home_remote_datasource.dart'
+    as _i1056;
 import 'package:everyday_wholesale/features/home/data/repositories/home_repository_impl.dart'
     as _i734;
 import 'package:everyday_wholesale/features/home/domain/repositories/home_repository.dart'
@@ -63,8 +79,20 @@ import 'package:everyday_wholesale/features/home/domain/usecases/get_promo_banne
     as _i674;
 import 'package:everyday_wholesale/features/home/presentation/bloc/home_bloc.dart'
     as _i1013;
-import 'package:everyday_wholesale/features/product/data/datasources/product_mock_datasource.dart'
-    as _i585;
+import 'package:everyday_wholesale/features/order/data/datasources/order_remote_datasource.dart'
+    as _i62;
+import 'package:everyday_wholesale/features/order/data/repositories/order_repository_impl.dart'
+    as _i506;
+import 'package:everyday_wholesale/features/order/domain/repositories/order_repository.dart'
+    as _i193;
+import 'package:everyday_wholesale/features/order/domain/usecases/get_order_history_usecase.dart'
+    as _i191;
+import 'package:everyday_wholesale/features/order/domain/usecases/place_order_usecase.dart'
+    as _i504;
+import 'package:everyday_wholesale/features/order/presentation/bloc/order_history_bloc.dart'
+    as _i419;
+import 'package:everyday_wholesale/features/product/data/datasources/product_remote_datasource.dart'
+    as _i581;
 import 'package:everyday_wholesale/features/product/data/repositories/product_repository_impl.dart'
     as _i137;
 import 'package:everyday_wholesale/features/product/domain/repositories/product_repository.dart'
@@ -115,20 +143,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i974.FirebaseFirestore>(
       () => firebaseModule.firebaseFirestore,
     );
-    gh.lazySingleton<_i589.HomeMockDatasource>(
-      () => _i589.HomeMockDatasourceImpl(),
-    );
-    gh.lazySingleton<_i585.ProductMockDatasource>(
-      () => _i585.ProductMockDatasourceImpl(),
-    );
-    gh.lazySingleton<_i951.CartLocalDatasource>(
-      () => _i951.CartLocalDatasourceImpl(),
-    );
     gh.lazySingleton<_i204.AppReadinessLocalDatasource>(
       () => _i204.AppReadinessLocalDatasourceImpl(),
     );
-    gh.lazySingleton<_i339.HomeRepository>(
-      () => _i734.HomeRepositoryImpl(gh<_i589.HomeMockDatasource>()),
+    gh.lazySingleton<_i940.HomeLocalDatasource>(
+      () => _i940.HomeLocalDatasourceImpl(),
     );
     gh.lazySingleton<_i51.WishlistLocalDatasource>(
       () => _i51.WishlistLocalDatasourceImpl(),
@@ -142,23 +161,25 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.FirebaseFirestore>(),
       ),
     );
-    gh.lazySingleton<_i175.CartRepository>(
-      () => _i184.CartRepositoryImpl(gh<_i951.CartLocalDatasource>()),
-    );
-    gh.factory<_i430.AddToCartUseCase>(
-      () => _i430.AddToCartUseCase(gh<_i175.CartRepository>()),
-    );
-    gh.factory<_i883.ClearCartUseCase>(
-      () => _i883.ClearCartUseCase(gh<_i175.CartRepository>()),
-    );
-    gh.factory<_i931.RemoveFromCartUseCase>(
-      () => _i931.RemoveFromCartUseCase(gh<_i175.CartRepository>()),
-    );
-    gh.factory<_i900.UpdateCartQuantityUseCase>(
-      () => _i900.UpdateCartQuantityUseCase(gh<_i175.CartRepository>()),
-    );
     gh.lazySingleton<_i870.AuthRepository>(
       () => _i402.AuthRepositoryImpl(gh<_i965.AuthRemoteDatasource>()),
+    );
+    gh.lazySingleton<_i581.ProductRemoteDatasource>(
+      () => _i581.ProductRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.lazySingleton<_i660.AdminDashboardRemoteDatasource>(
+      () => _i660.AdminDashboardRemoteDatasourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+      ),
+    );
+    gh.lazySingleton<_i1056.HomeRemoteDatasource>(
+      () => _i1056.HomeRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.lazySingleton<_i339.HomeRepository>(
+      () => _i734.HomeRepositoryImpl(
+        gh<_i1056.HomeRemoteDatasource>(),
+        gh<_i940.HomeLocalDatasource>(),
+      ),
     );
     gh.factory<_i305.AddToWishlistUseCase>(
       () => _i305.AddToWishlistUseCase(gh<_i93.WishlistRepository>()),
@@ -172,6 +193,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i574.RemoveFromWishlistUseCase>(),
       ),
     );
+    gh.lazySingleton<_i490.CartRemoteDatasource>(
+      () => _i490.CartRemoteDatasourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i59.FirebaseAuth>(),
+        gh<_i581.ProductRemoteDatasource>(),
+      ),
+    );
     gh.factory<_i353.GetCategoriesUseCase>(
       () => _i353.GetCategoriesUseCase(gh<_i339.HomeRepository>()),
     );
@@ -183,8 +211,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i204.AppReadinessLocalDatasource>(),
       ),
     );
-    gh.lazySingleton<_i411.ProductRepository>(
-      () => _i137.ProductRepositoryImpl(gh<_i585.ProductMockDatasource>()),
+    gh.lazySingleton<_i62.OrderRemoteDatasource>(
+      () => _i62.OrderRemoteDatasourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i59.FirebaseAuth>(),
+      ),
+    );
+    gh.lazySingleton<_i444.AdminDashboardRepository>(
+      () => _i702.AdminDashboardRepositoryImpl(
+        gh<_i660.AdminDashboardRemoteDatasource>(),
+      ),
     );
     gh.factory<_i1013.HomeBloc>(
       () => _i1013.HomeBloc(
@@ -192,14 +228,11 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i674.GetPromoBannersUseCase>(),
       ),
     );
-    gh.factory<_i682.GetProductByIdUseCase>(
-      () => _i682.GetProductByIdUseCase(gh<_i411.ProductRepository>()),
-    );
-    gh.factory<_i706.GetProductsByCategoryUseCase>(
-      () => _i706.GetProductsByCategoryUseCase(gh<_i411.ProductRepository>()),
-    );
-    gh.factory<_i785.ProductDetailBloc>(
-      () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
+    gh.lazySingleton<_i193.OrderRepository>(
+      () => _i506.OrderRepositoryImpl(
+        gh<_i62.OrderRemoteDatasource>(),
+        gh<_i59.FirebaseAuth>(),
+      ),
     );
     gh.factory<_i188.IsPhoneRegisteredUseCase>(
       () => _i188.IsPhoneRegisteredUseCase(gh<_i870.AuthRepository>()),
@@ -225,16 +258,24 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i133.VerifyPhoneOtpUseCase>(
       () => _i133.VerifyPhoneOtpUseCase(gh<_i870.AuthRepository>()),
     );
-    gh.lazySingleton<_i632.CartBloc>(
-      () => _i632.CartBloc(
-        gh<_i430.AddToCartUseCase>(),
-        gh<_i900.UpdateCartQuantityUseCase>(),
-        gh<_i931.RemoveFromCartUseCase>(),
-        gh<_i883.ClearCartUseCase>(),
-      ),
+    gh.factory<_i191.GetOrderHistoryUseCase>(
+      () => _i191.GetOrderHistoryUseCase(gh<_i193.OrderRepository>()),
+    );
+    gh.factory<_i504.PlaceOrderUseCase>(
+      () => _i504.PlaceOrderUseCase(gh<_i193.OrderRepository>()),
     );
     gh.factory<_i105.CheckAppReadyUseCase>(
       () => _i105.CheckAppReadyUseCase(gh<_i246.AppReadinessRepository>()),
+    );
+    gh.lazySingleton<_i411.ProductRepository>(
+      () => _i137.ProductRepositoryImpl(gh<_i581.ProductRemoteDatasource>()),
+    );
+    gh.lazySingleton<_i175.CartRepository>(
+      () => _i184.CartRepositoryImpl(gh<_i490.CartRemoteDatasource>()),
+    );
+    gh.factory<_i1031.GetDashboardStatsUseCase>(
+      () =>
+          _i1031.GetDashboardStatsUseCase(gh<_i444.AdminDashboardRepository>()),
     );
     gh.lazySingleton<_i569.AccountBloc>(
       () => _i569.AccountBloc(
@@ -249,11 +290,57 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i577.SendPasswordResetEmailUseCase>(),
       ),
     );
-    gh.factory<_i37.ProductListBloc>(
-      () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),
+    gh.factory<_i297.DashboardBloc>(
+      () => _i297.DashboardBloc(gh<_i1031.GetDashboardStatsUseCase>()),
+    );
+    gh.factory<_i419.OrderHistoryBloc>(
+      () => _i419.OrderHistoryBloc(gh<_i191.GetOrderHistoryUseCase>()),
+    );
+    gh.factory<_i682.GetProductByIdUseCase>(
+      () => _i682.GetProductByIdUseCase(gh<_i411.ProductRepository>()),
+    );
+    gh.factory<_i706.GetProductsByCategoryUseCase>(
+      () => _i706.GetProductsByCategoryUseCase(gh<_i411.ProductRepository>()),
     );
     gh.factory<_i86.SplashBloc>(
       () => _i86.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),
+    );
+    gh.factory<_i785.ProductDetailBloc>(
+      () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
+    );
+    gh.factory<_i430.AddToCartUseCase>(
+      () => _i430.AddToCartUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i883.ClearCartUseCase>(
+      () => _i883.ClearCartUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i30.GetCartUseCase>(
+      () => _i30.GetCartUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i931.RemoveFromCartUseCase>(
+      () => _i931.RemoveFromCartUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i900.UpdateCartQuantityUseCase>(
+      () => _i900.UpdateCartQuantityUseCase(gh<_i175.CartRepository>()),
+    );
+    gh.factory<_i37.ProductListBloc>(
+      () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),
+    );
+    gh.lazySingleton<_i632.CartBloc>(
+      () => _i632.CartBloc(
+        gh<_i870.AuthRepository>(),
+        gh<_i30.GetCartUseCase>(),
+        gh<_i430.AddToCartUseCase>(),
+        gh<_i900.UpdateCartQuantityUseCase>(),
+        gh<_i931.RemoveFromCartUseCase>(),
+        gh<_i883.ClearCartUseCase>(),
+      ),
+    );
+    gh.factory<_i441.CheckoutBloc>(
+      () => _i441.CheckoutBloc(
+        gh<_i504.PlaceOrderUseCase>(),
+        gh<_i632.CartBloc>(),
+      ),
     );
     return this;
   }
