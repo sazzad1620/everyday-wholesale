@@ -72,10 +72,11 @@ Every new feature replicates the `data/domain/presentation` structure shown by t
 | Error handling | `fpdart` (`Either<Failure, T>`) | Same pattern as reference project's `dartz`, but actively maintained with better Dart 3 support |
 | Localization | `easy_localization` | Uses literal `assets/translations/en.json` files as requested; simple to add more locales later |
 | Responsive layout | Custom breakpoint helper (`core/utils/responsive`), no package | Reference project's `flutter_screenutil` scales by mobile width, which actively fights responsive web/desktop layouts — a hard requirement here |
-| Backend | Firebase — Auth + Firestore only (Auth, Firestore) | Client requirement, free tier where possible — **not yet added**, deferred to the Firebase integration phase. Deliberately excludes Storage and Cloud Functions, see below |
-| Payments | Stripe | Client requirement — **not yet integrated**, deferred until backend + order flow exist |
-| Payment backend | Netlify Functions (not Firebase Cloud Functions) | Creating a Stripe PaymentIntent needs a server holding the Stripe secret key. Firebase Cloud Functions would require upgrading the whole Firebase project to the paid Blaze plan just to enable that one feature; Netlify's free tier runs this one function without ever touching Firebase billing, so Firebase stays on the free Spark plan for the entire project |
-| Product images | Cloudinary (not Firebase Storage) | Cloud Storage for Firebase requires the paid Blaze plan to activate at all (a Google policy, not a usage-based limit) — even minimal use needs a card on file. Cloudinary's free tier (25GB storage + bandwidth/month) needs no card and adds on-the-fly image resizing (one upload serves thumbnail/card/detail sizes), which suits a catalog with many products each carrying several photos. Admin uploads go through a signed Netlify Function (same pattern as Stripe) so uploads stay restricted to admins; the resulting image URL is stored on the product's Firestore document — Firebase itself never touches image bytes |
+| Backend | Firebase — Auth, Firestore, Cloud Storage, Cloud Functions (all on the **Blaze** plan) | Client requirement. Originally planned as Auth+Firestore-only on the free Spark plan, with Storage/payments routed through Cloudinary/Netlify specifically to avoid Blaze's card requirement (see history below). **Superseded**: the project has since upgraded to Blaze, so the whole backend now consolidates into Firebase alone |
+| Payments | Stripe, via Firebase Cloud Functions | Client requirement — **not yet integrated**, deferred until backend + order flow exist. A Cloud Function holds the Stripe secret key and creates PaymentIntents; the Flutter app calls it via the `cloud_functions` package |
+| Product images | Firebase Cloud Storage, with the official "Resize Images" Extension for thumbnail/card/detail sizes | Storage Rules gate uploads to `role: admin`, checked directly against the signed-in user — no separate signing server needed, unlike the earlier Cloudinary plan |
+| *(superseded)* Payment backend | ~~Netlify Functions~~ | Was chosen to avoid Firebase's Blaze plan requirement for Cloud Functions. No longer needed — the project upgraded to Blaze, so Cloud Functions is used directly instead |
+| *(superseded)* Product images | ~~Cloudinary~~ | Was chosen to avoid Blaze's card requirement for Cloud Storage. No longer needed — Cloud Storage is used directly instead |
 | Models | Manual `fromMap`/`toMap` | Matches reference project; keeps codegen surface limited to `injectable` |
 
 ### 4.4 Naming conventions
@@ -87,9 +88,10 @@ Every new feature replicates the `data/domain/presentation` structure shown by t
 
 ### 4.5 Explicitly deferred (not built yet)
 
-- Firebase packages/integration (`firebase_core`, `firebase_auth`, `cloud_firestore`). No `firebase_storage`, no `cloud_functions` — deliberately, see §4.3.
-- Stripe integration (Netlify Functions backend).
-- Cloudinary integration for product images (Netlify-signed uploads).
+- `firebase_storage` and `cloud_functions` packages/integration (Auth + Firestore are integrated; see [IMPLEMENTATION.md](IMPLEMENTATION.md) for exact status).
+- Stripe integration (Firebase Cloud Functions backend).
+- Product image upload (Firebase Cloud Storage + Security Rules).
+- Phone Authentication (needs client confirmation on OTP vs. password-based first — see [BACKEND_SETUP.md](BACKEND_SETUP.md) Phase A10).
 - Real Home UI with product data (currently a bare placeholder).
 - `auth`, `product`/`catalog`, `cart`, `checkout`, `orders` features (customer side).
 - Login/signup, address management, and order-history UI (currently inline mock buttons / "coming soon" stubs / no entry point in `account_sheet.dart`) — see Phase 2.
@@ -103,8 +105,8 @@ Every new feature replicates the `data/domain/presentation` structure shown by t
 2. **UI-first customer build** — real Home page UI with mock/hardcoded product data, no backend. Also product listing/detail, cart, and checkout screens, plus login/signup and account sub-pages (address management, edit profile, order history) as static UI against mock data, built from gunmahalalfood.com screenshots.
 3. **Firebase integration** — Firestore data models for products/orders/users, Firebase Auth for customer + admin/manager login. Mock data sources swapped for Firebase-backed ones behind the existing repository interfaces (no presentation-layer changes needed, by design).
 4. **Customer features end-to-end** — auth, product catalog, cart, checkout, order placement, order history/status — wired to real Firebase data.
-5. **Admin/manager side** — dashboard, product management (CRUD, including photo upload via Cloudinary + a signed Netlify Function — see §4.3), order management, order status updates.
-6. **Stripe integration** — online payment on the customer side, payment receipt on the admin side. Requires a small serverless backend to create PaymentIntents securely — client-side Stripe calls alone aren't safe for this. Built as **Netlify Functions**, not Firebase Cloud Functions, specifically to avoid requiring the Firebase project to upgrade to the paid Blaze plan (see §4.3). The Flutter app calls the Netlify function over plain HTTPS; Firestore still stores the resulting order/payment status as usual.
+5. **Admin/manager side** — dashboard, product management (CRUD, including photo upload via Firebase Cloud Storage + Security Rules — see §4.3), order management, order status updates.
+6. **Stripe integration** — online payment on the customer side, payment receipt on the admin side. Requires a small backend to create PaymentIntents securely — client-side Stripe calls alone aren't safe for this. Built as a **Firebase Cloud Function**, now that the project is on the Blaze plan (see §4.3). The Flutter app calls it via the `cloud_functions` package; Firestore stores the resulting order/payment status as usual.
 7. **Polish** — dark mode wiring, additional locales if requested, further platform-specific optimizations.
 
 ## 6. Design source

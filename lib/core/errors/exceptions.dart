@@ -9,3 +9,9 @@ class CacheException implements Exception {
 
   final String message;
 }
+
+class AuthException implements Exception {
+  const AuthException([this.message = 'Something went wrong with authentication.']);
+
+  final String message;
+}

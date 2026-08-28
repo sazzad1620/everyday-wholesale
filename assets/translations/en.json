@@ -2,9 +2,7 @@
   "app_name": "Everyday Wholesale",
   "header": {
     "brand_primary": "EVERYDAY",
-    "brand_secondary": "WHOLESALE",
-    "greeting_guest": "Hi, Guest",
-    "greeting_named": "Hi, {name}"
+    "brand_secondary": "WHOLESALE"
   },
   "home": {
     "search_hint": "Search for products...",
@@ -88,7 +86,6 @@
     "return_to_shopping": "Return to Shopping"
   },
   "checkout": {
-    "title": "Checkout",
     "delivery_address_title": "Delivery Address",
     "edit": "Edit",
     "mock_address_line": "Saitama-ken, Hanyu-shi, Chuo 3-Chome 3-19",
@@ -107,6 +104,7 @@
     "edit_profile": "Edit Profile",
     "address": "Address",
     "order_history": "Order History",
+    "my_reviews": "My Reviews",
     "logout": "Logout"
   },
   "order_history": {
@@ -124,12 +122,28 @@
     "sign_in_subtitle": "Sign in to track orders, save addresses, and check out faster.",
     "sign_up_title": "Create Account",
     "sign_up_subtitle": "Sign up to start ordering with us.",
+    "email_tab": "Email",
+    "phone_tab": "Phone",
     "name_hint": "Full name",
     "email_hint": "Email address",
     "password_hint": "Password",
+    "phone_hint": "Phone number",
+    "otp_hint": "6-digit code",
+    "send_otp": "Send Code",
+    "otp_sent_message": "We sent a 6-digit code to {phone}.",
+    "change_number": "Change number",
+    "resend_code": "Resend code",
+    "resend_in": "Resend in {seconds}s",
     "sign_in_action": "Sign In",
     "sign_up_action": "Sign Up",
+    "verify_sign_in": "Verify & Sign In",
+    "verify_sign_up": "Verify & Sign Up",
     "no_account": "Don't have an account?",
-    "have_account": "Already have an account?"
+    "have_account": "Already have an account?",
+    "error_name_required": "Please enter your name.",
+    "error_email_required": "Please enter your email.",
+    "error_email_invalid": "Please enter a valid email address.",
+    "error_password_required": "Please enter your password.",
+    "error_password_weak": "Password must be at least 6 characters."
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/utils/snack_utils.dart';
+import '../../../../shared/utils/toast.dart';
 
 /// Static mock address — there's no real saved-address data anywhere yet
 /// (the account sheet's own "Address" entry is already just a coming-soon
@@ -34,7 +34,7 @@ class DeliveryAddressCard extends StatelessWidget {
               Expanded(child: Text('checkout.delivery_address_title'.tr(), style: AppTextStyles.title)),
               InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () => showComingSoonSnackBar(context, 'checkout.delivery_address_title'.tr()),
+                onTap: () => showComingSoonToast(context, 'checkout.delivery_address_title'.tr()),
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Text(

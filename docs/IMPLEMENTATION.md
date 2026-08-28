@@ -49,11 +49,14 @@ Status key: ✅ done · 🚧 in progress · ⬜ not started
 
 | Task | Status | Notes |
 |---|---|---|
-| Add Firebase packages, configure per platform (Android/iOS/Web) | ✅ | `firebase_core`, `firebase_auth`, `cloud_firestore` added to `pubspec.yaml` — no `firebase_storage` (deliberately, see [PLAN.md §4.3](PLAN.md)); `Firebase.initializeApp()` wired into [lib/app/bootstrap.dart](../lib/app/bootstrap.dart), verified booting cleanly on web (all 3 SDKs initialize, no console errors). Android Gradle plugin wiring was already added by `flutterfire configure`; iOS/Web need no manual wiring. Auth enabled, Firestore database created. See [BACKEND_SETUP.md](BACKEND_SETUP.md) |
+| Add Firebase packages, configure per platform (Android/iOS/Web) | ✅ | `firebase_core`, `firebase_auth`, `cloud_firestore` added to `pubspec.yaml`; `Firebase.initializeApp()` wired into [lib/app/bootstrap.dart](../lib/app/bootstrap.dart), verified booting cleanly on web (all 3 SDKs initialize, no console errors). Android Gradle plugin wiring was already added by `flutterfire configure`; iOS/Web need no manual wiring. Auth enabled, Firestore database created. `firebase_storage`/`cloud_functions` not yet added — Parts B/C of [BACKEND_SETUP.md](BACKEND_SETUP.md) |
+| Project upgraded to Blaze plan | ✅ | Unlocks Cloud Storage, Cloud Functions, and Phone Auth — see [PLAN.md §4.3](PLAN.md) for the full history (originally avoided in favor of Cloudinary/Netlify; superseded) |
+| Firestore security rules | ✅ | [firestore.rules](../firestore.rules) — public read for `products`/`categories`, owner-or-admin for `users`/`orders`, role changes restricted to admins. Written, not yet deployed/pasted into the console — see [BACKEND_SETUP.md](BACKEND_SETUP.md) Phase A7 |
 | Firestore data model for products | ⬜ | |
 | Firestore data model for orders | ⬜ | |
-| Firebase Auth (customer + admin/manager roles) | ⬜ | |
-| Swap mock datasources for Firebase-backed ones | ⬜ | Should only touch `data/` layer, per repository-interface design |
+| Firebase Auth — email/password (customer + admin/manager roles) | ✅ | Real `auth` slice in [lib/features/auth](../lib/features/auth) (domain/data/presentation, `AuthRepository`/`AuthRemoteDatasource`/usecases), wired into `AccountBloc` and the sign-in/sign-up dialogs. `lib/features/account` is now just the profile UI (`account_page.dart`, `order_history_page.dart`), split out from the auth slice for clarity. Sign-up creates a `users/{uid}` Firestore doc with `role: 'customer'`; `AccountBloc` stays synced via `authStateChanges()` so a signed-in session survives app restarts. `flutter analyze` clean, web build verified |
+| Firebase Auth — phone (SMS OTP) | ⬜ | Confirmed with client: real OTP (not password-based). UI scaffold exists (`AuthMethodToggle`/`PhoneNumberStep`/`OtpVerificationStep` in `lib/shared/widgets/dialogs/`) with the phone tab's "Verify" showing a coming-soon message for now. Needs Phase A10's console step (enable Phone provider + Android SHA fingerprints) before real wiring |
+| Account feature — real auth wired into UI | ✅ | `sign_in_dialog.dart`/`sign_up_dialog.dart` (email tab) call real `AccountSignInRequested`/`AccountSignUpRequested`; `account_page.dart` shows the real signed-in user's name/email and calls `AccountSignOutRequested` on logout; header greeting uses the real name too |
 
 ## Phase 4 — Customer features end-to-end ⬜
 
@@ -78,7 +81,7 @@ Status key: ✅ done · 🚧 in progress · ⬜ not started
 
 | Task | Status | Notes |
 |---|---|---|
-| Backend (Netlify Function, not Firebase Cloud Function) to create PaymentIntents | ⬜ | Needed for secure payment — can't do client-side alone; hosted on Netlify to keep Firebase on the free Spark plan, see [PLAN.md §4.3](PLAN.md) |
+| Backend (Firebase Cloud Function) to create PaymentIntents | ⬜ | Needed for secure payment — can't do client-side alone. Now on Cloud Functions directly (project upgraded to Blaze), not Netlify — see [PLAN.md §4.3](PLAN.md) |
 | Customer-side payment flow | ⬜ | |
 | Admin-side payment/receipt visibility | ⬜ | |
 

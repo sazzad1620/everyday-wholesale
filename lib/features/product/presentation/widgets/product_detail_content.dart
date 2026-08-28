@@ -7,7 +7,7 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/utils/snack_utils.dart';
+import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/product_image.dart';
 import '../../../../shared/widgets/quantity_stepper.dart';
@@ -43,7 +43,7 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
 
   void _addToCart(BuildContext context, ProductEntity product) {
     getIt<CartBloc>().add(CartItemAdded(product, _quantity));
-    showSnackMessage(context, 'product.added_to_cart'.tr());
+    AppToast.show(context, 'product.added_to_cart'.tr(), type: ToastType.success);
     setState(() => _quantity = 1);
   }
 

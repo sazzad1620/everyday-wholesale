@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -82,7 +83,8 @@ class _OrderHistoryView extends StatelessWidget {
         children: [
           AppHeader(
             showSearchBar: false,
-            onMenuTap: () => Scaffold.of(context).openDrawer(),
+            showBackButton: true,
+            onMenuTap: () => context.pop(),
             onAccountTap: () => openAccountMenu(context),
           ),
           Expanded(

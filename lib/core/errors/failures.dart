@@ -19,3 +19,7 @@ class UnexpectedFailure extends Failure {
 class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message = 'The requested item could not be found.']);
 }
+
+class AuthFailure extends Failure {
+  const AuthFailure([super.message = 'Something went wrong with authentication.']);
+}

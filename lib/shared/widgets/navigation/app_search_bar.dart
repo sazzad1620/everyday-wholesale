@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_input_style.dart';
 import '../../theme/app_spacing.dart';
-import '../../utils/snack_utils.dart';
+import '../../utils/toast.dart';
 
 /// Lives inside [AppHeader]. Uses [AppInputStyle] — the same flat, ash,
 /// borderless treatment every real text field will use later.
@@ -22,7 +22,7 @@ class AppSearchBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppInputStyle.radius),
           child: InkWell(
             borderRadius: BorderRadius.circular(AppInputStyle.radius),
-            onTap: () => showComingSoonSnackBar(context, 'Search'),
+            onTap: () => showComingSoonToast(context, 'Search'),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
               child: Row(

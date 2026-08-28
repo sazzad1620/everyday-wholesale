@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
-import '../../utils/snack_utils.dart';
+import '../../utils/toast.dart';
 import 'drawer_header_bar.dart';
 
 /// Opened from the hamburger menu icon on every page's [AppHeader] — always
@@ -28,17 +28,17 @@ class MainMenuDrawer extends StatelessWidget {
             _MenuTile(
               icon: Icons.info_outline_rounded,
               label: 'drawer.about'.tr(),
-              onTap: () => showComingSoonSnackBar(context, 'drawer.about'.tr()),
+              onTap: () => showComingSoonToast(context, 'drawer.about'.tr()),
             ),
             _MenuTile(
               icon: Icons.policy_outlined,
               label: 'drawer.terms_privacy'.tr(),
-              onTap: () => showComingSoonSnackBar(context, 'drawer.terms_privacy'.tr()),
+              onTap: () => showComingSoonToast(context, 'drawer.terms_privacy'.tr()),
             ),
             _MenuTile(
               icon: Icons.star_outline_rounded,
               label: 'drawer.rate_app'.tr(),
-              onTap: () => showComingSoonSnackBar(context, 'drawer.rate_app'.tr()),
+              onTap: () => showComingSoonToast(context, 'drawer.rate_app'.tr()),
             ),
           ],
         ),

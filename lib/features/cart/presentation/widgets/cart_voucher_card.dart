@@ -5,7 +5,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_input_style.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/utils/snack_utils.dart';
+import '../../../../shared/utils/toast.dart';
 
 /// Its own card, separate from [CartSummaryCard]'s totals breakdown — the
 /// breakdown still shows a "Voucher" deduction line once one's applied.
@@ -37,7 +37,7 @@ class CartVoucherCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              _ApplyButton(onTap: () => showComingSoonSnackBar(context, 'Vouchers')),
+              _ApplyButton(onTap: () => showComingSoonToast(context, 'Vouchers')),
             ],
           ),
         ],
