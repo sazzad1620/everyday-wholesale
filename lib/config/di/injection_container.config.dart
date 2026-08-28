@@ -77,6 +77,10 @@ import 'package:everyday_wholesale/features/auth/domain/usecases/sign_out_usecas
     as _i736;
 import 'package:everyday_wholesale/features/auth/domain/usecases/sign_up_usecase.dart'
     as _i260;
+import 'package:everyday_wholesale/features/auth/domain/usecases/update_address_usecase.dart'
+    as _i379;
+import 'package:everyday_wholesale/features/auth/domain/usecases/update_name_usecase.dart'
+    as _i171;
 import 'package:everyday_wholesale/features/auth/domain/usecases/verify_phone_otp_usecase.dart'
     as _i133;
 import 'package:everyday_wholesale/features/auth/presentation/bloc/account_bloc.dart'
@@ -326,6 +330,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i260.SignUpUseCase>(
       () => _i260.SignUpUseCase(gh<_i870.AuthRepository>()),
     );
+    gh.factory<_i379.UpdateAddressUseCase>(
+      () => _i379.UpdateAddressUseCase(gh<_i870.AuthRepository>()),
+    );
+    gh.factory<_i171.UpdateNameUseCase>(
+      () => _i171.UpdateNameUseCase(gh<_i870.AuthRepository>()),
+    );
     gh.factory<_i133.VerifyPhoneOtpUseCase>(
       () => _i133.VerifyPhoneOtpUseCase(gh<_i870.AuthRepository>()),
     );
@@ -359,19 +369,6 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i1031.GetDashboardStatsUseCase(gh<_i444.AdminDashboardRepository>()),
     );
-    gh.lazySingleton<_i569.AccountBloc>(
-      () => _i569.AccountBloc(
-        gh<_i870.AuthRepository>(),
-        gh<_i456.SignInUseCase>(),
-        gh<_i260.SignUpUseCase>(),
-        gh<_i736.SignOutUseCase>(),
-        gh<_i309.SendPhoneOtpUseCase>(),
-        gh<_i133.VerifyPhoneOtpUseCase>(),
-        gh<_i188.IsPhoneRegisteredUseCase>(),
-        gh<_i877.SignInWithGoogleUseCase>(),
-        gh<_i577.SendPasswordResetEmailUseCase>(),
-      ),
-    );
     gh.factory<_i568.AdminProductListBloc>(
       () => _i568.AdminProductListBloc(
         gh<_i598.GetAllProductsUseCase>(),
@@ -395,6 +392,21 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i785.ProductDetailBloc>(
       () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
+    );
+    gh.lazySingleton<_i569.AccountBloc>(
+      () => _i569.AccountBloc(
+        gh<_i870.AuthRepository>(),
+        gh<_i456.SignInUseCase>(),
+        gh<_i260.SignUpUseCase>(),
+        gh<_i736.SignOutUseCase>(),
+        gh<_i309.SendPhoneOtpUseCase>(),
+        gh<_i133.VerifyPhoneOtpUseCase>(),
+        gh<_i188.IsPhoneRegisteredUseCase>(),
+        gh<_i877.SignInWithGoogleUseCase>(),
+        gh<_i577.SendPasswordResetEmailUseCase>(),
+        gh<_i379.UpdateAddressUseCase>(),
+        gh<_i171.UpdateNameUseCase>(),
+      ),
     );
     gh.factory<_i695.CreateCategoryUseCase>(
       () => _i695.CreateCategoryUseCase(gh<_i271.AdminCategoryRepository>()),

@@ -11,6 +11,7 @@ import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../account/presentation/pages/account_page.dart';
+import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../cart/presentation/bloc/cart_state.dart';
 import '../bloc/checkout_bloc.dart';
@@ -43,6 +44,22 @@ class CheckoutPage extends StatelessWidget {
 
 class _CheckoutView extends StatelessWidget {
   const _CheckoutView();
+
+  void _placeOrder(BuildContext context) {
+    final address = getIt<AccountBloc>().state.user?.address;
+    if (address == null) {
+      AppToast.show(context, 'checkout.address_required'.tr(), type: ToastType.error);
+      return;
+    }
+    context.read<CheckoutBloc>().add(
+      CheckoutOrderPlaceRequested(
+        // Real payment is still Stripe (Phase 6); the address is real now.
+        paymentMethod: 'checkout.mock_payment_method'.tr(),
+        addressLine: '${address.receiverName}, ${address.formattedLine}',
+        addressPhone: address.phoneNumber,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,18 +100,7 @@ class _CheckoutView extends StatelessWidget {
                           PrimaryButton(
                             label: 'checkout.place_order'.tr(),
                             isLoading: checkoutState.isPlacingOrder,
-                            onTap: () => context.read<CheckoutBloc>().add(
-                              CheckoutOrderPlaceRequested(
-                                // Payment/address are still the same
-                                // placeholder values shown on this card —
-                                // real ones land once Stripe (Phase 6) and
-                                // address management (Phase 4 follow-up)
-                                // are built. The order itself is real.
-                                paymentMethod: 'checkout.mock_payment_method'.tr(),
-                                addressLine: 'checkout.mock_address_line'.tr(),
-                                addressPhone: 'checkout.mock_address_phone'.tr(),
-                              ),
-                            ),
+                            onTap: () => _placeOrder(context),
                           ),
                         ],
                       );

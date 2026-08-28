@@ -13,6 +13,8 @@ import '../../domain/usecases/sign_in_usecase.dart';
 import '../../domain/usecases/sign_in_with_google_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/sign_up_usecase.dart';
+import '../../domain/usecases/update_address_usecase.dart';
+import '../../domain/usecases/update_name_usecase.dart';
 import '../../domain/usecases/verify_phone_otp_usecase.dart';
 import 'account_event.dart';
 import 'account_state.dart';
@@ -34,6 +36,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     this._isPhoneRegisteredUseCase,
     this._signInWithGoogleUseCase,
     this._sendPasswordResetEmailUseCase,
+    this._updateAddressUseCase,
+    this._updateNameUseCase,
   ) : super(const AccountState.guest()) {
     on<AccountAuthStateChanged>((event, emit) => emit(AccountState(user: event.user)));
     on<AccountSignInRequested>(_onSignInRequested);
@@ -43,6 +47,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     on<AccountPhoneOtpVerifyRequested>(_onPhoneOtpVerifyRequested);
     on<AccountGoogleSignInRequested>(_onGoogleSignInRequested);
     on<AccountPasswordResetRequested>(_onPasswordResetRequested);
+    on<AccountAddressUpdateRequested>(_onAddressUpdateRequested);
+    on<AccountNameUpdateRequested>(_onNameUpdateRequested);
 
     _authSubscription = _authRepository.authStateChanges.listen((user) => add(AccountAuthStateChanged(user)));
   }
@@ -56,6 +62,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final IsPhoneRegisteredUseCase _isPhoneRegisteredUseCase;
   final SignInWithGoogleUseCase _signInWithGoogleUseCase;
   final SendPasswordResetEmailUseCase _sendPasswordResetEmailUseCase;
+  final UpdateAddressUseCase _updateAddressUseCase;
+  final UpdateNameUseCase _updateNameUseCase;
 
   late final StreamSubscription<UserEntity?> _authSubscription;
 
@@ -145,6 +153,54 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     result.match(
       (failure) => emit(AccountState(user: state.user, errorMessage: failure.message)),
       (_) => emit(AccountState(user: state.user, passwordResetEmailSent: true)),
+    );
+  }
+
+  Future<void> _onAddressUpdateRequested(AccountAddressUpdateRequested event, Emitter<AccountState> emit) async {
+    final currentUser = state.user;
+    if (currentUser == null) return;
+
+    emit(AccountState(user: currentUser, isSubmitting: true));
+    final result = await _updateAddressUseCase(UpdateAddressParams(uid: currentUser.uid, address: event.address));
+    result.match(
+      (failure) => emit(AccountState(user: currentUser, errorMessage: failure.message)),
+      (_) => emit(
+        AccountState(
+          user: UserEntity(
+            uid: currentUser.uid,
+            email: currentUser.email,
+            name: currentUser.name,
+            phone: currentUser.phone,
+            role: currentUser.role,
+            address: event.address,
+          ),
+          addressUpdated: true,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onNameUpdateRequested(AccountNameUpdateRequested event, Emitter<AccountState> emit) async {
+    final currentUser = state.user;
+    if (currentUser == null) return;
+
+    emit(AccountState(user: currentUser, isSubmitting: true));
+    final result = await _updateNameUseCase(UpdateNameParams(uid: currentUser.uid, name: event.name));
+    result.match(
+      (failure) => emit(AccountState(user: currentUser, errorMessage: failure.message)),
+      (_) => emit(
+        AccountState(
+          user: UserEntity(
+            uid: currentUser.uid,
+            email: currentUser.email,
+            name: event.name,
+            phone: currentUser.phone,
+            role: currentUser.role,
+            address: currentUser.address,
+          ),
+          nameUpdated: true,
+        ),
+      ),
     );
   }
 

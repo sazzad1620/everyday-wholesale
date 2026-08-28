@@ -9,6 +9,8 @@ class AccountState extends Equatable {
     this.errorMessage,
     this.phoneVerificationId,
     this.passwordResetEmailSent = false,
+    this.addressUpdated = false,
+    this.nameUpdated = false,
   });
 
   const AccountState.guest() : this();
@@ -37,8 +39,24 @@ class AccountState extends Equatable {
   /// its own once anything else happens.
   final bool passwordResetEmailSent;
 
+  /// True for one state right after [AccountAddressUpdateRequested]
+  /// succeeds — same reset-on-next-action pattern as [passwordResetEmailSent].
+  final bool addressUpdated;
+
+  /// True for one state right after [AccountNameUpdateRequested] succeeds —
+  /// same reset-on-next-action pattern as [addressUpdated].
+  final bool nameUpdated;
+
   bool get isLoggedIn => user != null;
 
   @override
-  List<Object?> get props => [user, isSubmitting, errorMessage, phoneVerificationId, passwordResetEmailSent];
+  List<Object?> get props => [
+    user,
+    isSubmitting,
+    errorMessage,
+    phoneVerificationId,
+    passwordResetEmailSent,
+    addressUpdated,
+    nameUpdated,
+  ];
 }

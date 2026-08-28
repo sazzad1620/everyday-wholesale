@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/presentation/pages/account_page.dart';
+import '../../features/account/presentation/pages/address_form_page.dart';
+import '../../features/account/presentation/pages/edit_profile_page.dart';
 import '../../features/account/presentation/pages/order_history_page.dart';
 import '../../features/admin/presentation/pages/admin_category_form_page.dart';
 import '../../features/admin/presentation/pages/admin_product_form_page.dart';
@@ -130,6 +132,16 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.orderHistory,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const OrderHistoryPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.accountAddress,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const AddressFormPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.editProfile,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const EditProfilePage(),
     ),
     GoRoute(
       path: RoutePaths.checkout,

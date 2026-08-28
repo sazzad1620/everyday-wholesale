@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../entities/address_entity.dart';
 import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
@@ -40,4 +41,12 @@ abstract class AuthRepository {
   Future<Either<Failure, Unit>> sendPasswordResetEmail(String email);
 
   Future<Either<Failure, Unit>> signOut();
+
+  /// Overwrites the signed-in user's one saved delivery address.
+  Future<Either<Failure, Unit>> updateAddress({required String uid, required AddressEntity address});
+
+  /// Updates the signed-in user's display name — the only profile field
+  /// that's actually editable (email/phone are tied to the sign-in
+  /// credential itself and shown read-only instead).
+  Future<Either<Failure, Unit>> updateName({required String uid, required String name});
 }

@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/exceptions.dart';
+import '../models/address_model.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDatasource {
@@ -32,6 +33,10 @@ abstract class AuthRemoteDatasource {
   Future<void> sendPasswordResetEmail(String email);
 
   Future<void> signOut();
+
+  Future<void> updateAddress(String uid, AddressModel address);
+
+  Future<void> updateName(String uid, String name);
 }
 
 @LazySingleton(as: AuthRemoteDatasource)
@@ -212,6 +217,19 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     if (!kIsWeb) {
       await GoogleSignIn.instance.signOut();
     }
+  }
+
+  @override
+  Future<void> updateAddress(String uid, AddressModel address) =>
+      _firestore.collection(_usersCollection).doc(uid).update({'address': address.toMap()});
+
+  @override
+  Future<void> updateName(String uid, String name) async {
+    await _firestore.collection(_usersCollection).doc(uid).update({'name': name});
+    // Keeps the Auth profile's displayName in sync with Firestore's copy,
+    // same as `signUp` sets it initially — nothing reads Auth's copy today,
+    // but there's no reason to let the two silently drift apart.
+    await _firebaseAuth.currentUser?.updateDisplayName(name);
   }
 
   /// Reads the `users/{uid}` doc for role/name; falls back to the Auth

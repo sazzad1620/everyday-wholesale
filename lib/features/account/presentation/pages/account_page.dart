@@ -112,12 +112,12 @@ class _AccountBody extends StatelessWidget {
             _AccountRow(
               icon: Icons.edit_outlined,
               label: 'account.edit_profile'.tr(),
-              onTap: () => showComingSoonToast(context, 'account.edit_profile'.tr()),
+              onTap: () => context.push(RoutePaths.editProfile),
             ),
             _AccountRow(
               icon: Icons.location_on_outlined,
               label: 'account.address'.tr(),
-              onTap: () => showComingSoonToast(context, 'account.address'.tr()),
+              onTap: () => context.push(RoutePaths.accountAddress),
             ),
             _AccountRow(
               icon: Icons.receipt_long_outlined,

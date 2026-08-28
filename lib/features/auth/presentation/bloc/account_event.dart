@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/user_entity.dart';
 
 abstract class AccountEvent extends Equatable {
@@ -84,4 +85,22 @@ class AccountPasswordResetRequested extends AccountEvent {
 
   @override
   List<Object?> get props => [email];
+}
+
+class AccountAddressUpdateRequested extends AccountEvent {
+  const AccountAddressUpdateRequested(this.address);
+
+  final AddressEntity address;
+
+  @override
+  List<Object?> get props => [address];
+}
+
+class AccountNameUpdateRequested extends AccountEvent {
+  const AccountNameUpdateRequested(this.name);
+
+  final String name;
+
+  @override
+  List<Object?> get props => [name];
 }
