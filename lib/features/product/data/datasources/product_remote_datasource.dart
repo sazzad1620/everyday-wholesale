@@ -7,6 +7,8 @@ abstract class ProductRemoteDatasource {
   Future<List<ProductModel>> getProductsByCategory(String categoryId, {String? subcategoryId});
 
   Future<ProductModel?> getProductById(String id);
+
+  Future<List<ProductModel>> searchProducts(String query);
 }
 
 @LazySingleton(as: ProductRemoteDatasource)
@@ -34,5 +36,19 @@ class ProductRemoteDatasourceImpl implements ProductRemoteDatasource {
     final doc = await _firestore.collection(_productsCollection).doc(id).get();
     if (!doc.exists) return null;
     return ProductModel.fromMap(doc.data()!, id: doc.id);
+  }
+
+  @override
+  Future<List<ProductModel>> searchProducts(String query) async {
+    // Firestore has no case-insensitive substring query, and the catalog is
+    // small enough (tens of products) that fetching everything and filtering
+    // client-side is simpler and cheap enough — no search index service
+    // needed at this scale.
+    final snapshot = await _firestore.collection(_productsCollection).get();
+    final lowerQuery = query.toLowerCase();
+    return snapshot.docs
+        .map((doc) => ProductModel.fromMap(doc.data(), id: doc.id))
+        .where((product) => product.name.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 }

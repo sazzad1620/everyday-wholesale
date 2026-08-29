@@ -180,6 +180,9 @@
     "forgot_password": "Forgot password?",
     "password_reset_sent": "Check your email for a link to reset your password."
   },
+  "search": {
+    "empty_title": "No results found"
+  },
   "admin": {
     "panel_title": "Admin Panel",
     "logout": "Logout",

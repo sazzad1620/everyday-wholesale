@@ -2,7 +2,7 @@
 
 Single source of truth for what this app is, why it's built the way it is, the technical decisions behind it, and what's actually done vs. still to build. If a future decision contradicts this file, update this file in the same change. **§7 (Roadmap & Status) is the living checklist** — update it whenever a phase or task changes status; it should always reflect the real state of the code, not aspiration.
 
-> Companion docs: [BACKEND_SETUP.md](BACKEND_SETUP.md) (beginner-friendly Firebase console walkthrough), [IOS_SETUP.md](IOS_SETUP.md) (exact checklist for when Mac/Xcode access is available).
+> Companion docs: [BACKEND_SETUP.md](BACKEND_SETUP.md) (beginner-friendly Firebase console walkthrough), [IOS_SETUP.md](IOS_SETUP.md) (exact checklist for when Mac/Xcode access is available), [PAYMENTS_PLAN.md](PAYMENTS_PLAN.md) (Phase 6 sub-plan — Stripe integration broken into its own phased checklist).
 
 ## 1. Product
 
@@ -164,6 +164,7 @@ Firestore schema + swapping customer-facing mock data for real data, plus the 3 
 **Deferred to a follow-up pass — now done:**
 - [x] Address management — one saved address per account (not an address book), matching real usage: nothing in the app needs multiple addresses yet. New `AddressEntity`/`AddressModel` embedded as a Firestore map on `users/{uid}` (`AuthRepository.updateAddress`/`UpdateAddressUseCase`, `AccountBloc` gained `AccountAddressUpdateRequested`/`addressUpdated`). Fields follow the Japanese addressing convention (receiver name, phone, postal code, state/prefecture, city, street, chome-banchi-go, optional building name) since every address in the app is a Japanese one. New `AddressFormPage` (`/account/address`) is the single edit surface, reached from both Account > Address and the checkout delivery-address card's "Edit"/"Add" link — one saved address, one place to edit it, everywhere else just reads it. Checkout's `DeliveryAddressCard` now shows the real saved address (or a "no address saved" prompt) instead of mock text, and `CheckoutOrderPlaceRequested` now sends the real address/phone instead of the old placeholder strings; placing an order without a saved address shows a toast instead of silently using fake data. No Firestore rule changes needed (address is just a field within the existing owner-writable `users/{uid}` doc). `flutter analyze`/`flutter build web`/`flutter test` clean; live-browser check confirmed the app boots and every new file loads without error — the actual save/display flow wasn't driven end-to-end in-browser (no test account signed in this session)
 - [x] Edit profile UI — deliberately minimal: only the display name is actually editable (`AuthRepository.updateName`/`UpdateNameUseCase`, `AccountBloc` gained `AccountNameUpdateRequested`/`nameUpdated`, keeps Firebase Auth's `displayName` in sync too). Email and phone are shown but not editable — both are tied to the sign-in credential itself, and changing either for real is a Firebase re-authentication flow, not a plain field write. New `EditProfilePage` (`/account/edit-profile`, reached from the existing Account > Edit Profile row): all three fields use the same normal `AppInputStyle.decoration()` look/size as everywhere else in the app (no visual "locked" styling) — email/phone are just `readOnly: true` `TextFormField`s whose `onTap` shows a "Primary contact cannot be changed" toast instead of allowing input; the phone field is omitted entirely for accounts with none (email sign-ups). No Firestore rule changes needed. `flutter analyze`/`flutter build web`/`flutter test` clean; live-browser check confirmed every new file loads without error — the actual save flow wasn't driven end-to-end in-browser (no test account signed in this session)
+- [x] Product search — the header's `AppSearchBar` (Home/category/product-list pages) was a visual-only "coming soon" placeholder until now. It's a real text field in place now; typing opens a floating results dropdown anchored just below the bar (`OverlayEntry` + `CompositedTransformFollower`/`CompositedTransformTarget`, closed via `TapRegion.onTapOutside`) rather than navigating to a separate page — each row is a small thumbnail with the name and price (small, muted) below it, tapping one goes straight to that product's detail page. `ProductRepository`/`ProductRemoteDatasource` gained `searchProducts(query)` — fetches the `products` collection and filters client-side by case-insensitive substring match on name (no Firestore full-text search; the catalog is small enough that this is simpler than a prefix-range query or a search index service). New `SearchBloc`/`SearchProductsUseCase` debounce each keystroke ~350ms via a bumped request-id check (no extra `bloc_concurrency` dependency) before querying. `flutter analyze` clean, DI codegen regenerated — not driven end-to-end in-browser this session
 
 ### Phase 5 — Admin/manager side ✅ done
 
@@ -183,10 +184,7 @@ Firestore schema + swapping customer-facing mock data for real data, plus the 3 
 
 ### Phase 6 — Stripe payments ⬜
 
-- [ ] Firebase Cloud Function to create PaymentIntents (holds the Stripe secret key — can't be done client-side alone)
-- [ ] Customer-side payment flow (`flutter_stripe` package)
-- [ ] Admin-side payment/receipt visibility
-- [ ] Order status updates on payment success (Cloud Function or webhook)
+Big enough to warrant its own sub-plan — see **[PAYMENTS_PLAN.md](PAYMENTS_PLAN.md)** for the full architecture, decisions, and phased checklist (Cloud Functions backend → client payment flow → order status/history UI → admin visibility → production readiness). Check this item off only once every phase there is done.
 
 ### Phase 7 — iOS finalization & polish ⬜
 

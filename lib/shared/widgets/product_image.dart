@@ -6,9 +6,16 @@ import '../theme/app_colors.dart';
 /// uploads one, one plain generic placeholder so it reads as "no image set
 /// yet" rather than a designed icon.
 class ProductImage extends StatelessWidget {
-  const ProductImage({super.key, required this.imageUrl});
+  const ProductImage({super.key, required this.imageUrl, this.padding = 10});
 
   final String? imageUrl;
+
+  /// Inset around the real photo before its own rounding — the default
+  /// matches [CategoryImage]'s "photo sitting on a card" treatment for
+  /// grid/detail tiles. Compact contexts (small list-row thumbnails) should
+  /// pass `0` so the photo fills the tile instead of shrinking further
+  /// inside an already-small box.
+  final double padding;
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +27,8 @@ class ProductImage extends StatelessWidget {
           ),
         // Real admin uploads will be `https://` (Firebase Storage) URLs; a
         // bundled asset path is only ever a local demo stand-in for one.
-        // Inset with a little padding + its own rounding so the photo reads
-        // as a card sitting on the tile, rather than filling it edge to edge
-        // — matches CategoryImage's treatment of a real photo.
         final url => Padding(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(padding),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: url.startsWith('http')

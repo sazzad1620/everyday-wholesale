@@ -34,4 +34,13 @@ class ProductRepositoryImpl implements ProductRepository {
       return const Left(UnexpectedFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, List<ProductEntity>>> searchProducts(String query) async {
+    try {
+      return Right(await _datasource.searchProducts(query));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
 }
