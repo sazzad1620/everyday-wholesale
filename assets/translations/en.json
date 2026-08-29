@@ -219,7 +219,8 @@
     "error_product_unit_required": "Please enter a unit.",
     "product_category_hint": "Category",
     "category_required": "Please choose a category.",
-    "product_subcategory_hint": "Subcategory (optional)",
+    "product_subcategory_hint": "Subcategory",
+    "error_subcategory_required": "Please choose a subcategory.",
     "product_condition_hint": "Condition (e.g. Fresh, Frozen)",
     "error_product_condition_required": "Please enter a condition.",
     "product_origin_hint": "Origin (e.g. Bangladesh)",
@@ -230,6 +231,9 @@
     "delete_product_title": "Delete product?",
     "delete_product_message": "\"{name}\" will be permanently removed from the catalog.",
     "products_empty_title": "No products yet",
-    "products_empty_message": "Tap \"Add Product\" to create the first one."
+    "products_empty_message": "Tap \"Add Product\" to create the first one.",
+    "order_customer": "Contact",
+    "orders_empty_title": "No orders yet",
+    "orders_empty_message": "Orders placed by customers will show up here."
   }
 }

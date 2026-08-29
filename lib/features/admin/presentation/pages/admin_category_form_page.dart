@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../config/di/injection_container.dart';
 import '../../../../core/utils/slugify.dart';
@@ -13,15 +14,23 @@ import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../home/domain/entities/category_entity.dart';
 import '../../../home/domain/entities/subcategory_entity.dart';
+import '../../domain/usecases/upload_product_image_usecase.dart';
 import '../bloc/category_form_bloc.dart';
 import '../bloc/category_form_event.dart';
 import '../bloc/category_form_state.dart';
-import '../widgets/icon_picker.dart';
+import '../widgets/product_image_picker.dart';
 
 /// Add/edit form for a single category — pushed full-screen (root
-/// navigator) rather than a dialog, since the icon picker + variable-length
-/// subcategory list need real room, especially on desktop. `initial: null`
-/// means add mode; a non-null [CategoryEntity] means edit mode.
+/// navigator) rather than a dialog, since the variable-length subcategory
+/// list needs real room, especially on desktop. `initial: null` means add
+/// mode; a non-null [CategoryEntity] means edit mode.
+///
+/// Category/subcategory each get a real uploaded photo instead of the old
+/// icon-picker — same upload path products already use
+/// ([UploadProductImageUseCase], `product_images/` in Storage — the bucket
+/// path name is a leftover from products being first, but Storage doesn't
+/// care who uploads to it, so reusing it avoids a second Storage Rules
+/// entry for what's functionally the same operation).
 class AdminCategoryFormPage extends StatelessWidget {
   const AdminCategoryFormPage({super.key, this.initial});
 
@@ -37,13 +46,16 @@ class AdminCategoryFormPage extends StatelessWidget {
 }
 
 class _SubcategoryDraft {
-  _SubcategoryDraft({required this.id, required String name}) : controller = TextEditingController(text: name);
+  _SubcategoryDraft({required this.id, required String name, this.imageUrl})
+    : controller = TextEditingController(text: name);
 
   /// Empty for a subcategory newly added in this form — its id is derived
   /// from the name (via [slugify]) only at submit time. Fixed/unchanged for
   /// a subcategory that already existed, since products may reference it.
   final String id;
   final TextEditingController controller;
+  String? imageUrl;
+  bool isUploading = false;
 }
 
 class _CategoryFormView extends StatefulWidget {
@@ -58,9 +70,11 @@ class _CategoryFormView extends StatefulWidget {
 class _CategoryFormViewState extends State<_CategoryFormView> {
   final _formKey = GlobalKey<FormState>();
   late final _nameController = TextEditingController(text: widget.initial?.name ?? '');
-  String? _selectedIconKey;
+  String? _imageUrl;
+  bool _isUploadingImage = false;
   late final List<_SubcategoryDraft> _subcategories = [
-    for (final s in widget.initial?.subcategories ?? const []) _SubcategoryDraft(id: s.id, name: s.name),
+    for (final s in widget.initial?.subcategories ?? const [])
+      _SubcategoryDraft(id: s.id, name: s.name, imageUrl: s.imageUrl),
   ];
 
   bool get _isEditing => widget.initial != null;
@@ -68,7 +82,7 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
   @override
   void initState() {
     super.initState();
-    _selectedIconKey = widget.initial?.iconKey;
+    _imageUrl = widget.initial?.imageUrl;
   }
 
   @override
@@ -87,13 +101,33 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
     _subcategories.removeAt(index);
   });
 
+  Future<void> _pickAndUpload({
+    required VoidCallback onStart,
+    required VoidCallback onEnd,
+    required ValueChanged<String> onUploaded,
+  }) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600, imageQuality: 85);
+    if (picked == null || !mounted) return;
+
+    final bytes = await picked.readAsBytes();
+    final extension = picked.name.contains('.') ? picked.name.split('.').last : 'jpg';
+    if (!mounted) return;
+
+    onStart();
+    final result = await getIt<UploadProductImageUseCase>()(
+      UploadProductImageParams(bytes: bytes, fileExtension: extension),
+    );
+    if (!mounted) return;
+    onEnd();
+
+    result.match(
+      (failure) => AppToast.show(context, failure.message, type: ToastType.error),
+      onUploaded,
+    );
+  }
+
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
-    final iconKey = _selectedIconKey;
-    if (iconKey == null) {
-      AppToast.show(context, 'admin.category_icon_required'.tr(), type: ToastType.error);
-      return;
-    }
 
     final name = _nameController.text.trim();
     final id = widget.initial?.id ?? slugify(name);
@@ -103,6 +137,7 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
           SubcategoryEntity(
             id: draft.id.isNotEmpty ? draft.id : slugify(draft.controller.text.trim()),
             name: draft.controller.text.trim(),
+            imageUrl: draft.imageUrl,
           ),
     ];
 
@@ -111,8 +146,11 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
         category: CategoryEntity(
           id: id,
           name: name,
-          iconKey: iconKey,
-          imageUrl: widget.initial?.imageUrl,
+          // No longer admin-picked — the customer-facing card only ever
+          // showed `imageUrl` anyway (see `CategoryImage`), this is kept
+          // only because `CategoryEntity`/existing docs still carry it.
+          iconKey: widget.initial?.iconKey ?? id,
+          imageUrl: _imageUrl,
           subcategories: subcategories,
         ),
         isEditing: _isEditing,
@@ -145,6 +183,16 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.md),
               children: [
+                ProductImagePicker(
+                  imageUrl: _imageUrl,
+                  isUploading: _isUploadingImage,
+                  onTap: () => _pickAndUpload(
+                    onStart: () => setState(() => _isUploadingImage = true),
+                    onEnd: () => setState(() => _isUploadingImage = false),
+                    onUploaded: (url) => setState(() => _imageUrl = url),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: _nameController,
                   decoration: AppInputStyle.decoration(hintText: 'admin.category_name_hint'.tr(), radius: 14),
@@ -153,10 +201,6 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
                     return null;
                   },
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                Text('admin.category_icon_label'.tr(), style: AppTextStyles.title),
-                const SizedBox(height: AppSpacing.sm),
-                IconPicker(selectedKey: _selectedIconKey, onSelected: (key) => setState(() => _selectedIconKey = key)),
                 const SizedBox(height: AppSpacing.lg),
                 Row(
                   children: [
@@ -169,9 +213,21 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
                 ),
                 for (var i = 0; i < _subcategories.length; i++)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        ProductImagePicker(
+                          size: 56,
+                          imageUrl: _subcategories[i].imageUrl,
+                          isUploading: _subcategories[i].isUploading,
+                          onTap: () => _pickAndUpload(
+                            onStart: () => setState(() => _subcategories[i].isUploading = true),
+                            onEnd: () => setState(() => _subcategories[i].isUploading = false),
+                            onUploaded: (url) => setState(() => _subcategories[i].imageUrl = url),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: TextFormField(
                             controller: _subcategories[i].controller,

@@ -9,11 +9,18 @@ import '../../../../shared/widgets/product_image.dart';
 /// just renders whatever [imageUrl]/[isUploading] it's handed and reports
 /// taps back via [onTap].
 class ProductImagePicker extends StatelessWidget {
-  const ProductImagePicker({super.key, required this.imageUrl, required this.isUploading, required this.onTap});
+  const ProductImagePicker({
+    super.key,
+    required this.imageUrl,
+    required this.isUploading,
+    required this.onTap,
+    this.size = 140,
+  });
 
   final String? imageUrl;
   final bool isUploading;
   final VoidCallback onTap;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +29,8 @@ class ProductImagePicker extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Container(
-            width: 140,
-            height: 140,
+            width: size,
+            height: size,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
             clipBehavior: Clip.antiAlias,
             child: isUploading

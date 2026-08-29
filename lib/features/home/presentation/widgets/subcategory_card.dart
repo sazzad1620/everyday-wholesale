@@ -39,10 +39,7 @@ class SubcategoryCard extends StatelessWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 1,
-                  // Subcategories don't carry their own photo yet — falls
-                  // back to CategoryImage's generic placeholder, same as a
-                  // category with no imageUrl set.
-                  child: CategoryImage(imageUrl: null, backgroundColor: tileColor),
+                  child: CategoryImage(imageUrl: subcategory.imageUrl, backgroundColor: tileColor),
                 ),
                 Expanded(
                   child: Container(

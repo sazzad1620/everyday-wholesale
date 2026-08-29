@@ -12,6 +12,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../../shared/widgets/inputs/app_dropdown_field.dart';
 import '../../../home/domain/entities/category_entity.dart';
 import '../../../home/domain/usecases/get_categories_usecase.dart';
 import '../../../product/domain/entities/product_entity.dart';
@@ -232,29 +233,35 @@ class _ProductFormViewState extends State<_ProductFormView> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                DropdownButtonFormField<String>(
+                AppDropdownField<String>(
                   initialValue: _selectedCategoryId,
-                  decoration: AppInputStyle.decoration(hintText: 'admin.product_category_hint'.tr(), radius: 14),
+                  hintText: 'admin.product_category_hint'.tr(),
+                  radius: 14,
                   items: [
                     for (final category in _categories)
-                      DropdownMenuItem(value: category.id, child: Text(category.name)),
+                      AppDropdownItem(value: category.id, label: category.name),
                   ],
                   onChanged: _onCategoryChanged,
                   validator: (value) => value == null ? 'admin.category_required'.tr() : null,
                 ),
                 if (subcategories.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
-                  DropdownButtonFormField<String>(
+                  AppDropdownField<String>(
+                    // Remounts on category change so a subcategory picked
+                    // under the previous category doesn't visually linger —
+                    // `_onCategoryChanged` already resets the underlying
+                    // value, but a `FormField`'s `initialValue` only applies
+                    // once, not on every rebuild.
+                    key: ValueKey(_selectedCategoryId),
                     initialValue: _selectedSubcategoryId,
-                    decoration: AppInputStyle.decoration(
-                      hintText: 'admin.product_subcategory_hint'.tr(),
-                      radius: 14,
-                    ),
+                    hintText: 'admin.product_subcategory_hint'.tr(),
+                    radius: 14,
                     items: [
                       for (final subcategory in subcategories)
-                        DropdownMenuItem(value: subcategory.id, child: Text(subcategory.name)),
+                        AppDropdownItem(value: subcategory.id, label: subcategory.name),
                     ],
                     onChanged: (value) => setState(() => _selectedSubcategoryId = value),
+                    validator: (value) => value == null ? 'admin.error_subcategory_required'.tr() : null,
                   ),
                 ],
                 const SizedBox(height: AppSpacing.sm),

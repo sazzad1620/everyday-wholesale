@@ -150,59 +150,66 @@ class _ProductTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 0,
-      child: InkWell(
+    // Same recipe as `ProductCard`/`_StatCard`: the outer `Container` owns
+    // shape/fill/shadow, a transparent `Material`+`InkWell` inside it just
+    // supplies the ripple — not the other way around, which is what made
+    // these tiles render as a flat gray block instead of a white card
+    // (`Material`'s `borderRadius` is only honored for `MaterialType.card`,
+    // so it was silently ignored, and the inner `Container` had no fill).
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
-            ],
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: const Icon(Icons.inventory_2_rounded, color: AppColors.primary),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(product.name, style: AppTextStyles.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Text(
-                      '${formatYen(product.price)} · ${product.unit}',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: const Icon(Icons.inventory_2_rounded, color: AppColors.primary),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(product.name, style: AppTextStyles.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(
+                        '${formatYen(product.price)} · ${product.unit}',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!product.inStock)
+                  Container(
+                    margin: const EdgeInsets.only(right: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
-                ),
-              ),
-              if (!product.inStock)
-                Container(
-                  margin: const EdgeInsets.only(right: AppSpacing.sm),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    child: Text(
+                      'product.out_of_stock'.tr(),
+                      style: AppTextStyles.caption.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
+                    ),
                   ),
-                  child: Text(
-                    'product.out_of_stock'.tr(),
-                    style: AppTextStyles.caption.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                  onPressed: onDelete,
                 ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                onPressed: onDelete,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -29,6 +29,6 @@ class CategoryModel extends CategoryEntity {
     'name': name,
     'iconKey': iconKey,
     'imageUrl': imageUrl,
-    'subcategories': subcategories.map((s) => SubcategoryModel(id: s.id, name: s.name).toMap()).toList(),
+    'subcategories': subcategories.map((s) => SubcategoryModel(id: s.id, name: s.name, imageUrl: s.imageUrl).toMap()).toList(),
   };
 }

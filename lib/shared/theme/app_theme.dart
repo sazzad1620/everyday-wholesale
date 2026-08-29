@@ -23,6 +23,12 @@ abstract final class AppTheme {
         textTheme: const TextTheme(
           headlineSmall: AppTextStyles.headline,
           titleMedium: AppTextStyles.title,
+          // `bodyLarge` is what TextField/TextFormField actually use for
+          // their input/hint text when no explicit `style:` is set — left
+          // at Material's own default before, so every plain text field in
+          // the app rendered a couple points larger than the app's own
+          // 14sp `AppTextStyles.body` by accident, not by design.
+          bodyLarge: AppTextStyles.body,
           bodyMedium: AppTextStyles.body,
           bodySmall: AppTextStyles.caption,
         ),
@@ -46,6 +52,7 @@ abstract final class AppTheme {
         textTheme: const TextTheme(
           headlineSmall: AppTextStyles.headline,
           titleMedium: AppTextStyles.title,
+          bodyLarge: AppTextStyles.body,
           bodyMedium: AppTextStyles.body,
           bodySmall: AppTextStyles.caption,
         ),

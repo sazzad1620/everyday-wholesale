@@ -150,47 +150,53 @@ class _CategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 0,
-      child: InkWell(
+    // Same recipe as `ProductCard`/`_StatCard`: outer `Container` owns
+    // shape/fill/shadow, transparent `Material`+`InkWell` inside just
+    // supplies the ripple (see `_ProductTile` in admin_products_page.dart
+    // for why the previous Material-outer/Container-inner layering rendered
+    // as a flat gray block instead of a proper white card).
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
-            ],
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: Icon(iconForCategory(category.iconKey), color: AppColors.primary),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(category.name, style: AppTextStyles.title),
-                    if (category.subcategories.isNotEmpty)
-                      Text(
-                        'admin.subcategory_count'.tr(namedArgs: {'count': '${category.subcategories.length}'}),
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-                      ),
-                  ],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: Icon(iconForCategory(category.iconKey), color: AppColors.primary),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                onPressed: onDelete,
-              ),
-            ],
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(category.name, style: AppTextStyles.title),
+                      if (category.subcategories.isNotEmpty)
+                        Text(
+                          'admin.subcategory_count'.tr(namedArgs: {'count': '${category.subcategories.length}'}),
+                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                        ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                  onPressed: onDelete,
+                ),
+              ],
+            ),
           ),
         ),
       ),

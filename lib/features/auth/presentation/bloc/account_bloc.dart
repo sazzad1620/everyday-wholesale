@@ -38,7 +38,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     this._sendPasswordResetEmailUseCase,
     this._updateAddressUseCase,
     this._updateNameUseCase,
-  ) : super(const AccountState.guest()) {
+  ) : super(const AccountState.initial()) {
     on<AccountAuthStateChanged>((event, emit) => emit(AccountState(user: event.user)));
     on<AccountSignInRequested>(_onSignInRequested);
     on<AccountSignUpRequested>(_onSignUpRequested);

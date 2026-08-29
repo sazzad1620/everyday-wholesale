@@ -3,20 +3,23 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/utils/responsive/responsive_builder.dart';
 import '../../../../shared/theme/app_colors.dart';
-import '../widgets/admin_header.dart';
+import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../account/presentation/pages/account_page.dart';
+import '../widgets/admin_menu_drawer.dart';
 import 'admin_categories_page.dart';
 import 'admin_dashboard_page.dart';
 import 'admin_orders_page.dart';
 import 'admin_products_page.dart';
 
-/// Root of the admin/manager side — a responsive nav shell (bottom nav on
-/// phone, a side rail on tablet/desktop, using the same [ResponsiveBuilder]
-/// the rest of the app uses) around 4 sections. Reached only via `/admin`,
-/// which is route-guarded to `role: admin` accounts (see `app_router.dart`).
-///
-/// Deliberately its own shell, not [MainShell]/[StandaloneShellScaffold] —
-/// this is a back-office context (no drawer, no cart, no category browsing),
-/// so reusing the customer chrome would drag in irrelevant pieces.
+/// Root of the admin/manager side. Header is the plain shared [AppHeader]
+/// (logo + hamburger + account icon, no search bar) — same look as every
+/// customer page, rather than a bespoke admin header. Navigation is a
+/// [AdminMenuDrawer] opened from that hamburger on every breakpoint, plus an
+/// always-visible `NavigationRail` on tablet/desktop where there's room for
+/// both. No bottom `NavigationBar` on mobile anymore — a drawer is the
+/// standard admin-panel pattern (Shopify, Firebase console, etc.), and it
+/// unifies the interaction model with the customer side's own
+/// hamburger-opens-drawer navigation instead of running two different ones.
 class AdminShellPage extends StatefulWidget {
   const AdminShellPage({super.key});
 
@@ -25,15 +28,16 @@ class AdminShellPage extends StatefulWidget {
 }
 
 class _AdminShellPageState extends State<AdminShellPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
   static const _pages = [AdminDashboardPage(), AdminProductsPage(), AdminCategoriesPage(), AdminOrdersPage()];
 
-  List<_AdminDestination> _destinations() => [
-    _AdminDestination(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard_rounded, label: 'admin.nav_dashboard'.tr()),
-    _AdminDestination(icon: Icons.inventory_2_outlined, selectedIcon: Icons.inventory_2_rounded, label: 'admin.nav_products'.tr()),
-    _AdminDestination(icon: Icons.category_outlined, selectedIcon: Icons.category_rounded, label: 'admin.nav_categories'.tr()),
-    _AdminDestination(icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long_rounded, label: 'admin.nav_orders'.tr()),
+  List<AdminDestination> _destinations() => [
+    AdminDestination(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard_rounded, label: 'admin.nav_dashboard'.tr()),
+    AdminDestination(icon: Icons.inventory_2_outlined, selectedIcon: Icons.inventory_2_rounded, label: 'admin.nav_products'.tr()),
+    AdminDestination(icon: Icons.category_outlined, selectedIcon: Icons.category_rounded, label: 'admin.nav_categories'.tr()),
+    AdminDestination(icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long_rounded, label: 'admin.nav_orders'.tr()),
   ];
 
   void _select(int index) => setState(() => _selectedIndex = index);
@@ -41,98 +45,71 @@ class _AdminShellPageState extends State<AdminShellPage> {
   @override
   Widget build(BuildContext context) {
     final destinations = _destinations();
-    return ResponsiveBuilder(
-      mobile: (context) => _MobileAdminShell(
-        selectedIndex: _selectedIndex,
-        onSelect: _select,
-        destinations: destinations,
-        pages: _pages,
-      ),
-      desktop: (context) => _DesktopAdminShell(
-        selectedIndex: _selectedIndex,
-        onSelect: _select,
-        destinations: destinations,
-        pages: _pages,
-      ),
-    );
-  }
-}
 
-class _AdminDestination {
-  const _AdminDestination({required this.icon, required this.selectedIcon, required this.label});
-
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
-}
-
-class _MobileAdminShell extends StatelessWidget {
-  const _MobileAdminShell({
-    required this.selectedIndex,
-    required this.onSelect,
-    required this.destinations,
-    required this.pages,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onSelect;
-  final List<_AdminDestination> destinations;
-  final List<Widget> pages;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      appBar: const AdminHeader(),
-      body: SafeArea(top: false, child: IndexedStack(index: selectedIndex, children: pages)),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onSelect,
-        destinations: [
-          for (final d in destinations) NavigationDestination(icon: Icon(d.icon), selectedIcon: Icon(d.selectedIcon), label: d.label),
-        ],
-      ),
-    );
-  }
-}
-
-class _DesktopAdminShell extends StatelessWidget {
-  const _DesktopAdminShell({
-    required this.selectedIndex,
-    required this.onSelect,
-    required this.destinations,
-    required this.pages,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onSelect;
-  final List<_AdminDestination> destinations;
-  final List<Widget> pages;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const AdminHeader(),
+      drawer: AdminMenuDrawer(selectedIndex: _selectedIndex, onSelect: _select, destinations: destinations),
       body: SafeArea(
-        top: false,
-        child: Row(
+        child: Column(
           children: [
-            NavigationRail(
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onSelect,
-              labelType: NavigationRailLabelType.all,
-              backgroundColor: AppColors.surface,
-              destinations: [
-                for (final d in destinations)
-                  NavigationRailDestination(icon: Icon(d.icon), selectedIcon: Icon(d.selectedIcon), label: Text(d.label)),
-              ],
+            AppHeader(
+              showSearchBar: false,
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+              onAccountTap: () => openAccountMenu(context),
             ),
-            VerticalDivider(width: 1, color: AppColors.textSecondary.withValues(alpha: 0.15)),
-            Expanded(child: IndexedStack(index: selectedIndex, children: pages)),
+            Expanded(
+              child: ResponsiveBuilder(
+                mobile: (context) => IndexedStack(index: _selectedIndex, children: _pages),
+                desktop: (context) => _DesktopAdminBody(
+                  selectedIndex: _selectedIndex,
+                  onSelect: _select,
+                  destinations: destinations,
+                  pages: _pages,
+                ),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Tablet/desktop keeps an always-visible `NavigationRail` alongside the
+/// drawer (there's room for both, and a persistent rail is the expected
+/// desktop-admin pattern) — the drawer just becomes a second, optional way
+/// in on wide screens rather than mobile's only way.
+class _DesktopAdminBody extends StatelessWidget {
+  const _DesktopAdminBody({
+    required this.selectedIndex,
+    required this.onSelect,
+    required this.destinations,
+    required this.pages,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelect;
+  final List<AdminDestination> destinations;
+  final List<Widget> pages;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        NavigationRail(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onSelect,
+          labelType: NavigationRailLabelType.all,
+          backgroundColor: AppColors.surface,
+          destinations: [
+            for (final d in destinations)
+              NavigationRailDestination(icon: Icon(d.icon), selectedIcon: Icon(d.selectedIcon), label: Text(d.label)),
+          ],
+        ),
+        VerticalDivider(width: 1, color: AppColors.textSecondary.withValues(alpha: 0.15)),
+        Expanded(child: IndexedStack(index: selectedIndex, children: pages)),
+      ],
     );
   }
 }

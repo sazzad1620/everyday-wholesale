@@ -11,11 +11,26 @@ class AccountState extends Equatable {
     this.passwordResetEmailSent = false,
     this.addressUpdated = false,
     this.nameUpdated = false,
+    this.isInitializing = false,
   });
 
   const AccountState.guest() : this();
 
+  /// The bloc's actual startup state — [isInitializing] starts true here and
+  /// nowhere else, since this is the only state that exists before Firebase
+  /// Auth has had a chance to say whether a session is already persisted.
+  const AccountState.initial() : this(isInitializing: true);
+
   final UserEntity? user;
+
+  /// True only for the app's very first [AccountState], before Firebase
+  /// Auth's persisted session (if any) has been checked — flips to false
+  /// permanently on the first [AccountAuthStateChanged], whether that
+  /// resolves to a signed-in user or confirms there's none. Lets a one-time
+  /// startup decision (the splash screen routing an already-signed-in admin
+  /// straight to `/admin`) tell "haven't checked yet" apart from "checked,
+  /// and it's a guest" — [user] being null alone can't distinguish those.
+  final bool isInitializing;
 
   /// True while a sign-in/sign-up/sign-out/phone-otp call is in flight —
   /// drives the loading spinner on the dialogs' submit/send/verify buttons.
@@ -58,5 +73,6 @@ class AccountState extends Equatable {
     passwordResetEmailSent,
     addressUpdated,
     nameUpdated,
+    isInitializing,
   ];
 }

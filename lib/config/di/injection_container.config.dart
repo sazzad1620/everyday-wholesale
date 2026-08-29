@@ -15,18 +15,24 @@ import 'package:everyday_wholesale/features/admin/data/datasources/admin_categor
     as _i980;
 import 'package:everyday_wholesale/features/admin/data/datasources/admin_dashboard_remote_datasource.dart'
     as _i660;
+import 'package:everyday_wholesale/features/admin/data/datasources/admin_order_remote_datasource.dart'
+    as _i714;
 import 'package:everyday_wholesale/features/admin/data/datasources/admin_product_remote_datasource.dart'
     as _i1029;
 import 'package:everyday_wholesale/features/admin/data/repositories/admin_category_repository_impl.dart'
     as _i755;
 import 'package:everyday_wholesale/features/admin/data/repositories/admin_dashboard_repository_impl.dart'
     as _i702;
+import 'package:everyday_wholesale/features/admin/data/repositories/admin_order_repository_impl.dart'
+    as _i99;
 import 'package:everyday_wholesale/features/admin/data/repositories/admin_product_repository_impl.dart'
     as _i402;
 import 'package:everyday_wholesale/features/admin/domain/repositories/admin_category_repository.dart'
     as _i271;
 import 'package:everyday_wholesale/features/admin/domain/repositories/admin_dashboard_repository.dart'
     as _i444;
+import 'package:everyday_wholesale/features/admin/domain/repositories/admin_order_repository.dart'
+    as _i147;
 import 'package:everyday_wholesale/features/admin/domain/repositories/admin_product_repository.dart'
     as _i205;
 import 'package:everyday_wholesale/features/admin/domain/usecases/create_category_usecase.dart'
@@ -37,16 +43,22 @@ import 'package:everyday_wholesale/features/admin/domain/usecases/delete_categor
     as _i891;
 import 'package:everyday_wholesale/features/admin/domain/usecases/delete_product_usecase.dart'
     as _i634;
+import 'package:everyday_wholesale/features/admin/domain/usecases/get_all_orders_usecase.dart'
+    as _i724;
 import 'package:everyday_wholesale/features/admin/domain/usecases/get_all_products_usecase.dart'
     as _i598;
 import 'package:everyday_wholesale/features/admin/domain/usecases/get_dashboard_stats_usecase.dart'
     as _i1031;
 import 'package:everyday_wholesale/features/admin/domain/usecases/update_category_usecase.dart'
     as _i412;
+import 'package:everyday_wholesale/features/admin/domain/usecases/update_order_status_usecase.dart'
+    as _i514;
 import 'package:everyday_wholesale/features/admin/domain/usecases/update_product_usecase.dart'
     as _i955;
 import 'package:everyday_wholesale/features/admin/domain/usecases/upload_product_image_usecase.dart'
     as _i38;
+import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_order_list_bloc.dart'
+    as _i482;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_product_form_bloc.dart'
     as _i676;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_product_list_bloc.dart'
@@ -260,6 +272,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i581.ProductRemoteDatasource>(),
       ),
     );
+    gh.lazySingleton<_i714.AdminOrderRemoteDatasource>(
+      () => _i714.AdminOrderRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
     gh.factory<_i353.GetCategoriesUseCase>(
       () => _i353.GetCategoriesUseCase(gh<_i339.HomeRepository>()),
     );
@@ -359,6 +374,16 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i175.CartRepository>(
       () => _i184.CartRepositoryImpl(gh<_i490.CartRemoteDatasource>()),
     );
+    gh.lazySingleton<_i147.AdminOrderRepository>(
+      () =>
+          _i99.AdminOrderRepositoryImpl(gh<_i714.AdminOrderRemoteDatasource>()),
+    );
+    gh.factory<_i724.GetAllOrdersUseCase>(
+      () => _i724.GetAllOrdersUseCase(gh<_i147.AdminOrderRepository>()),
+    );
+    gh.factory<_i514.UpdateOrderStatusUseCase>(
+      () => _i514.UpdateOrderStatusUseCase(gh<_i147.AdminOrderRepository>()),
+    );
     gh.factory<_i676.AdminProductFormBloc>(
       () => _i676.AdminProductFormBloc(
         gh<_i291.CreateProductUseCase>(),
@@ -406,6 +431,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i577.SendPasswordResetEmailUseCase>(),
         gh<_i379.UpdateAddressUseCase>(),
         gh<_i171.UpdateNameUseCase>(),
+      ),
+    );
+    gh.factory<_i482.AdminOrderListBloc>(
+      () => _i482.AdminOrderListBloc(
+        gh<_i724.GetAllOrdersUseCase>(),
+        gh<_i514.UpdateOrderStatusUseCase>(),
       ),
     );
     gh.factory<_i695.CreateCategoryUseCase>(
