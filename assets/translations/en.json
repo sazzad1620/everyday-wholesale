@@ -150,6 +150,18 @@
     "items_title": "Items",
     "item_meta": "{unit} • Qty {quantity}"
   },
+  "my_reviews": {
+    "title": "My Reviews",
+    "tab_to_be_reviewed": "To Be Reviewed",
+    "tab_history": "History",
+    "to_be_reviewed_empty_title": "Nothing to review",
+    "to_be_reviewed_empty_message": "Products from your completed orders will show up here for you to rate.",
+    "history_empty_title": "No reviews yet",
+    "history_empty_message": "Reviews you submit will show up here.",
+    "rate_prompt": "Rate this product",
+    "purchased_on": "Purchased {date}",
+    "reviewed_on": "Reviewed {date}"
+  },
   "auth": {
     "sign_in_title": "Sign In",
     "sign_in_subtitle": "Sign in to track orders, save addresses, and check out faster.",
@@ -192,6 +204,7 @@
     "nav_products": "Products",
     "nav_categories": "Categories",
     "nav_orders": "Orders",
+    "nav_user_reviews": "User Reviews",
     "section_coming_soon": "Coming soon.",
     "dashboard_greeting": "Welcome, {name}",
     "stat_products": "Products",
@@ -238,6 +251,9 @@
     "products_empty_title": "No products yet",
     "products_empty_message": "Tap \"Add Product\" to create the first one.",
     "orders_empty_title": "No orders yet",
-    "orders_empty_message": "Orders placed by customers will show up here."
+    "orders_empty_message": "Orders placed by customers will show up here.",
+    "reviews_empty_title": "No reviews yet",
+    "reviews_empty_message": "Reviews submitted by customers will show up here.",
+    "reviewed_by": "by {name}"
   }
 }

@@ -179,7 +179,6 @@ Map<String, dynamic> _product({
   String? subcategoryId,
   String? imageUrl,
   bool inStock = true,
-  List<Map<String, dynamic>> reviews = const [],
 }) {
   return {
     'name': name,
@@ -193,13 +192,13 @@ Map<String, dynamic> _product({
     'description': description,
     'imageUrl': imageUrl,
     'inStock': inStock,
-    'reviews': reviews,
+    // No seeded rating/review data — real reviews start from real orders
+    // now (see the `review` feature), so every product starts at 0/0.
+    'ratingSum': 0,
+    'reviewCount': 0,
     'id': id, // stripped before writing (used only as the doc ID below)
   };
 }
-
-Map<String, dynamic> _review(String name, double rating, String comment) =>
-    {'reviewerName': name, 'rating': rating, 'comment': comment};
 
 // Same 25 products the old product_mock_datasource.dart hardcoded.
 final List<Map<String, dynamic>> _products = [
@@ -215,11 +214,6 @@ final List<Map<String, dynamic>> _products = [
     description:
         'A rich, syrup-soaked Bengali sweet made the traditional way — soft, delicately sweet, and perfect '
         'for celebrations or an everyday treat.',
-    reviews: [
-      _review('Rashed Karim', 5, 'Tastes just like home. Will order again!'),
-      _review('Nusrat Jahan', 4, 'Sweet and fresh, arrived well packed.'),
-      _review('Imran Hossain', 5, 'Best chom chom I have had in Japan.'),
-    ],
   ),
   _product(
     id: 'mp_2',
@@ -267,11 +261,6 @@ final List<Map<String, dynamic>> _products = [
     description:
         'Halal-certified whole chicken, expertly cut for convenience and sourced from trusted suppliers. Ideal '
         'for roasting, curries, or grilling, and a favourite among our regular customers.',
-    reviews: [
-      _review('Shakil Ahmed', 5, 'Very fresh and cut exactly as described.'),
-      _review('Maisha Tabassum', 5, 'Great quality, perfect for curry.'),
-      _review('Tanvir Alam', 4, 'Good value for 1kg, delivery was quick.'),
-    ],
   ),
   _product(
     id: 'mf_2',
@@ -483,10 +472,6 @@ final List<Map<String, dynamic>> _products = [
     description:
         'Halal-certified beef salami, thinly sliced and ready to serve — great for sandwiches, platters, or a '
         'quick snack.',
-    reviews: [
-      _review('Farhana Akter', 5, 'Delicious and properly Halal certified.'),
-      _review('Kamal Hasan', 4, 'Nice texture, good for sandwiches.'),
-    ],
   ),
   _product(
     id: 'hp_2',
@@ -522,11 +507,6 @@ final List<Map<String, dynamic>> _products = [
     description:
         'Long-grain aromatic Basmati rice, aged for extra fragrance and fluffiness — a pantry essential for '
         'biryani, pulao, and everyday meals.',
-    reviews: [
-      _review('Sabbir Rahman', 5, 'Excellent aroma, cooks perfectly every time.'),
-      _review('Ayesha Siddika', 4, 'Good quality rice, a bit pricey but worth it.'),
-      _review('Jahid Hasan', 5, 'Best basmati rice available locally.'),
-    ],
   ),
   _product(
     id: 'rg_2',

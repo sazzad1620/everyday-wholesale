@@ -16,6 +16,7 @@ import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../cart/presentation/bloc/cart_event.dart';
+import '../../../review/domain/entities/review_entity.dart';
 import '../../../wishlist/presentation/bloc/wishlist_bloc.dart';
 import '../../../wishlist/presentation/bloc/wishlist_event.dart';
 import '../../../wishlist/presentation/bloc/wishlist_state.dart';
@@ -28,9 +29,10 @@ import 'product_info_row.dart';
 /// count for this product (that lives in `CartBloc`). Tapping "Add to Cart"
 /// dispatches into the shared cart and resets this back to 1.
 class ProductDetailContent extends StatefulWidget {
-  const ProductDetailContent({super.key, required this.product});
+  const ProductDetailContent({super.key, required this.product, this.reviews = const []});
 
   final ProductEntity product;
+  final List<ReviewEntity> reviews;
 
   @override
   State<ProductDetailContent> createState() => _ProductDetailContentState();
@@ -110,7 +112,7 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
           const SizedBox(height: AppSpacing.lg),
           const ProductHighlightBoxes(),
           const SizedBox(height: AppSpacing.lg),
-          ProductDetailTabs(product: product),
+          ProductDetailTabs(product: product, reviews: widget.reviews),
         ],
       ),
     );

@@ -6,6 +6,7 @@ import '../../features/account/presentation/pages/address_form_page.dart';
 import '../../features/account/presentation/pages/edit_profile_page.dart';
 import '../../features/account/presentation/pages/order_detail_page.dart';
 import '../../features/account/presentation/pages/order_history_page.dart';
+import '../../features/admin/presentation/pages/admin_account_page.dart';
 import '../../features/admin/presentation/pages/admin_category_form_page.dart';
 import '../../features/admin/presentation/pages/admin_order_detail_page.dart';
 import '../../features/admin/presentation/pages/admin_product_form_page.dart';
@@ -20,6 +21,7 @@ import '../../features/order/domain/entities/order_entity.dart';
 import '../../features/product/domain/entities/product_entity.dart';
 import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
+import '../../features/review/presentation/pages/my_reviews_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
 import '../../shared/widgets/navigation/main_shell.dart';
@@ -40,9 +42,25 @@ final GoRouter appRouter = GoRouter(
   // out until the next tap.
   refreshListenable: GoRouterRefreshStream(getIt<AccountBloc>().stream),
   redirect: (context, state) {
-    if (!state.matchedLocation.startsWith(RoutePaths.admin)) return null;
+    final location = state.matchedLocation;
     final isAdmin = getIt<AccountBloc>().state.user?.isAdmin ?? false;
-    return isAdmin ? null : RoutePaths.home;
+
+    if (location.startsWith(RoutePaths.admin)) {
+      return isAdmin ? null : RoutePaths.home;
+    }
+
+    // An admin should never land in the customer storefront (bottom-nav
+    // Home/Wishlist/Cart) — e.g. a stale link, the browser back button on
+    // web, or anything else outside the admin's own navigation. Bounce
+    // straight back to the dashboard instead.
+    final isCustomerShellRoute =
+        location == RoutePaths.home ||
+        location.startsWith('${RoutePaths.home}/') ||
+        location == RoutePaths.wishlist ||
+        location == RoutePaths.cart;
+    if (isAdmin && isCustomerShellRoute) return RoutePaths.admin;
+
+    return null;
   },
   routes: [
     GoRoute(
@@ -121,6 +139,11 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const AdminShellPage(),
     ),
     GoRoute(
+      path: RoutePaths.adminAccount,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const AdminAccountPage(),
+    ),
+    GoRoute(
       path: RoutePaths.adminCategoryForm,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => AdminCategoryFormPage(initial: state.extra as CategoryEntity?),
@@ -134,6 +157,11 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.orderHistory,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const OrderHistoryPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.myReviews,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const MyReviewsPage(),
     ),
     GoRoute(
       path: RoutePaths.orderDetail,

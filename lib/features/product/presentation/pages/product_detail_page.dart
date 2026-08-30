@@ -129,8 +129,8 @@ class _ProductDetailBody extends StatelessWidget {
       );
     }
 
-    final product = (state as ProductDetailLoaded).product;
+    final loaded = state as ProductDetailLoaded;
 
-    return SingleChildScrollView(child: ProductDetailContent(product: product));
+    return SingleChildScrollView(child: ProductDetailContent(product: loaded.product, reviews: loaded.reviews));
   }
 }

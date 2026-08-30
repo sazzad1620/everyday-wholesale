@@ -65,6 +65,8 @@ import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_produc
     as _i676;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_product_list_bloc.dart'
     as _i568;
+import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_review_list_bloc.dart'
+    as _i430;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/category_form_bloc.dart'
     as _i363;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/category_list_bloc.dart'
@@ -106,7 +108,7 @@ import 'package:everyday_wholesale/features/cart/data/repositories/cart_reposito
 import 'package:everyday_wholesale/features/cart/domain/repositories/cart_repository.dart'
     as _i175;
 import 'package:everyday_wholesale/features/cart/domain/usecases/add_to_cart_usecase.dart'
-    as _i430;
+    as _i431;
 import 'package:everyday_wholesale/features/cart/domain/usecases/clear_cart_usecase.dart'
     as _i883;
 import 'package:everyday_wholesale/features/cart/domain/usecases/get_cart_usecase.dart'
@@ -163,6 +165,22 @@ import 'package:everyday_wholesale/features/product/presentation/bloc/product_li
     as _i37;
 import 'package:everyday_wholesale/features/product/presentation/bloc/search_bloc.dart'
     as _i380;
+import 'package:everyday_wholesale/features/review/data/datasources/review_remote_datasource.dart'
+    as _i287;
+import 'package:everyday_wholesale/features/review/data/repositories/review_repository_impl.dart'
+    as _i789;
+import 'package:everyday_wholesale/features/review/domain/repositories/review_repository.dart'
+    as _i427;
+import 'package:everyday_wholesale/features/review/domain/usecases/get_all_reviews_usecase.dart'
+    as _i1071;
+import 'package:everyday_wholesale/features/review/domain/usecases/get_my_reviews_usecase.dart'
+    as _i871;
+import 'package:everyday_wholesale/features/review/domain/usecases/get_product_reviews_usecase.dart'
+    as _i838;
+import 'package:everyday_wholesale/features/review/domain/usecases/submit_review_usecase.dart'
+    as _i424;
+import 'package:everyday_wholesale/features/review/presentation/bloc/my_reviews_bloc.dart'
+    as _i582;
 import 'package:everyday_wholesale/features/splash/data/datasources/app_readiness_local_datasource.dart'
     as _i204;
 import 'package:everyday_wholesale/features/splash/data/repositories/app_readiness_repository_impl.dart'
@@ -237,6 +255,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i870.AuthRepository>(
       () => _i403.AuthRepositoryImpl(gh<_i965.AuthRemoteDatasource>()),
     );
+    gh.lazySingleton<_i287.ReviewRemoteDatasource>(
+      () => _i287.ReviewRemoteDatasourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i59.FirebaseAuth>(),
+      ),
+    );
     gh.lazySingleton<_i581.ProductRemoteDatasource>(
       () => _i581.ProductRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
     );
@@ -252,6 +276,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i734.HomeRepositoryImpl(
         gh<_i1056.HomeRemoteDatasource>(),
         gh<_i940.HomeLocalDatasource>(),
+      ),
+    );
+    gh.lazySingleton<_i427.ReviewRepository>(
+      () => _i789.ReviewRepositoryImpl(
+        gh<_i287.ReviewRemoteDatasource>(),
+        gh<_i59.FirebaseAuth>(),
       ),
     );
     gh.lazySingleton<_i980.AdminCategoryRemoteDatasource>(
@@ -372,6 +402,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i411.ProductRepository>(
       () => _i137.ProductRepositoryImpl(gh<_i581.ProductRemoteDatasource>()),
     );
+    gh.factory<_i1071.GetAllReviewsUseCase>(
+      () => _i1071.GetAllReviewsUseCase(gh<_i427.ReviewRepository>()),
+    );
+    gh.factory<_i871.GetMyReviewsUseCase>(
+      () => _i871.GetMyReviewsUseCase(gh<_i427.ReviewRepository>()),
+    );
+    gh.factory<_i838.GetProductReviewsUseCase>(
+      () => _i838.GetProductReviewsUseCase(gh<_i427.ReviewRepository>()),
+    );
+    gh.factory<_i424.SubmitReviewUseCase>(
+      () => _i424.SubmitReviewUseCase(gh<_i427.ReviewRepository>()),
+    );
     gh.lazySingleton<_i271.AdminCategoryRepository>(
       () => _i755.AdminCategoryRepositoryImpl(
         gh<_i980.AdminCategoryRemoteDatasource>(),
@@ -400,6 +442,9 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i1031.GetDashboardStatsUseCase(gh<_i444.AdminDashboardRepository>()),
     );
+    gh.factory<_i430.AdminReviewListBloc>(
+      () => _i430.AdminReviewListBloc(gh<_i1071.GetAllReviewsUseCase>()),
+    );
     gh.factory<_i498.AdminOrderDetailBloc>(
       () => _i498.AdminOrderDetailBloc(gh<_i514.UpdateOrderStatusUseCase>()),
     );
@@ -415,6 +460,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i419.OrderHistoryBloc>(
       () => _i419.OrderHistoryBloc(gh<_i191.GetOrderHistoryUseCase>()),
     );
+    gh.factory<_i582.MyReviewsBloc>(
+      () => _i582.MyReviewsBloc(
+        gh<_i191.GetOrderHistoryUseCase>(),
+        gh<_i871.GetMyReviewsUseCase>(),
+        gh<_i424.SubmitReviewUseCase>(),
+      ),
+    );
     gh.factory<_i682.GetProductByIdUseCase>(
       () => _i682.GetProductByIdUseCase(gh<_i411.ProductRepository>()),
     );
@@ -426,9 +478,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i86.SplashBloc>(
       () => _i86.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),
-    );
-    gh.factory<_i785.ProductDetailBloc>(
-      () => _i785.ProductDetailBloc(gh<_i682.GetProductByIdUseCase>()),
     );
     gh.lazySingleton<_i569.AccountBloc>(
       () => _i569.AccountBloc(
@@ -451,6 +500,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i514.UpdateOrderStatusUseCase>(),
       ),
     );
+    gh.factory<_i785.ProductDetailBloc>(
+      () => _i785.ProductDetailBloc(
+        gh<_i682.GetProductByIdUseCase>(),
+        gh<_i838.GetProductReviewsUseCase>(),
+      ),
+    );
     gh.factory<_i695.CreateCategoryUseCase>(
       () => _i695.CreateCategoryUseCase(gh<_i271.AdminCategoryRepository>()),
     );
@@ -460,8 +515,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i412.UpdateCategoryUseCase>(
       () => _i412.UpdateCategoryUseCase(gh<_i271.AdminCategoryRepository>()),
     );
-    gh.factory<_i430.AddToCartUseCase>(
-      () => _i430.AddToCartUseCase(gh<_i175.CartRepository>()),
+    gh.factory<_i431.AddToCartUseCase>(
+      () => _i431.AddToCartUseCase(gh<_i175.CartRepository>()),
     );
     gh.factory<_i883.ClearCartUseCase>(
       () => _i883.ClearCartUseCase(gh<_i175.CartRepository>()),
@@ -497,7 +552,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i632.CartBloc(
         gh<_i870.AuthRepository>(),
         gh<_i30.GetCartUseCase>(),
-        gh<_i430.AddToCartUseCase>(),
+        gh<_i431.AddToCartUseCase>(),
         gh<_i900.UpdateCartQuantityUseCase>(),
         gh<_i931.RemoveFromCartUseCase>(),
         gh<_i883.ClearCartUseCase>(),

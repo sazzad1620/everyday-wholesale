@@ -50,6 +50,11 @@ service cloud.firestore {
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
+
+      // A signed-in customer may bump the denormalized rating aggregate when
+      // they submit a review (see `reviews` below) — nothing else on the doc.
+      allow update: if isSignedIn() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingSum', 'reviewCount']);
     }
 
     // Customers read/create their own orders; only admins can read/manage
@@ -58,6 +63,23 @@ service cloud.firestore {
       allow read: if isAdmin() || (isSignedIn() && resource.data.customerId == request.auth.uid);
       allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid;
       allow update, delete: if isAdmin();
+    }
+
+    // One rating per (order, product) pair — the app always writes with doc
+    // id `{orderId}_{productId}`, and `allow update: if false` means trying
+    // to reuse that id (e.g. a retry) just fails outright rather than
+    // silently double-counting. Public read, same spirit as
+    // products/categories. Only the reviewer can create their own review,
+    // and only for an order they actually own.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() &&
+        request.resource.data.reviewerId == request.auth.uid &&
+        request.resource.data.rating is int &&
+        request.resource.data.rating >= 1 && request.resource.data.rating <= 5 &&
+        get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.customerId == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin();
     }
   }
 }

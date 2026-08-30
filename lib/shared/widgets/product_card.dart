@@ -14,6 +14,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'product_image.dart';
+import 'star_rating.dart';
 
 int _quantityInCart(CartState state, String productId) {
   for (final item in state.items) {
@@ -92,8 +93,7 @@ class ProductCard extends StatelessWidget {
                             const SizedBox(height: AppSpacing.xs),
                             Row(
                               children: [
-                                for (var i = 0; i < 5; i++)
-                                  const Icon(Icons.star_border_rounded, size: 15, color: AppColors.textSecondary),
+                                StarRating(rating: product.rating, size: 15),
                                 const Spacer(),
                                 BlocBuilder<WishlistBloc, WishlistState>(
                                   bloc: wishlistBloc,

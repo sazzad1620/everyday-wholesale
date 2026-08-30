@@ -157,7 +157,11 @@ class _ProductFormViewState extends State<_ProductFormView> {
       subcategoryId: _selectedSubcategoryId,
       imageUrl: _imageUrl,
       inStock: _inStock,
-      reviews: widget.initial?.reviews ?? const [],
+      // Preserved as-is — this form has no rating UI, and since
+      // `updateProduct` writes the whole doc, omitting these would silently
+      // reset an existing product's accumulated rating back to zero.
+      ratingSum: widget.initial?.ratingSum ?? 0,
+      reviewCount: widget.initial?.reviewCount ?? 0,
     );
 
     context.read<AdminProductFormBloc>().add(

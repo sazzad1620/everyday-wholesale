@@ -1,5 +1,4 @@
 import '../../domain/entities/product_entity.dart';
-import 'product_review_model.dart';
 
 /// Mirrors a `products/{productId}` Firestore document. `id` is the
 /// document ID, not a stored field.
@@ -17,11 +16,11 @@ class ProductModel extends ProductEntity {
     super.subcategoryId,
     super.imageUrl,
     super.inStock,
-    super.reviews,
+    super.ratingSum,
+    super.reviewCount,
   });
 
   factory ProductModel.fromMap(Map<String, dynamic> map, {required String id}) {
-    final rawReviews = map['reviews'] as List<dynamic>? ?? const [];
     return ProductModel(
       id: id,
       name: map['name'] as String? ?? '',
@@ -35,7 +34,8 @@ class ProductModel extends ProductEntity {
       subcategoryId: map['subcategoryId'] as String?,
       imageUrl: map['imageUrl'] as String?,
       inStock: map['inStock'] as bool? ?? true,
-      reviews: rawReviews.map((raw) => ProductReviewModel.fromMap(Map<String, dynamic>.from(raw as Map))).toList(),
+      ratingSum: (map['ratingSum'] as num?) ?? 0,
+      reviewCount: (map['reviewCount'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -51,8 +51,7 @@ class ProductModel extends ProductEntity {
     'subcategoryId': subcategoryId,
     'imageUrl': imageUrl,
     'inStock': inStock,
-    'reviews': reviews
-        .map((r) => ProductReviewModel(reviewerName: r.reviewerName, rating: r.rating, comment: r.comment).toMap())
-        .toList(),
+    'ratingSum': ratingSum,
+    'reviewCount': reviewCount,
   };
 }

@@ -8,7 +8,6 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/standalone_shell_scaffold.dart';
@@ -17,14 +16,18 @@ import '../../../auth/presentation/bloc/account_event.dart';
 import '../../../auth/presentation/bloc/account_state.dart';
 
 /// Single entry point for the header's account icon — routes to the
-/// signed-in [AccountPage] or the sign-in dialog depending on [AccountBloc]
-/// state, so call sites don't need to branch themselves.
+/// signed-in [AccountPage] (or, for an admin, the separate `AdminAccountPage`
+/// — see its doc comment for why they can't share one) or the sign-in dialog
+/// depending on [AccountBloc] state, so call sites don't need to branch
+/// themselves.
 void openAccountMenu(BuildContext context) {
-  final isLoggedIn = getIt<AccountBloc>().state.isLoggedIn;
-  if (isLoggedIn) {
-    context.push(RoutePaths.account);
-  } else {
+  final user = getIt<AccountBloc>().state.user;
+  if (user == null) {
     showSignInDialog(context);
+  } else if (user.isAdmin) {
+    context.push(RoutePaths.adminAccount);
+  } else {
+    context.push(RoutePaths.account);
   }
 }
 
@@ -127,7 +130,7 @@ class _AccountBody extends StatelessWidget {
             _AccountRow(
               icon: Icons.star_outline_rounded,
               label: 'account.my_reviews'.tr(),
-              onTap: () => showComingSoonToast(context, 'account.my_reviews'.tr()),
+              onTap: () => context.push(RoutePaths.myReviews),
             ),
             _AccountRow(
               icon: Icons.logout_rounded,

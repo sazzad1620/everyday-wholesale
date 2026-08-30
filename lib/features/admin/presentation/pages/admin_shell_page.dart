@@ -10,6 +10,7 @@ import 'admin_categories_page.dart';
 import 'admin_dashboard_page.dart';
 import 'admin_orders_page.dart';
 import 'admin_products_page.dart';
+import 'admin_reviews_page.dart';
 
 /// Root of the admin/manager side. Header is the plain shared [AppHeader]
 /// (logo + hamburger + account icon, no search bar) — same look as every
@@ -31,13 +32,20 @@ class _AdminShellPageState extends State<AdminShellPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
-  static const _pages = [AdminDashboardPage(), AdminProductsPage(), AdminCategoriesPage(), AdminOrdersPage()];
+  static const _pages = [
+    AdminDashboardPage(),
+    AdminProductsPage(),
+    AdminCategoriesPage(),
+    AdminOrdersPage(),
+    AdminReviewsPage(),
+  ];
 
   List<AdminDestination> _destinations() => [
     AdminDestination(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard_rounded, label: 'admin.nav_dashboard'.tr()),
     AdminDestination(icon: Icons.inventory_2_outlined, selectedIcon: Icons.inventory_2_rounded, label: 'admin.nav_products'.tr()),
     AdminDestination(icon: Icons.category_outlined, selectedIcon: Icons.category_rounded, label: 'admin.nav_categories'.tr()),
     AdminDestination(icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long_rounded, label: 'admin.nav_orders'.tr()),
+    AdminDestination(icon: Icons.reviews_outlined, selectedIcon: Icons.reviews_rounded, label: 'admin.nav_user_reviews'.tr()),
   ];
 
   void _select(int index) => setState(() => _selectedIndex = index);

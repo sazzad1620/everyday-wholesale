@@ -3,9 +3,11 @@ abstract final class RoutePaths {
   static const String home = '/home';
   static const String account = '/account';
   static const String admin = '/admin';
+  static const String adminAccount = '/admin/account';
   static const String adminCategoryForm = '/admin/categories/form';
   static const String adminProductForm = '/admin/products/form';
   static const String orderHistory = '/account/order-history';
+  static const String myReviews = '/account/my-reviews';
   static const String orderDetail = '/account/order-detail';
   static const String adminOrderDetail = '/admin/orders/detail';
   static const String accountAddress = '/account/address';

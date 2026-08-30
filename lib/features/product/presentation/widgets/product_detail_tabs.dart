@@ -6,16 +6,17 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/star_rating.dart';
+import '../../../review/domain/entities/review_entity.dart';
 import '../../domain/entities/product_entity.dart';
-import '../../domain/entities/product_review_entity.dart';
 
 /// Description / Review / FAQ. A manual segmented tab bar rather than
 /// [TabBarView] — a [TabBarView] needs a bounded height, which conflicts
 /// with living inside the page's outer scroll view.
 class ProductDetailTabs extends StatefulWidget {
-  const ProductDetailTabs({super.key, required this.product});
+  const ProductDetailTabs({super.key, required this.product, this.reviews = const []});
 
   final ProductEntity product;
+  final List<ReviewEntity> reviews;
 
   @override
   State<ProductDetailTabs> createState() => _ProductDetailTabsState();
@@ -41,7 +42,7 @@ class _ProductDetailTabsState extends State<ProductDetailTabs> {
         const SizedBox(height: AppSpacing.md),
         switch (_selectedIndex) {
           0 => _DescriptionTab(description: widget.product.description),
-          1 => _ReviewTab(reviews: widget.product.reviews),
+          1 => _ReviewTab(reviews: widget.reviews),
           _ => const _FaqTab(),
         },
       ],
@@ -95,7 +96,7 @@ class _DescriptionTab extends StatelessWidget {
 class _ReviewTab extends StatelessWidget {
   const _ReviewTab({required this.reviews});
 
-  final List<ProductReviewEntity> reviews;
+  final List<ReviewEntity> reviews;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +122,7 @@ class _ReviewTab extends StatelessWidget {
 class _ReviewCard extends StatelessWidget {
   const _ReviewCard({required this.review});
 
-  final ProductReviewEntity review;
+  final ReviewEntity review;
 
   @override
   Widget build(BuildContext context) {
@@ -135,19 +136,12 @@ class _ReviewCard extends StatelessWidget {
           BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(review.reviewerName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-              ),
-              StarRating(rating: review.rating, size: 14),
-            ],
+          Expanded(
+            child: Text(review.reviewerName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
           ),
-          const SizedBox(height: 4),
-          Text(review.comment, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+          StarRating(rating: review.rating.toDouble(), size: 14),
         ],
       ),
     );

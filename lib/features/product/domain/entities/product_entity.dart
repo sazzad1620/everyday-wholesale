@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import 'product_review_entity.dart';
-
 class ProductEntity extends Equatable {
   const ProductEntity({
     required this.id,
@@ -16,7 +14,8 @@ class ProductEntity extends Equatable {
     this.subcategoryId,
     this.imageUrl,
     this.inStock = true,
-    this.reviews = const [],
+    this.ratingSum = 0,
+    this.reviewCount = 0,
   });
 
   final String id;
@@ -48,17 +47,20 @@ class ProductEntity extends Equatable {
 
   final bool inStock;
 
-  final List<ProductReviewEntity> reviews;
+  /// Sum of every submitted review's star rating for this product —
+  /// denormalized on the product doc (updated via `FieldValue.increment` the
+  /// moment a review is submitted, see `ReviewRemoteDatasource.submitReview`)
+  /// rather than derived from a live reviews query, so displaying a
+  /// product's rating never needs a second read. [rating] divides this by
+  /// [reviewCount] for display.
+  final num ratingSum;
 
-  /// Derived, not stored — a separate stored average could drift out of
-  /// sync with [reviews] in mock data (or, later, in a real backend).
-  double get rating {
-    if (reviews.isEmpty) return 0;
-    final total = reviews.fold<double>(0, (sum, review) => sum + review.rating);
-    return total / reviews.length;
-  }
+  final int reviewCount;
 
-  int get reviewCount => reviews.length;
+  /// 0 with no reviews yet — never null/blank, so every display site (star
+  /// row, product card) can treat "not yet reviewed" as the zero case
+  /// without a separate null check.
+  double get rating => reviewCount == 0 ? 0 : ratingSum / reviewCount;
 
   @override
   List<Object?> get props => [
@@ -74,6 +76,7 @@ class ProductEntity extends Equatable {
     subcategoryId,
     imageUrl,
     inStock,
-    reviews,
+    ratingSum,
+    reviewCount,
   ];
 }
