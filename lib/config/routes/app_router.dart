@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../features/account/presentation/pages/account_page.dart';
 import '../../features/account/presentation/pages/address_form_page.dart';
 import '../../features/account/presentation/pages/edit_profile_page.dart';
+import '../../features/account/presentation/pages/order_detail_page.dart';
 import '../../features/account/presentation/pages/order_history_page.dart';
 import '../../features/admin/presentation/pages/admin_category_form_page.dart';
+import '../../features/admin/presentation/pages/admin_order_detail_page.dart';
 import '../../features/admin/presentation/pages/admin_product_form_page.dart';
 import '../../features/admin/presentation/pages/admin_shell_page.dart';
 import '../../features/auth/presentation/bloc/account_bloc.dart';
@@ -132,6 +134,25 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.orderHistory,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const OrderHistoryPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.orderDetail,
+      parentNavigatorKey: rootNavigatorKey,
+      // `extra` only carries the order when reached via a real push (see
+      // `_OrderCard.onTap`); a direct/reloaded URL with none falls back to
+      // the list instead of crashing on a null cast.
+      builder: (context, state) {
+        final order = state.extra as OrderEntity?;
+        return order == null ? const OrderHistoryPage() : OrderDetailPage(order: order);
+      },
+    ),
+    GoRoute(
+      path: RoutePaths.adminOrderDetail,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) {
+        final order = state.extra as OrderEntity?;
+        return order == null ? const AdminShellPage() : AdminOrderDetailPage(order: order);
+      },
     ),
     GoRoute(
       path: RoutePaths.accountAddress,

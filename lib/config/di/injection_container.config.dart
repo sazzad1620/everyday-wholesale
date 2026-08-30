@@ -57,6 +57,8 @@ import 'package:everyday_wholesale/features/admin/domain/usecases/update_product
     as _i955;
 import 'package:everyday_wholesale/features/admin/domain/usecases/upload_product_image_usecase.dart'
     as _i38;
+import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_order_detail_bloc.dart'
+    as _i498;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_order_list_bloc.dart'
     as _i482;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/admin_product_form_bloc.dart'
@@ -397,6 +399,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1031.GetDashboardStatsUseCase>(
       () =>
           _i1031.GetDashboardStatsUseCase(gh<_i444.AdminDashboardRepository>()),
+    );
+    gh.factory<_i498.AdminOrderDetailBloc>(
+      () => _i498.AdminOrderDetailBloc(gh<_i514.UpdateOrderStatusUseCase>()),
     );
     gh.factory<_i568.AdminProductListBloc>(
       () => _i568.AdminProductListBloc(

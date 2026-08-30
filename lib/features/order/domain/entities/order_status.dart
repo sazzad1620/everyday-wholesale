@@ -1,7 +1,8 @@
-/// Every order starts `pending` — nothing currently moves it to `completed`
-/// (that's the admin/Stripe phases). `.name` (`pending`/`completed`/
-/// `cancelled`) is the stored Firestore string; see `OrderStatusX.parse`.
-enum OrderStatus { pending, completed, cancelled }
+/// Every order starts `pending` (placed, not yet acted on) — only the admin
+/// moves it forward: `processing` (accepted, being prepared) then
+/// `completed`, or `cancelled` from either `pending` or `processing`. `.name`
+/// is the stored Firestore string; see `OrderStatusX.parse`.
+enum OrderStatus { pending, processing, completed, cancelled }
 
 extension OrderStatusX on OrderStatus {
   static OrderStatus parse(String value) {

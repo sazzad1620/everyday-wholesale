@@ -37,13 +37,19 @@ class AddressEntity extends Equatable {
   /// e.g. "Amenite Plaza B101". Optional — not every address has one.
   final String? buildingName;
 
-  /// Single display line for the checkout card / order history — mirrors
-  /// the shape of the old mock address text ("Saitama-ken, Hanyu-shi, Chuo
-  /// 3-Chome 3-19").
+  /// Single display line for the checkout card / order history, smallest
+  /// region to largest (building → block/house number → street → city →
+  /// state/prefecture) — the standard order for a written-out address, e.g.
+  /// "Amenite Plaza B101, 3-Chome 3-19, Chuo, Hanyu-shi, Saitama-ken".
   String get formattedLine {
-    final line = '$state, $city, $street $chomeBanchiGo'.trim();
-    if (buildingName == null || buildingName!.trim().isEmpty) return line;
-    return '$line, ${buildingName!.trim()}';
+    final parts = [
+      if (buildingName != null && buildingName!.trim().isNotEmpty) buildingName!.trim(),
+      chomeBanchiGo,
+      street,
+      city,
+      state,
+    ];
+    return parts.join(', ');
   }
 
   @override

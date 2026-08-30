@@ -22,6 +22,12 @@ abstract final class AppColors {
   static const Color inputFill = Color(0xFFF1F1F3);
 
   static const Color error = Color(0xFFD32F2F);
+
+  /// "In progress" indicator — currently only the order-status pill's
+  /// `processing` state. Distinct from [secondary] (pending/waiting) and
+  /// [primary] (done/success).
+  static const Color info = Color(0xFF1976D2);
+
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);
 

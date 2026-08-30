@@ -27,6 +27,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required String paymentMethod,
     required String addressLine,
     required String addressPhone,
+    required String addressReceiverName,
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
     if (uid == null) return const Left(AuthFailure('Please sign in to place an order.'));
@@ -58,6 +59,7 @@ class OrderRepositoryImpl implements OrderRepository {
         paymentMethod: paymentMethod,
         addressLine: addressLine,
         addressPhone: addressPhone,
+        addressReceiverName: addressReceiverName,
         createdAt: DateTime.now(),
       );
       return Right(await _datasource.placeOrder(order));

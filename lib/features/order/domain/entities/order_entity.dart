@@ -20,6 +20,7 @@ class OrderEntity extends Equatable {
     required this.addressLine,
     required this.addressPhone,
     required this.createdAt,
+    this.addressReceiverName,
   });
 
   final String id;
@@ -38,6 +39,12 @@ class OrderEntity extends Equatable {
   final String addressPhone;
   final DateTime createdAt;
 
+  /// Split out from [addressLine] so the receiver's name can be shown on its
+  /// own line instead of glued onto the front of the address text. Null for
+  /// orders placed before this field existed — those keep showing the old
+  /// combined [addressLine] as-is (it already had the name baked in).
+  final String? addressReceiverName;
+
   @override
   List<Object?> get props => [
     id,
@@ -55,5 +62,6 @@ class OrderEntity extends Equatable {
     addressLine,
     addressPhone,
     createdAt,
+    addressReceiverName,
   ];
 }

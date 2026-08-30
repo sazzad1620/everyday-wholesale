@@ -58,9 +58,9 @@ class DeliveryAddressCard extends StatelessWidget {
           else ...[
             Text(address.receiverName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),
-            Text(address.formattedLine, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
-            const SizedBox(height: 2),
             Text(address.phoneNumber, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
+            const SizedBox(height: 2),
+            Text(address.formattedLine, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
           ],
         ],
       ),

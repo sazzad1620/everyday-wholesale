@@ -23,6 +23,7 @@ class OrderModel extends OrderEntity {
     required super.addressLine,
     required super.addressPhone,
     required super.createdAt,
+    super.addressReceiverName,
   });
 
   factory OrderModel.fromMap(Map<String, dynamic> map, {required String id}) {
@@ -43,6 +44,7 @@ class OrderModel extends OrderEntity {
       paymentMethod: map['paymentMethod'] as String? ?? '',
       addressLine: map['addressLine'] as String? ?? '',
       addressPhone: map['addressPhone'] as String? ?? '',
+      addressReceiverName: map['addressReceiverName'] as String?,
       // `createdAt` is only a real Timestamp once Firestore has resolved the
       // server-side value on a subsequent read; immediately after `add()` it
       // may still be null, so fall back to "now" for that first return.
@@ -68,5 +70,6 @@ class OrderModel extends OrderEntity {
     'paymentMethod': paymentMethod,
     'addressLine': addressLine,
     'addressPhone': addressPhone,
+    'addressReceiverName': addressReceiverName,
   };
 }

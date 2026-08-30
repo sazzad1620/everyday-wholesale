@@ -33,6 +33,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         paymentMethod: event.paymentMethod,
         addressLine: event.addressLine,
         addressPhone: event.addressPhone,
+        addressReceiverName: event.addressReceiverName,
       ),
     );
 

@@ -16,6 +16,7 @@ class PlaceOrderParams extends Equatable {
     required this.paymentMethod,
     required this.addressLine,
     required this.addressPhone,
+    required this.addressReceiverName,
   });
 
   final List<CartItemEntity> cartItems;
@@ -23,9 +24,10 @@ class PlaceOrderParams extends Equatable {
   final String paymentMethod;
   final String addressLine;
   final String addressPhone;
+  final String addressReceiverName;
 
   @override
-  List<Object?> get props => [cartItems, totals, paymentMethod, addressLine, addressPhone];
+  List<Object?> get props => [cartItems, totals, paymentMethod, addressLine, addressPhone, addressReceiverName];
 }
 
 @injectable
@@ -42,6 +44,7 @@ class PlaceOrderUseCase extends UseCase<OrderEntity, PlaceOrderParams> {
       paymentMethod: params.paymentMethod,
       addressLine: params.addressLine,
       addressPhone: params.addressPhone,
+      addressReceiverName: params.addressReceiverName,
     );
   }
 }

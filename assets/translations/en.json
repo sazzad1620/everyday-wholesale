@@ -146,7 +146,9 @@
     "order_date": "Order Date",
     "order_status": "Order Status",
     "payment_method": "Payment Method",
-    "total": "Total"
+    "total": "Total",
+    "items_title": "Items",
+    "item_meta": "{unit} • Qty {quantity}"
   },
   "auth": {
     "sign_in_title": "Sign In",
@@ -235,7 +237,6 @@
     "delete_product_message": "\"{name}\" will be permanently removed from the catalog.",
     "products_empty_title": "No products yet",
     "products_empty_message": "Tap \"Add Product\" to create the first one.",
-    "order_customer": "Contact",
     "orders_empty_title": "No orders yet",
     "orders_empty_message": "Orders placed by customers will show up here."
   }

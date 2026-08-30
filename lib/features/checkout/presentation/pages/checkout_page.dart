@@ -55,8 +55,9 @@ class _CheckoutView extends StatelessWidget {
       CheckoutOrderPlaceRequested(
         // Real payment is still Stripe (Phase 6); the address is real now.
         paymentMethod: 'checkout.mock_payment_method'.tr(),
-        addressLine: '${address.receiverName}, ${address.formattedLine}',
+        addressLine: address.formattedLine,
         addressPhone: address.phoneNumber,
+        addressReceiverName: address.receiverName,
       ),
     );
   }

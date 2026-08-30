@@ -12,6 +12,7 @@ abstract class OrderRepository {
     required String paymentMethod,
     required String addressLine,
     required String addressPhone,
+    required String addressReceiverName,
   });
 
   /// Newest first. Only ever returns the signed-in user's own orders — the

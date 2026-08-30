@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
+import '../../../../config/routes/route_paths.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
@@ -14,12 +15,16 @@ import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/bloc/order_history_bloc.dart';
 import '../../../order/presentation/bloc/order_history_event.dart';
 import '../../../order/presentation/bloc/order_history_state.dart';
+import '../../../order/presentation/widgets/order_id_header_bar.dart';
+import '../../../order/presentation/widgets/order_info_row.dart';
+import '../../../order/presentation/widgets/order_status_pill.dart';
 import 'account_page.dart';
 
 /// Full-screen order-history page, reached from [AccountPage]. Pushed on the
-/// root navigator the same way [AccountPage] is (see `app_router.dart`), so
-/// it gets the same drawer/end-drawer/bottom-nav chrome via
-/// [StandaloneShellScaffold].
+/// root navigator the same way [AccountPage] is (see `app_router.dart`), but
+/// — unlike [AccountPage] — a plain [Scaffold] with a back arrow, same as
+/// `EditProfilePage`/`AddressFormPage`: a page you drill into rather than
+/// switch to doesn't need the drawer/bottom-nav chrome.
 class OrderHistoryPage extends StatelessWidget {
   const OrderHistoryPage({super.key});
 
@@ -37,43 +42,46 @@ class _OrderHistoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          AppHeader(
-            showSearchBar: false,
-            showBackButton: true,
-            onMenuTap: () => context.pop(),
-            onAccountTap: () => openAccountMenu(context),
-          ),
-          Expanded(
-            child: BlocBuilder<OrderHistoryBloc, OrderHistoryState>(
-              builder: (context, state) {
-                return switch (state) {
-                  OrderHistoryInitial() || OrderHistoryInProgress() => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  OrderHistoryFailure(:final message) => ComingSoonView(
-                    icon: Icons.error_outline_rounded,
-                    title: 'common.generic_error'.tr(),
-                    message: message,
-                  ),
-                  OrderHistoryLoaded(:final orders) when orders.isEmpty => ComingSoonView(
-                    icon: Icons.receipt_long_outlined,
-                    title: 'order_history.empty_title'.tr(),
-                    message: 'order_history.empty_message'.tr(),
-                  ),
-                  OrderHistoryLoaded(:final orders) => ListView.separated(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    itemCount: orders.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                    itemBuilder: (context, index) => _OrderCard(order: orders[index]),
-                  ),
-                };
-              },
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            AppHeader(
+              showSearchBar: false,
+              showBackButton: true,
+              onMenuTap: () => context.pop(),
+              onAccountTap: () => openAccountMenu(context),
             ),
-          ),
-        ],
+            Expanded(
+              child: BlocBuilder<OrderHistoryBloc, OrderHistoryState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    OrderHistoryInitial() || OrderHistoryInProgress() => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    OrderHistoryFailure(:final message) => ComingSoonView(
+                      icon: Icons.error_outline_rounded,
+                      title: 'common.generic_error'.tr(),
+                      message: message,
+                    ),
+                    OrderHistoryLoaded(:final orders) when orders.isEmpty => ComingSoonView(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'order_history.empty_title'.tr(),
+                      message: 'order_history.empty_message'.tr(),
+                    ),
+                    OrderHistoryLoaded(:final orders) => ListView.separated(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      itemCount: orders.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                      itemBuilder: (context, index) => _OrderCard(order: orders[index]),
+                    ),
+                  };
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -95,59 +103,41 @@ class _OrderCard extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-            color: AppColors.primary,
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: '${'order_history.order_id'.tr()}  ', style: AppTextStyles.body.copyWith(color: Colors.white)),
-                  TextSpan(
-                    text: order.id,
-                    style: AppTextStyles.body.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ],
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push(RoutePaths.orderDetail, extra: order),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              OrderIdHeaderBar(orderId: order.id),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  children: [
+                    OrderInfoRow(label: 'order_history.order_date'.tr(), value: DateFormat.yMMMMd().format(order.createdAt)),
+                    const SizedBox(height: AppSpacing.xs),
+                    OrderInfoRow(label: 'order_history.payment_method'.tr(), value: order.paymentMethod),
+                    const SizedBox(height: AppSpacing.xs),
+                    OrderInfoRow(label: 'order_history.total'.tr(), value: formatYen(order.total)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'order_history.order_status'.tr(),
+                          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                        ),
+                        OrderStatusPill(status: order.status),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              children: [
-                _OrderRow(label: 'order_history.order_date'.tr(), value: DateFormat.yMMMMd().format(order.createdAt)),
-                const SizedBox(height: AppSpacing.xs),
-                _OrderRow(label: 'order_history.order_status'.tr(), value: order.status.name.toUpperCase()),
-                const SizedBox(height: AppSpacing.xs),
-                _OrderRow(label: 'order_history.payment_method'.tr(), value: order.paymentMethod),
-                const SizedBox(height: AppSpacing.xs),
-                _OrderRow(label: 'order_history.total'.tr(), value: formatYen(order.total)),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
-    );
-  }
-}
-
-class _OrderRow extends StatelessWidget {
-  const _OrderRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
-        Text(value, style: AppTextStyles.body.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
-      ],
     );
   }
 }
