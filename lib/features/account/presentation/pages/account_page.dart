@@ -5,16 +5,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
+import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
-import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../../shared/widgets/navigation/standalone_shell_scaffold.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../auth/presentation/bloc/account_event.dart';
 import '../../../auth/presentation/bloc/account_state.dart';
+import '../widgets/desktop_account_body.dart';
 
 /// Single entry point for the header's account icon — routes to the
 /// signed-in [AccountPage] (or, for an admin, the separate `AdminAccountPage`
@@ -62,7 +63,9 @@ class _AccountView extends StatelessWidget {
             onAccountTap: () => openAccountMenu(context),
           ),
           Expanded(
-            child: DesktopBody(
+            child: DesktopAccountBody(
+              // Not one of the 5 links itself (this page is the hub they
+              // link out from), so nothing is highlighted here.
               child: _AccountBody(
                 onLogout: () {
                   getIt<AccountBloc>().add(const AccountSignOutRequested());
@@ -84,6 +87,12 @@ class _AccountBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The sidebar (see DesktopAccountBody) already lists these same 5
+    // destinations at desktop width, so repeating them here too just reads
+    // as duplicated content — this list only renders on phone, where
+    // there's no sidebar and it's the only way to reach them.
+    final isWide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
     return BlocBuilder<AccountBloc, AccountState>(
       bloc: getIt<AccountBloc>(),
       builder: (context, state) {
@@ -96,51 +105,62 @@ class _AccountBody extends StatelessWidget {
                 const CircleAvatar(
                   radius: 28,
                   backgroundColor: AppColors.primary,
-                  child: Icon(Icons.person_rounded, color: Colors.white, size: 30),
+                  child: Icon(
+                    Icons.person_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user?.name ?? 'account.guest_name'.tr(), style: AppTextStyles.title),
+                      Text(
+                        user?.name ?? 'account.guest_name'.tr(),
+                        style: AppTextStyles.title,
+                      ),
                       Text(
                         user?.email ?? 'account.guest_email'.tr(),
-                        style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            const Divider(height: 1),
-            _AccountRow(
-              icon: Icons.edit_outlined,
-              label: 'account.edit_profile'.tr(),
-              onTap: () => context.push(RoutePaths.editProfile),
-            ),
-            _AccountRow(
-              icon: Icons.location_on_outlined,
-              label: 'account.address'.tr(),
-              onTap: () => context.push(RoutePaths.accountAddress),
-            ),
-            _AccountRow(
-              icon: Icons.receipt_long_outlined,
-              label: 'account.order_history'.tr(),
-              onTap: () => context.push(RoutePaths.orderHistory),
-            ),
-            _AccountRow(
-              icon: Icons.star_outline_rounded,
-              label: 'account.my_reviews'.tr(),
-              onTap: () => context.push(RoutePaths.myReviews),
-            ),
-            _AccountRow(
-              icon: Icons.logout_rounded,
-              label: 'account.logout'.tr(),
-              onTap: onLogout,
-              isDestructive: true,
-            ),
+            if (!isWide) ...[
+              const SizedBox(height: AppSpacing.md),
+              const Divider(height: 1),
+              _AccountRow(
+                icon: Icons.edit_outlined,
+                label: 'account.edit_profile'.tr(),
+                onTap: () => context.push(RoutePaths.editProfile),
+              ),
+              _AccountRow(
+                icon: Icons.location_on_outlined,
+                label: 'account.address'.tr(),
+                onTap: () => context.push(RoutePaths.accountAddress),
+              ),
+              _AccountRow(
+                icon: Icons.receipt_long_outlined,
+                label: 'account.order_history'.tr(),
+                onTap: () => context.push(RoutePaths.orderHistory),
+              ),
+              _AccountRow(
+                icon: Icons.star_outline_rounded,
+                label: 'account.my_reviews'.tr(),
+                onTap: () => context.push(RoutePaths.myReviews),
+              ),
+              _AccountRow(
+                icon: Icons.logout_rounded,
+                label: 'account.logout'.tr(),
+                onTap: onLogout,
+                isDestructive: true,
+              ),
+            ],
           ],
         );
       },
@@ -149,7 +169,12 @@ class _AccountBody extends StatelessWidget {
 }
 
 class _AccountRow extends StatelessWidget {
-  const _AccountRow({required this.icon, required this.label, this.onTap, this.isDestructive = false});
+  const _AccountRow({
+    required this.icon,
+    required this.label,
+    this.onTap,
+    this.isDestructive = false,
+  });
 
   final IconData icon;
   final String label;
@@ -161,8 +186,17 @@ class _AccountRow extends StatelessWidget {
     final color = isDestructive ? AppColors.error : AppColors.textPrimary;
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: isDestructive ? AppColors.error : AppColors.textSecondary),
-      title: Text(label, style: AppTextStyles.body.copyWith(color: color, fontWeight: FontWeight.w600)),
+      leading: Icon(
+        icon,
+        color: isDestructive ? AppColors.error : AppColors.textSecondary,
+      ),
+      title: Text(
+        label,
+        style: AppTextStyles.body.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
       onTap: onTap,
     );
   }

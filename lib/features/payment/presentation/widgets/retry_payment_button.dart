@@ -16,7 +16,11 @@ import '../payment_confirmation.dart';
 /// loading state and error toasts) since it's a one-shot action, not
 /// something that needs a dedicated bloc.
 class RetryPaymentButton extends StatefulWidget {
-  const RetryPaymentButton({super.key, required this.orderId, required this.onSucceeded});
+  const RetryPaymentButton({
+    super.key,
+    required this.orderId,
+    required this.onSucceeded,
+  });
 
   final String orderId;
 
@@ -34,9 +38,13 @@ class _RetryPaymentButtonState extends State<RetryPaymentButton> {
   Future<void> _retry() async {
     setState(() => _isRetrying = true);
 
-    final intentResult = await getIt<CreatePaymentIntentUseCase>()(widget.orderId);
+    final intentResult = await getIt<CreatePaymentIntentUseCase>()(
+      widget.orderId,
+    );
     final clientSecret = intentResult.match((failure) {
-      if (mounted) AppToast.show(context, failure.message, type: ToastType.error);
+      if (mounted) {
+        AppToast.show(context, failure.message, type: ToastType.error);
+      }
       return null;
     }, (secret) => secret);
 
@@ -46,7 +54,10 @@ class _RetryPaymentButtonState extends State<RetryPaymentButton> {
     }
     if (!mounted) return;
 
-    final result = await confirmCardPayment(context: context, clientSecret: clientSecret);
+    final result = await confirmCardPayment(
+      context: context,
+      clientSecret: clientSecret,
+    );
     if (!mounted) return;
     setState(() => _isRetrying = false);
 

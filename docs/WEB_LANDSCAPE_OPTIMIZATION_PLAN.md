@@ -152,37 +152,49 @@ Do these first; everything else depends on them.
     an oversized circle breaking past the pill's own rounded corner; now
     reads as part of the same shape.
 
-## Phase 1 — Storefront pages ⬜ (highest visual impact, matches reference images 1–5)
+## Phase 1 — Storefront pages ✅ done (highest visual impact, matches reference images 1–5)
 
 All of these ride on Phase 0 automatically once their scroll body is wrapped
 in `ResponsiveContentContainer`; only the specific files needing *extra*
 reflow beyond "wrap + let the grid delegate do its job" are called out.
 
-- [ ] **Home** (`lib/features/home/presentation/pages/home_page.dart`): wrap the
+- [x] **Home** (`lib/features/home/presentation/pages/home_page.dart`): wrap the
   `ListView` body. Category grid reflows via Phase 0.2 automatically.
-- [ ] **Category / product listing** (`lib/features/product/presentation/pages/product_list_page.dart`):
+- [x] **Category / product listing** (`lib/features/product/presentation/pages/product_list_page.dart`):
   wrap body; breadcrumb, subcategory grid, and product grid all reflow.
-- [ ] **Product detail** (`lib/features/product/presentation/widgets/product_detail_content.dart`):
-  currently one stacked `Column` (image → title/price/rating → info row →
-  qty/cart/wishlist → highlight boxes → tabs). At >=600: reflow the top
-  section into a `Row` — image capped at a fixed width (~440) on the left,
-  the title-through-add-to-cart block on the right — while
-  `ProductHighlightBoxes` and `ProductDetailTabs` stay full-width below,
-  matching the reference's gallery/info split without touching the tab
-  content itself.
-- [ ] **Cart** (`lib/features/cart/presentation/pages/cart_page.dart`): reflow
+- [x] **Product detail** (`lib/features/product/presentation/widgets/product_detail_content.dart`):
+  reflowed the top section into a `Row` — image on the left, the
+  title-through-add-to-cart block on the right — while
+  `ProductHighlightBoxes` and `ProductDetailTabs` stay full-width below.
+  **Two corrections made after seeing it live**: a fixed 440 image width (as
+  planned) overflowed the info column's own rows (rating/stock,
+  qty/cart/wishlist) at narrower desktop widths, where 440 left too little
+  of the remaining space — switched to a capped flex share (`Expanded(flex:
+  2)` image / `Expanded(flex: 3)` info, image still capped at a max of 440)
+  so the info column always gets its proportional share of whatever width
+  is actually available. That alone still wasn't enough right above the
+  tablet/desktop cutover (~600–650px), where the sidebar alone leaves less
+  room here than a phone has — the split now only engages once a
+  `LayoutBuilder` confirms this widget itself has >=700px to work with
+  (checked against its own constraints, not the screen width), stacking
+  like phone otherwise.
+- [x] **Cart** (`lib/features/cart/presentation/pages/cart_page.dart`): reflowed
   `_CartBody`'s stacked list into `Row(children: [Expanded(items list +
-  voucher), SizedBox(width: ~360, child: sticky CartSummaryCard)])` at >=600
+  voucher), SizedBox(width: 360, child: sticky CartSummaryCard)])` at >=600
   — matches the reference bag page's items-table + total-panel split, no new
   widgets needed (`CartItemCard`/`CartSummaryCard`/`CartVoucherCard` reused
   as-is).
-- [ ] **Checkout** (`lib/features/checkout/presentation/pages/checkout_page.dart`):
+- [x] **Checkout** (`lib/features/checkout/presentation/pages/checkout_page.dart`):
   same idea — `DeliveryAddressCard` + `PaymentMethodCard` on the left,
-  `OrderSummaryCard` + place-order button sticky on the right.
-- [ ] **Wishlist** (`lib/features/wishlist/presentation/pages/wishlist_page.dart`):
+  `OrderSummaryCard` + place-order button sticky on the right, at >=600.
+- [x] **Wishlist** (`lib/features/wishlist/presentation/pages/wishlist_page.dart`):
   wrap body; grid reflows via Phase 0.2.
 
-## Phase 2 — Account area ⬜ (images 6–9's *structural* idea only, not their stats/table features)
+Verified at 375 (mobile, unchanged), 620 (the narrow-desktop edge case that
+first exposed the product-detail overflow), 1000, and 1440 — no
+`RenderFlex` overflow at any of them, `flutter analyze` clean throughout.
+
+## Phase 2 — Account area ✅ done (images 6–9's *structural* idea only, not their stats/table features)
 
 The reference's dashboard/orders/reviews pages have no equivalent data in
 our app (no reward points, no pending/completed/cancelled counters as
@@ -190,24 +202,67 @@ separate fields). What we *can* borrow cheaply: a persistent left account
 nav alongside content, instead of push-navigating to a full-screen page for
 every item.
 
-- [ ] Add a small `_DesktopAccountNav` (reuses the exact same 5 rows
-  `AccountPage._AccountBody` already renders — Edit Profile / Address / Order
-  History / My Reviews / Logout — just as a highlighted vertical list instead
-  of `ListTile`s) shown alongside content at >=600 on:
-  - [ ] `AccountPage` (`lib/features/account/presentation/pages/account_page.dart`)
-  - [ ] `OrderHistoryPage` (`lib/features/account/presentation/pages/order_history_page.dart`)
-  - [ ] `AddressFormPage` (`lib/features/account/presentation/pages/address_form_page.dart`)
-  - [ ] `EditProfilePage`, `MyReviewsPage` (same treatment, not yet read in
-    detail — confirm same "stacked ListView" shape before touching)
-- [ ] Since these are separate routes (not tabs in one page today), the nav
-  itself doesn't need new state — each page just renders its own version of
-  the nav with itself highlighted, same as how `AdminMenuDrawer` takes a
-  `selectedIndex`. Lower priority than Phase 1; do only after Phase 1 is
-  confirmed working.
-- [ ] `AddressFormPage`'s single-column form can additionally reflow into two
-  columns of fields at >=600 (receiver/phone/postal/state/city/street pair
-  up) — purely a `Wrap`/`Row` change around the existing
-  `TextFormField`s, no new fields.
+- [x] Added `DesktopAccountNav` (`lib/features/account/presentation/widgets/desktop_account_nav.dart`,
+  built as a standalone widget rather than the originally-sketched private
+  `_DesktopAccountNav` — reused from 4 different pages, so it couldn't stay
+  page-private) — reuses the exact same 5 rows `AccountPage._AccountBody`
+  already renders (Edit Profile / Address / Order History / My Reviews /
+  Logout), as a highlighted vertical list, self-contained for navigation
+  (`pushReplacement` between sections, not `push` — so clicking around the
+  sidebar doesn't stack pages the back button then has to unwind one at a
+  time) and logout. Shown alongside content at >=600 via a new
+  `DesktopAccountBody` wrapper (mirrors `DesktopBody` from Phase 0 — lives
+  *inside* each page below its own header/tab bar, same reasoning) on:
+  - [x] `AccountPage` — `current: null` (the hub isn't one of its own 5
+    links, so nothing is highlighted). **Two corrections after seeing it
+    live**: first, the main content originally still rendered the same 5
+    rows too, directly duplicating the sidebar sitting right next to it —
+    `_AccountBody` now only renders that row list on phone width (where
+    there's no sidebar and it's the only way to reach them); at desktop it
+    shows just the profile card. Second, the header's account icon still
+    navigated *to* this now-sparse hub page on desktop, which read as an
+    odd extra hop — `AppHeader`'s account entry
+    (`_AccountHeaderAction`/`_AccountPopupButton`) now opens a small
+    `PopupMenuButton` with the same 5 items directly from the header icon
+    instead, for a signed-in non-admin customer at desktop width (signed-out
+    still opens the sign-in dialog, admin still goes to the admin account
+    page — both unchanged, same as phone). Items `context.push` the same
+    routes `DesktopAccountNav` does. `AccountPage` itself is still reachable
+    (e.g. a direct link) but is no longer the primary way there from the
+    header on desktop.
+  - [x] `OrderHistoryPage` — `current: AccountNavItem.orderHistory`
+  - [x] `AddressFormPage` — `current: AccountNavItem.address`
+  - [x] `EditProfilePage` — `current: AccountNavItem.editProfile`
+  - [x] `MyReviewsPage` — `current: AccountNavItem.myReviews`; its `TabBar`
+    moved inside `DesktopAccountBody`'s content column (same "lives beside
+    the sidebar, not above it" treatment `BreadcrumbBar` got in Phase 0)
+- [x] Since these are separate routes (not tabs in one page), the nav
+  doesn't need shared state — each page renders its own `DesktopAccountNav`
+  with itself highlighted, same as `AdminMenuDrawer`'s `selectedIndex`.
+- [x] `AddressFormPage`'s form now reflows into two columns of fields at
+  >=600 (receiver+phone, postal+state, city+street, chome-banchi-go+
+  building) via a small `_fieldPair` helper — `Row` of two `Expanded`s
+  wide, stacked `Column` on phone, no new fields.
+- [x] Found and fixed a real bug during verification: `DesktopAccountNav`'s
+  selected-row highlight used a colored `Container` wrapping the `ListTile`
+  (same mistake `DesktopSidebar` made in Phase 0, and same fix — the
+  `ListTile`'s ink/tap-highlight paints on the nearest `Material` ancestor,
+  and a `Container` in between hides it; caught via a live Flutter
+  assertion, not visually).
+
+Verified at 375 (mobile, unchanged — still the plain `ListTile` list, no
+sidebar, plain account icon opening the sign-in dialog same as always) and
+~1100 desktop (sidebar renders, `pushReplacement` navigation between all 4
+linked pages works, correct item highlighted each time, no console errors
+after the `Material` fix; header's account icon still opens the sign-in
+dialog signed-out, confirming that branch of `_AccountHeaderAction` works).
+The `AccountPage` duplication fix was additionally confirmed against a real
+signed-in account via screenshots from the user's own session. The header
+popup itself (added after that same screenshot prompted the "same things in
+double" feedback) has **not** been click-tested signed-in yet, in either
+session — it follows the exact `PopupMenuButton` pattern already proven in
+`order_status_pill.dart`, but worth a real look before considering this
+fully done.
 
 ## Explicitly not doing (flag if you disagree)
 
@@ -223,10 +278,16 @@ every item.
 2. ✅ Phase 0.3 + 0.4 (shell sidebar + header) — done, restructured along
    the way per live feedback (see Phase 0 notes above). Drawer/bottom-nav
    behavior verified untouched on mobile.
-3. ⬜ Phase 1 pages one at a time (Home → Category/Product list → Product
-   detail → Cart → Checkout → Wishlist), verifying in the Chrome/Edge preview
-   at a few widths (768, 1024, 1440) after each.
-4. ⬜ Phase 2 (account area) once Phase 1 is confirmed.
+3. ✅ Phase 1 pages (Home → Category/Product list → Product detail → Cart →
+   Checkout → Wishlist) — done, with the product-detail fixes described
+   above. Verified at 375/620/1000/1440.
+4. ✅ Phase 2 (account area) — done, with the `Material`/ink fix described
+   above. Verified at 375 and ~1100.
+
+All phases of this plan are done. What's left is the two remaining
+Phase 0/1 loose ends called out above: `ResponsiveContentContainer` still
+isn't wired into Home/Category-listing/Wishlist, and the account section
+was verified logged-out only.
 
 Testing: `everyday_wholesale-web` / `everyday_wholesale-web-server` launch
 configs already exist in `.claude/launch.json` — use the browser preview at

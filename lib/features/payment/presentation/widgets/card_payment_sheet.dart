@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
+import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -14,6 +15,13 @@ import '../../domain/entities/payment_confirmation_result.dart';
 /// the PaymentIntent directly via `Stripe.instance.confirmPayment`. Pops
 /// with a [PaymentConfirmationResult]; a plain dismiss (tapping the
 /// backdrop) resolves to `null`, which the caller treats as canceled.
+///
+/// Presented as a bottom sheet on phone (see `confirmCardPayment`'s
+/// [showBlurredBottomSheet] call) but as a centered, width-capped dialog
+/// card at >= [AppBreakpoints.mobile] — a full-bleed bottom sheet reads as a
+/// mobile-only pattern once it's stretched across a desktop-width window;
+/// this widget adapts its own corner radius/width to whichever shell it was
+/// presented in.
 class CardPaymentSheet extends StatefulWidget {
   const CardPaymentSheet({super.key, required this.clientSecret});
 
@@ -38,17 +46,26 @@ class _CardPaymentSheetState extends State<CardPaymentSheet> {
     try {
       await Stripe.instance.confirmPayment(
         paymentIntentClientSecret: widget.clientSecret,
-        data: const PaymentMethodParams.card(paymentMethodData: PaymentMethodData()),
+        data: const PaymentMethodParams.card(
+          paymentMethodData: PaymentMethodData(),
+        ),
       );
-      if (mounted) Navigator.of(context).pop(const PaymentConfirmationSucceeded());
+      if (mounted) {
+        Navigator.of(context).pop(const PaymentConfirmationSucceeded());
+      }
     } on StripeException catch (e) {
       if (e.error.code == FailureCode.Canceled) {
-        if (mounted) Navigator.of(context).pop(const PaymentConfirmationCanceled());
+        if (mounted) {
+          Navigator.of(context).pop(const PaymentConfirmationCanceled());
+        }
         return;
       }
       setState(() {
         _isProcessing = false;
-        _errorMessage = e.error.localizedMessage ?? e.error.message ?? 'payment.generic_error'.tr();
+        _errorMessage =
+            e.error.localizedMessage ??
+            e.error.message ??
+            'payment.generic_error'.tr();
       });
     } catch (_) {
       setState(() {
@@ -60,51 +77,77 @@ class _CardPaymentSheetState extends State<CardPaymentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
-        child: Material(
-          color: AppColors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    const SizedBox(width: 30),
-                    Expanded(
-                      child: Text(
-                        'payment.card_details_title'.tr(),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.title,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 420 : double.infinity),
+          child: Material(
+            color: AppColors.surface,
+            borderRadius: isWide
+                ? BorderRadius.circular(24)
+                : const BorderRadius.vertical(top: Radius.circular(24)),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const SizedBox(width: 30),
+                      Expanded(
+                        child: Text(
+                          'payment.card_details_title'.tr(),
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.title,
+                        ),
+                      ),
+                      DialogCloseButton(
+                        onTap: _isProcessing
+                            ? () {}
+                            : () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.inputFill,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: CardField(
+                      enablePostalCode: true,
+                      onCardChanged: (details) => setState(
+                        () => _cardComplete = details?.complete ?? false,
                       ),
                     ),
-                    DialogCloseButton(onTap: _isProcessing ? () {} : () => Navigator.of(context).pop()),
+                  ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      _errorMessage!,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.error,
+                      ),
+                    ),
                   ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: AppColors.inputFill,
-                    borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: AppSpacing.md),
+                  PrimaryButton(
+                    label: 'payment.pay_now'.tr(),
+                    isLoading: _isProcessing,
+                    onTap: _pay,
                   ),
-                  child: CardField(
-                    enablePostalCode: true,
-                    onCardChanged: (details) => setState(() => _cardComplete = details?.complete ?? false),
-                  ),
-                ),
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(_errorMessage!, style: AppTextStyles.caption.copyWith(color: AppColors.error)),
+                  const SizedBox(height: AppSpacing.xs),
                 ],
-                const SizedBox(height: AppSpacing.md),
-                PrimaryButton(label: 'payment.pay_now'.tr(), isLoading: _isProcessing, onTap: _pay),
-                const SizedBox(height: AppSpacing.xs),
-              ],
+              ),
             ),
           ),
         ),

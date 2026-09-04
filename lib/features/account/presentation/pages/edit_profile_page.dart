@@ -14,6 +14,8 @@ import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../auth/presentation/bloc/account_event.dart';
 import '../../../auth/presentation/bloc/account_state.dart';
+import '../widgets/desktop_account_body.dart';
+import '../widgets/desktop_account_nav.dart';
 import 'account_page.dart';
 
 /// Only the display name is actually editable here — email/phone are tied
@@ -46,11 +48,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
-    getIt<AccountBloc>().add(AccountNameUpdateRequested(_nameController.text.trim()));
+    getIt<AccountBloc>().add(
+      AccountNameUpdateRequested(_nameController.text.trim()),
+    );
   }
 
   void _showContactLockedToast(BuildContext context) {
-    AppToast.show(context, 'account.primary_contact_locked'.tr(), type: ToastType.info);
+    AppToast.show(
+      context,
+      'account.primary_contact_locked'.tr(),
+      type: ToastType.info,
+    );
   }
 
   @override
@@ -71,52 +79,78 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Expanded(
               child: BlocConsumer<AccountBloc, AccountState>(
                 bloc: getIt<AccountBloc>(),
-                listenWhen: (previous, current) => previous.isSubmitting && !current.isSubmitting,
+                listenWhen: (previous, current) =>
+                    previous.isSubmitting && !current.isSubmitting,
                 listener: (context, state) {
                   if (state.errorMessage != null) {
-                    AppToast.show(context, state.errorMessage!, type: ToastType.error);
+                    AppToast.show(
+                      context,
+                      state.errorMessage!,
+                      type: ToastType.error,
+                    );
                   } else if (state.nameUpdated) {
-                    AppToast.show(context, 'account.profile_updated'.tr(), type: ToastType.success);
+                    AppToast.show(
+                      context,
+                      'account.profile_updated'.tr(),
+                      type: ToastType.success,
+                    );
                     context.pop();
                   }
                 },
                 builder: (context, state) {
-                  return Form(
-                    key: _formKey,
-                    child: ListView(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      children: [
-                        Text('account.edit_profile'.tr(), style: AppTextStyles.headline),
-                        const SizedBox(height: AppSpacing.lg),
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: AppInputStyle.decoration(hintText: 'account.name_hint'.tr(), radius: 14),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty) ? 'account.error_name_required'.tr() : null,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        TextFormField(
-                          controller: _emailController,
-                          readOnly: true,
-                          decoration: AppInputStyle.decoration(hintText: 'account.email_label'.tr(), radius: 14),
-                          onTap: () => _showContactLockedToast(context),
-                        ),
-                        if (hasPhone) ...[
+                  return DesktopAccountBody(
+                    current: AccountNavItem.editProfile,
+                    child: Form(
+                      key: _formKey,
+                      child: ListView(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        children: [
+                          Text(
+                            'account.edit_profile'.tr(),
+                            style: AppTextStyles.headline,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: AppInputStyle.decoration(
+                              hintText: 'account.name_hint'.tr(),
+                              radius: 14,
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                ? 'account.error_name_required'.tr()
+                                : null,
+                          ),
                           const SizedBox(height: AppSpacing.sm),
                           TextFormField(
-                            controller: _phoneController,
+                            controller: _emailController,
                             readOnly: true,
-                            decoration: AppInputStyle.decoration(hintText: 'account.phone_label'.tr(), radius: 14),
+                            decoration: AppInputStyle.decoration(
+                              hintText: 'account.email_label'.tr(),
+                              radius: 14,
+                            ),
                             onTap: () => _showContactLockedToast(context),
                           ),
+                          if (hasPhone) ...[
+                            const SizedBox(height: AppSpacing.sm),
+                            TextFormField(
+                              controller: _phoneController,
+                              readOnly: true,
+                              decoration: AppInputStyle.decoration(
+                                hintText: 'account.phone_label'.tr(),
+                                radius: 14,
+                              ),
+                              onTap: () => _showContactLockedToast(context),
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.lg),
+                          PrimaryButton(
+                            label: 'account.save_profile'.tr(),
+                            isLoading: state.isSubmitting,
+                            onTap: () => _submit(context),
+                          ),
                         ],
-                        const SizedBox(height: AppSpacing.lg),
-                        PrimaryButton(
-                          label: 'account.save_profile'.tr(),
-                          isLoading: state.isSubmitting,
-                          onTap: () => _submit(context),
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 },

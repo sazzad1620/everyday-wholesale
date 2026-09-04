@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
+import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/utils/toast.dart';
@@ -57,20 +58,31 @@ class _CheckoutViewState extends State<_CheckoutView> {
   PaymentMethodOption? _paymentMethod;
 
   Future<void> _pickPaymentMethod(BuildContext context) async {
-    final picked = await showPaymentMethodSheet(context, selected: _paymentMethod);
+    final picked = await showPaymentMethodSheet(
+      context,
+      selected: _paymentMethod,
+    );
     if (picked != null) setState(() => _paymentMethod = picked);
   }
 
   void _placeOrder(BuildContext context) {
     final address = getIt<AccountBloc>().state.user?.address;
     if (address == null) {
-      AppToast.show(context, 'checkout.address_required'.tr(), type: ToastType.error);
+      AppToast.show(
+        context,
+        'checkout.address_required'.tr(),
+        type: ToastType.error,
+      );
       return;
     }
 
     final paymentMethod = _paymentMethod;
     if (paymentMethod == null) {
-      AppToast.show(context, 'checkout.payment_method_required'.tr(), type: ToastType.error);
+      AppToast.show(
+        context,
+        'checkout.payment_method_required'.tr(),
+        type: ToastType.error,
+      );
       return;
     }
 
@@ -85,9 +97,15 @@ class _CheckoutViewState extends State<_CheckoutView> {
     );
   }
 
-  Future<void> _confirmPendingPayment(BuildContext context, String clientSecret) async {
+  Future<void> _confirmPendingPayment(
+    BuildContext context,
+    String clientSecret,
+  ) async {
     final bloc = context.read<CheckoutBloc>();
-    final result = await confirmCardPayment(context: context, clientSecret: clientSecret);
+    final result = await confirmCardPayment(
+      context: context,
+      clientSecret: clientSecret,
+    );
     if (!context.mounted) return;
     switch (result) {
       case PaymentConfirmationSucceeded():
@@ -117,18 +135,29 @@ class _CheckoutViewState extends State<_CheckoutView> {
                 listenWhen: (previous, current) {
                   final pendingSecretAppeared =
                       current.pendingPaymentClientSecret != null &&
-                      previous.pendingPaymentClientSecret != current.pendingPaymentClientSecret;
-                  final placingFinished = previous.isPlacingOrder && !current.isPlacingOrder;
+                      previous.pendingPaymentClientSecret !=
+                          current.pendingPaymentClientSecret;
+                  final placingFinished =
+                      previous.isPlacingOrder && !current.isPlacingOrder;
                   return pendingSecretAppeared || placingFinished;
                 },
                 listener: (context, state) async {
-                  if (state.pendingPaymentClientSecret != null && !state.paymentConfirmed) {
-                    await _confirmPendingPayment(context, state.pendingPaymentClientSecret!);
+                  if (state.pendingPaymentClientSecret != null &&
+                      !state.paymentConfirmed) {
+                    await _confirmPendingPayment(
+                      context,
+                      state.pendingPaymentClientSecret!,
+                    );
                     return;
                   }
                   if (state.errorMessage != null) {
-                    AppToast.show(context, state.errorMessage!, type: ToastType.error);
-                  } else if (state.paymentConfirmed && state.placedOrder != null) {
+                    AppToast.show(
+                      context,
+                      state.errorMessage!,
+                      type: ToastType.error,
+                    );
+                  } else if (state.paymentConfirmed &&
+                      state.placedOrder != null) {
                     context.go(
                       RoutePaths.orderConfirmation,
                       extra: OrderConfirmationArgs(
@@ -142,20 +171,78 @@ class _CheckoutViewState extends State<_CheckoutView> {
                   return BlocBuilder<CartBloc, CartState>(
                     bloc: getIt<CartBloc>(),
                     builder: (context, cartState) {
+                      final isWide =
+                          MediaQuery.sizeOf(context).width >=
+                          AppBreakpoints.mobile;
+
+                      final placeOrderButton = PrimaryButton(
+                        label: 'checkout.place_order'.tr(),
+                        isLoading: checkoutState.isPlacingOrder,
+                        onTap: () => _placeOrder(context),
+                      );
+
+                      // Desktop: address/payment method scroll on the left,
+                      // the order recap + place-order button stay put on
+                      // the right instead of scrolling below a long address
+                      // form — phone keeps everything in one stacked list.
+                      if (isWide) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: ListView(
+                                padding: const EdgeInsets.all(AppSpacing.md),
+                                children: [
+                                  const DeliveryAddressCard(),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  PaymentMethodCard(
+                                    selected: _paymentMethod,
+                                    onTap: () => _pickPaymentMethod(context),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: 360,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  0,
+                                  AppSpacing.md,
+                                  AppSpacing.md,
+                                  AppSpacing.md,
+                                ),
+                                child: Column(
+                                  children: [
+                                    OrderSummaryCard(
+                                      items: cartState.items,
+                                      itemTotal: cartState.itemTotal,
+                                    ),
+                                    const SizedBox(height: AppSpacing.lg),
+                                    placeOrderButton,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
                       return ListView(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         children: [
                           const DeliveryAddressCard(),
                           const SizedBox(height: AppSpacing.sm),
-                          OrderSummaryCard(items: cartState.items, itemTotal: cartState.itemTotal),
-                          const SizedBox(height: AppSpacing.sm),
-                          PaymentMethodCard(selected: _paymentMethod, onTap: () => _pickPaymentMethod(context)),
-                          const SizedBox(height: AppSpacing.lg),
-                          PrimaryButton(
-                            label: 'checkout.place_order'.tr(),
-                            isLoading: checkoutState.isPlacingOrder,
-                            onTap: () => _placeOrder(context),
+                          OrderSummaryCard(
+                            items: cartState.items,
+                            itemTotal: cartState.itemTotal,
                           ),
+                          const SizedBox(height: AppSpacing.sm),
+                          PaymentMethodCard(
+                            selected: _paymentMethod,
+                            onTap: () => _pickPaymentMethod(context),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          placeOrderButton,
                         ],
                       );
                     },

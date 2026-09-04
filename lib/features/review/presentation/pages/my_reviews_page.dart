@@ -10,6 +10,8 @@ import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../account/presentation/pages/account_page.dart';
+import '../../../account/presentation/widgets/desktop_account_body.dart';
+import '../../../account/presentation/widgets/desktop_account_nav.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../domain/entities/review_entity.dart';
 import '../../domain/entities/reviewable_item_entity.dart';
@@ -66,36 +68,58 @@ class _MyReviewsView extends StatelessWidget {
                 onMenuTap: () => context.pop(),
                 onAccountTap: () => openAccountMenu(context),
               ),
-              Material(
-                color: AppColors.surface,
-                child: TabBar(
-                  labelColor: AppColors.primary,
-                  unselectedLabelColor: AppColors.textSecondary,
-                  indicatorColor: AppColors.primary,
-                  tabs: [
-                    Tab(text: 'my_reviews.tab_to_be_reviewed'.tr()),
-                    Tab(text: 'my_reviews.tab_history'.tr()),
-                  ],
-                ),
-              ),
               Expanded(
-                child: BlocConsumer<MyReviewsBloc, MyReviewsState>(
-                  listenWhen: (previous, current) =>
-                      previous.submittingKey != null &&
-                      current.submittingKey == null &&
-                      current.errorMessage != null,
-                  listener: (context, state) => AppToast.show(context, state.errorMessage!, type: ToastType.error),
-                  builder: (context, state) {
-                    if (state.isLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    return TabBarView(
-                      children: [
-                        _ToBeReviewedTab(state: state, onRate: (item, rating) => _onRate(context, item, rating)),
-                        _HistoryTab(reviews: state.historyReviews),
-                      ],
-                    );
-                  },
+                child: DesktopAccountBody(
+                  current: AccountNavItem.myReviews,
+                  // TabBar lives inside the content column, not spanning
+                  // the full page above the sidebar — same reasoning as
+                  // BreadcrumbBar elsewhere (see DesktopBody's doc comment).
+                  child: Column(
+                    children: [
+                      Material(
+                        color: AppColors.surface,
+                        child: TabBar(
+                          labelColor: AppColors.primary,
+                          unselectedLabelColor: AppColors.textSecondary,
+                          indicatorColor: AppColors.primary,
+                          tabs: [
+                            Tab(text: 'my_reviews.tab_to_be_reviewed'.tr()),
+                            Tab(text: 'my_reviews.tab_history'.tr()),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: BlocConsumer<MyReviewsBloc, MyReviewsState>(
+                          listenWhen: (previous, current) =>
+                              previous.submittingKey != null &&
+                              current.submittingKey == null &&
+                              current.errorMessage != null,
+                          listener: (context, state) => AppToast.show(
+                            context,
+                            state.errorMessage!,
+                            type: ToastType.error,
+                          ),
+                          builder: (context, state) {
+                            if (state.isLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            return TabBarView(
+                              children: [
+                                _ToBeReviewedTab(
+                                  state: state,
+                                  onRate: (item, rating) =>
+                                      _onRate(context, item, rating),
+                                ),
+                                _HistoryTab(reviews: state.historyReviews),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -156,7 +180,8 @@ class _HistoryTab extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       itemCount: reviews.length,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-      itemBuilder: (context, index) => ReviewHistoryTile(review: reviews[index]),
+      itemBuilder: (context, index) =>
+          ReviewHistoryTile(review: reviews[index]),
     );
   }
 }

@@ -118,6 +118,7 @@
     "generic_error": "Something went wrong while processing your payment. Please try again."
   },
   "account": {
+    "title": "My Account",
     "guest_name": "Guest User",
     "guest_email": "guest@example.com",
     "edit_profile": "Edit Profile",

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
+import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
@@ -41,7 +42,15 @@ class CartPage extends StatelessWidget {
                 // right below the header on every page, same as Home's.
                 child: Column(
                   children: [
-                    BreadcrumbBar(items: [BreadcrumbItem(label: 'cart.title'.tr(), onTap: () {}, isCurrent: true)]),
+                    BreadcrumbBar(
+                      items: [
+                        BreadcrumbItem(
+                          label: 'cart.title'.tr(),
+                          onTap: () {},
+                          isCurrent: true,
+                        ),
+                      ],
+                    ),
                     Expanded(
                       child: BlocBuilder<CartBloc, CartState>(
                         bloc: getIt<CartBloc>(),
@@ -75,28 +84,65 @@ class _CartBody extends StatelessWidget {
     }
 
     final cartBloc = getIt<CartBloc>();
+    final isWide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
+    final summary = CartSummaryCard(
+      itemTotal: state.itemTotal,
+      onCheckout: () => context.push(RoutePaths.checkout),
+      onReturnToShopping: () => context.go(RoutePaths.home),
+    );
+
+    final itemsAndVoucher = [
+      CartFreeShippingBar(itemTotal: state.itemTotal),
+      const SizedBox(height: AppSpacing.sm),
+      for (final item in state.items) ...[
+        CartItemCard(
+          item: item,
+          onQuantityChanged: (quantity) =>
+              cartBloc.add(CartQuantityChanged(item.product.id, quantity)),
+          onRemove: () => cartBloc.add(CartItemRemoved(item.product.id)),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+      ],
+      const SizedBox(height: AppSpacing.sm),
+      const CartVoucherCard(),
+    ];
+
+    // Desktop: items scroll on the left, the totals/checkout card stays
+    // put on the right instead of scrolling away at the bottom of a long
+    // cart — phone keeps everything in one stacked, scrolling list.
+    if (isWide) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              children: itemsAndVoucher,
+            ),
+          ),
+          SizedBox(
+            width: 360,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                0,
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+              ),
+              child: summary,
+            ),
+          ),
+        ],
+      );
+    }
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        CartFreeShippingBar(itemTotal: state.itemTotal),
+        ...itemsAndVoucher,
         const SizedBox(height: AppSpacing.sm),
-        for (final item in state.items) ...[
-          CartItemCard(
-            item: item,
-            onQuantityChanged: (quantity) => cartBloc.add(CartQuantityChanged(item.product.id, quantity)),
-            onRemove: () => cartBloc.add(CartItemRemoved(item.product.id)),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-        ],
-        const SizedBox(height: AppSpacing.sm),
-        const CartVoucherCard(),
-        const SizedBox(height: AppSpacing.sm),
-        CartSummaryCard(
-          itemTotal: state.itemTotal,
-          onCheckout: () => context.push(RoutePaths.checkout),
-          onReturnToShopping: () => context.go(RoutePaths.home),
-        ),
+        summary,
       ],
     );
   }

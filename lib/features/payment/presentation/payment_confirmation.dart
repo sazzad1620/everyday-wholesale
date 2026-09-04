@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
+import '../../../core/utils/responsive/breakpoints.dart';
 import '../../../shared/widgets/dialogs/dialog_shell.dart';
 import '../domain/entities/payment_confirmation_result.dart';
 import 'widgets/card_payment_sheet.dart';
@@ -11,11 +12,18 @@ import 'widgets/card_payment_sheet.dart';
 /// outcome. Mobile uses the native `PaymentSheet`; the web SDK doesn't
 /// support it, so web falls back to an in-app [CardPaymentSheet] built on
 /// `CardField` + `confirmPayment`.
-Future<PaymentConfirmationResult> confirmCardPayment({required BuildContext context, required String clientSecret}) {
-  return kIsWeb ? _confirmWithCardField(context, clientSecret) : _confirmWithPaymentSheet(clientSecret);
+Future<PaymentConfirmationResult> confirmCardPayment({
+  required BuildContext context,
+  required String clientSecret,
+}) {
+  return kIsWeb
+      ? _confirmWithCardField(context, clientSecret)
+      : _confirmWithPaymentSheet(clientSecret);
 }
 
-Future<PaymentConfirmationResult> _confirmWithPaymentSheet(String clientSecret) async {
+Future<PaymentConfirmationResult> _confirmWithPaymentSheet(
+  String clientSecret,
+) async {
   try {
     await Stripe.instance.initPaymentSheet(
       paymentSheetParameters: SetupPaymentSheetParameters(
@@ -26,15 +34,32 @@ Future<PaymentConfirmationResult> _confirmWithPaymentSheet(String clientSecret) 
     await Stripe.instance.presentPaymentSheet();
     return const PaymentConfirmationSucceeded();
   } on StripeException catch (e) {
-    if (e.error.code == FailureCode.Canceled) return const PaymentConfirmationCanceled();
-    return PaymentConfirmationFailed(e.error.localizedMessage ?? e.error.message ?? 'payment.generic_error'.tr());
+    if (e.error.code == FailureCode.Canceled) {
+      return const PaymentConfirmationCanceled();
+    }
+    return PaymentConfirmationFailed(
+      e.error.localizedMessage ??
+          e.error.message ??
+          'payment.generic_error'.tr(),
+    );
   } catch (_) {
     return PaymentConfirmationFailed('payment.generic_error'.tr());
   }
 }
 
-Future<PaymentConfirmationResult> _confirmWithCardField(BuildContext context, String clientSecret) async {
-  final result = await showBlurredBottomSheet<PaymentConfirmationResult>(
+Future<PaymentConfirmationResult> _confirmWithCardField(
+  BuildContext context,
+  String clientSecret,
+) async {
+  // A bottom sheet reads as a mobile-only pattern once it's stretched full
+  // width on a desktop window — centered dialog card there instead (see
+  // CardPaymentSheet's own doc comment for how it adapts its styling to
+  // whichever shell it's presented in).
+  final isWide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+  final show = isWide
+      ? showBlurredDialog<PaymentConfirmationResult>
+      : showBlurredBottomSheet<PaymentConfirmationResult>;
+  final result = await show(
     context: context,
     builder: (context) => CardPaymentSheet(clientSecret: clientSecret),
   );

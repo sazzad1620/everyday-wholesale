@@ -8,6 +8,9 @@ import '../../../config/di/injection_container.dart';
 import '../../../config/routes/route_paths.dart';
 import '../../../core/constants/asset_paths.dart';
 import '../../../core/utils/responsive/breakpoints.dart';
+import '../../../features/auth/presentation/bloc/account_bloc.dart';
+import '../../../features/auth/presentation/bloc/account_event.dart';
+import '../../../features/auth/presentation/bloc/account_state.dart';
 import '../../../features/cart/presentation/bloc/cart_bloc.dart';
 import '../../../features/cart/presentation/bloc/cart_state.dart';
 import '../../theme/app_colors.dart';
@@ -60,16 +63,26 @@ class AppHeader extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.15))),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.textSecondary.withValues(alpha: 0.15),
+          ),
+        ),
         // Tight on purpose — a wider/softer blur here reads as a grey wash
         // on an otherwise all-white page, not as a shadow.
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 3, offset: const Offset(0, 1)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
         ],
       ),
       child: SafeArea(
         bottom: false,
-        child: isWide ? _WideHeaderRow(header: this) : _NarrowHeaderColumn(header: this),
+        child: isWide
+            ? _WideHeaderRow(header: this)
+            : _NarrowHeaderColumn(header: this),
       ),
     );
   }
@@ -87,12 +100,21 @@ class _NarrowHeaderColumn extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(4, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
+          padding: const EdgeInsets.fromLTRB(
+            4,
+            AppSpacing.xs,
+            AppSpacing.md,
+            AppSpacing.xs,
+          ),
           child: Row(
             children: [
               IconButton(
                 onPressed: header.onMenuTap,
-                icon: Icon(header.showBackButton ? Icons.arrow_back_rounded : Icons.menu_rounded),
+                icon: Icon(
+                  header.showBackButton
+                      ? Icons.arrow_back_rounded
+                      : Icons.menu_rounded,
+                ),
                 color: AppColors.textPrimary,
               ),
               const _BrandMark(),
@@ -102,13 +124,20 @@ class _NarrowHeaderColumn extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: const Padding(
                   padding: EdgeInsets.all(4),
-                  child: Icon(Icons.person_outline_rounded, color: AppColors.textPrimary, size: 22),
+                  child: Icon(
+                    Icons.person_outline_rounded,
+                    color: AppColors.textPrimary,
+                    size: 22,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        if (header.showSearchBar) ...[const SizedBox(height: AppSpacing.sm), const AppSearchBar()],
+        if (header.showSearchBar) ...[
+          const SizedBox(height: AppSpacing.sm),
+          const AppSearchBar(),
+        ],
         const SizedBox(height: AppSpacing.sm),
       ],
     );
@@ -128,7 +157,12 @@ class _WideHeaderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        4,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
       child: Row(
         children: [
           if (header.showBackButton)
@@ -139,7 +173,7 @@ class _WideHeaderRow extends StatelessWidget {
             )
           else
             const SizedBox(width: AppSpacing.sm),
-          const _BrandMark(),
+          _BrandMark(onTap: () => context.go(RoutePaths.home)),
           const SizedBox(width: AppSpacing.lg),
           if (header.showSearchBar)
             Expanded(
@@ -170,11 +204,7 @@ class _WideHeaderRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
-          _HeaderNavAction(
-            icon: Icons.person_outline_rounded,
-            label: 'nav.account'.tr(),
-            onTap: header.onAccountTap,
-          ),
+          _AccountHeaderAction(onAccountTap: header.onAccountTap),
         ],
       ),
     );
@@ -182,11 +212,18 @@ class _WideHeaderRow extends StatelessWidget {
 }
 
 class _BrandMark extends StatelessWidget {
-  const _BrandMark();
+  const _BrandMark({this.onTap});
+
+  /// Set only on desktop (see [_WideHeaderRow]) — the bottom nav's Home tab
+  /// doesn't exist at that width, and once the sidebar's own "Home" tile
+  /// was dropped too (see the plan doc's Phase 0 notes), the logo was the
+  /// only header element that looked clickable but wasn't. Left `null` on
+  /// phone, where the bottom nav's Home tab already covers this.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final mark = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Image.asset(AssetPaths.logo, height: 30),
@@ -194,14 +231,33 @@ class _BrandMark extends StatelessWidget {
         Text.rich(
           TextSpan(
             children: [
-              TextSpan(text: 'header.brand_primary'.tr(), style: GoogleFonts.oswald(fontWeight: FontWeight.w600)),
+              TextSpan(
+                text: 'header.brand_primary'.tr(),
+                style: GoogleFonts.oswald(fontWeight: FontWeight.w600),
+              ),
               const TextSpan(text: ' '),
-              TextSpan(text: 'header.brand_secondary'.tr(), style: GoogleFonts.oswald(fontWeight: FontWeight.w300)),
+              TextSpan(
+                text: 'header.brand_secondary'.tr(),
+                style: GoogleFonts.oswald(fontWeight: FontWeight.w300),
+              ),
             ],
           ),
-          style: const TextStyle(fontSize: 18, letterSpacing: -0.2, color: AppColors.textPrimary),
+          style: const TextStyle(
+            fontSize: 18,
+            letterSpacing: -0.2,
+            color: AppColors.textPrimary,
+          ),
         ),
       ],
+    );
+
+    final tap = onTap;
+    if (tap == null) return mark;
+
+    return InkWell(
+      onTap: tap,
+      borderRadius: BorderRadius.circular(8),
+      child: mark,
     );
   }
 }
@@ -210,11 +266,51 @@ class _BrandMark extends StatelessWidget {
 /// the same size and weight (a bare icon next to labeled ones reads as
 /// smaller even at equal icon size).
 class _HeaderNavAction extends StatelessWidget {
-  const _HeaderNavAction({required this.icon, required this.label, required this.onTap, this.badgeCount});
+  const _HeaderNavAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.badgeCount,
+  });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final int? badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: 4,
+        ),
+        child: _HeaderNavIconLabel(
+          icon: icon,
+          label: label,
+          badgeCount: badgeCount,
+        ),
+      ),
+    );
+  }
+}
+
+/// Just the icon-over-label visual, no tap handling of its own — shared by
+/// [_HeaderNavAction] (wraps it in an [InkWell]) and [_AccountPopupButton]'s
+/// trigger (wrapped in a [PopupMenuButton] instead, which handles its own
+/// tap).
+class _HeaderNavIconLabel extends StatelessWidget {
+  const _HeaderNavIconLabel({
+    required this.icon,
+    required this.label,
+    this.badgeCount,
+  });
+
+  final IconData icon;
+  final String label;
   final int? badgeCount;
 
   @override
@@ -224,19 +320,133 @@ class _HeaderNavAction extends StatelessWidget {
       iconWidget = Badge(label: Text('$badgeCount'), child: iconWidget);
     }
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            iconWidget,
-            const SizedBox(height: 2),
-            Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary)),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        iconWidget,
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
         ),
+      ],
+    );
+  }
+}
+
+/// The header's account entry — a plain tap (sign-in dialog / admin
+/// account page, via [onAccountTap]) for a signed-out visitor or an admin,
+/// same as before; for a signed-in customer, tapping opens a small popup
+/// right there instead of navigating to the account hub page, since that
+/// hub is mostly just a launchpad to these same 5 destinations once
+/// [DesktopSidebar]-style navigation exists elsewhere on desktop.
+class _AccountHeaderAction extends StatelessWidget {
+  const _AccountHeaderAction({required this.onAccountTap});
+
+  final VoidCallback onAccountTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AccountBloc, AccountState>(
+      bloc: getIt<AccountBloc>(),
+      builder: (context, state) {
+        final user = state.user;
+        if (user == null || user.isAdmin) {
+          return _HeaderNavAction(
+            icon: Icons.person_outline_rounded,
+            label: 'nav.account'.tr(),
+            onTap: onAccountTap,
+          );
+        }
+        return const _AccountPopupButton();
+      },
+    );
+  }
+}
+
+class _AccountPopupButton extends StatelessWidget {
+  const _AccountPopupButton();
+
+  void _logout(BuildContext context) {
+    getIt<AccountBloc>().add(const AccountSignOutRequested());
+    context.go(RoutePaths.home);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<VoidCallback>(
+      tooltip: '',
+      onSelected: (action) => action(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: AppColors.surface,
+      offset: const Offset(0, 44),
+      itemBuilder: (_) => [
+        _popupItem(
+          Icons.edit_outlined,
+          'account.edit_profile'.tr(),
+          () => context.push(RoutePaths.editProfile),
+        ),
+        _popupItem(
+          Icons.location_on_outlined,
+          'account.address'.tr(),
+          () => context.push(RoutePaths.accountAddress),
+        ),
+        _popupItem(
+          Icons.receipt_long_outlined,
+          'account.order_history'.tr(),
+          () => context.push(RoutePaths.orderHistory),
+        ),
+        _popupItem(
+          Icons.star_outline_rounded,
+          'account.my_reviews'.tr(),
+          () => context.push(RoutePaths.myReviews),
+        ),
+        const PopupMenuDivider(height: 1),
+        _popupItem(
+          Icons.logout_rounded,
+          'account.logout'.tr(),
+          () => _logout(context),
+          isDestructive: true,
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: 4,
+        ),
+        child: _HeaderNavIconLabel(
+          icon: Icons.person_outline_rounded,
+          label: 'nav.account'.tr(),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<VoidCallback> _popupItem(
+    IconData icon,
+    String label,
+    VoidCallback action, {
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive ? AppColors.error : AppColors.textPrimary;
+    return PopupMenuItem<VoidCallback>(
+      value: action,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: isDestructive ? AppColors.error : AppColors.textSecondary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            label,
+            style: AppTextStyles.body.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

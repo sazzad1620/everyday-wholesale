@@ -13,6 +13,7 @@ import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../../shared/widgets/product_grid.dart';
+import '../../../../shared/widgets/responsive_content_container.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../../../home/domain/entities/subcategory_entity.dart';
 import '../../../home/presentation/widgets/subcategory_grid.dart';
@@ -21,14 +22,21 @@ import '../bloc/product_list_event.dart';
 import '../bloc/product_list_state.dart';
 
 /// What `extra` carries on the `category/:categoryId` route.
-typedef CategoryProductsExtra = ({String? categoryName, List<SubcategoryEntity> subcategories});
+typedef CategoryProductsExtra = ({
+  String? categoryName,
+  List<SubcategoryEntity> subcategories,
+});
 
 /// What `extra` carries on the `browse/:subcategoryId` route — both names
 /// are needed there since the path only has ids. `subcategories` is the
 /// filtered-out page's siblings, carried along purely so a "back to
 /// category" breadcrumb tap can restore the merged subcategory+product view
 /// without re-fetching the category.
-typedef ProductListExtra = ({String categoryName, String subcategoryName, List<SubcategoryEntity> subcategories});
+typedef ProductListExtra = ({
+  String categoryName,
+  String subcategoryName,
+  List<SubcategoryEntity> subcategories,
+});
 
 class ProductListPage extends StatelessWidget {
   const ProductListPage({
@@ -64,14 +72,23 @@ class ProductListPage extends StatelessWidget {
               label: categoryLabel,
               onTap: () => context.pushReplacement(
                 RoutePaths.categoryProducts(categoryId),
-                extra: (categoryName: categoryLabel, subcategories: subcategories),
+                extra: (
+                  categoryName: categoryLabel,
+                  subcategories: subcategories,
+                ),
               ),
             ),
-            BreadcrumbItem(label: subcategoryName ?? subcategoryId!, onTap: () {}, isCurrent: true),
+            BreadcrumbItem(
+              label: subcategoryName ?? subcategoryId!,
+              onTap: () {},
+              isCurrent: true,
+            ),
           ];
 
     return BlocProvider(
-      create: (_) => getIt<ProductListBloc>()..add(ProductListStarted(categoryId, subcategoryId: subcategoryId)),
+      create: (_) =>
+          getIt<ProductListBloc>()
+            ..add(ProductListStarted(categoryId, subcategoryId: subcategoryId)),
       child: ColoredBox(
         color: AppColors.background,
         child: SafeArea(
@@ -144,9 +161,17 @@ class _ProductListBody extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: AppColors.error,
+              ),
               const SizedBox(height: AppSpacing.sm),
-              Text(message, style: AppTextStyles.body, textAlign: TextAlign.center),
+              Text(
+                message,
+                style: AppTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
@@ -159,51 +184,67 @@ class _ProductListBody extends StatelessWidget {
     // [ProductListExtra]) purely for breadcrumb "back" navigation, not display.
     final showSubcategories = subcategoryId == null && subcategories.isNotEmpty;
 
-    return ListView(
-      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.lg),
-      children: [
-        if (showSubcategories) ...[
-          SubcategoryGrid(
-            subcategories: subcategories,
-            onSubcategoryTap: (sub) => context.push(
-              RoutePaths.subcategoryProducts(categoryId, sub.id),
-              extra: (categoryName: categoryName, subcategoryName: sub.name, subcategories: subcategories),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Text(
-              'product.all_category_products'.tr(namedArgs: {'categoryName': categoryName}),
-              style: AppTextStyles.title,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-        ],
-        if (products.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Center(
-              child: Text('product.empty'.tr(), style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
-            ),
-          )
-        else
-          ProductGrid(
-            products: products,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            onTap: (product) => context.push(
-              RoutePaths.productDetail(categoryId, product.id),
-              extra: (
-                categoryName: categoryName,
-                subcategoryId: subcategoryId,
-                subcategoryName: subcategoryName,
-                subcategories: subcategories,
+    return ResponsiveContentContainer(
+      child: ListView(
+        padding: const EdgeInsets.only(
+          top: AppSpacing.md,
+          bottom: AppSpacing.lg,
+        ),
+        children: [
+          if (showSubcategories) ...[
+            SubcategoryGrid(
+              subcategories: subcategories,
+              onSubcategoryTap: (sub) => context.push(
+                RoutePaths.subcategoryProducts(categoryId, sub.id),
+                extra: (
+                  categoryName: categoryName,
+                  subcategoryName: sub.name,
+                  subcategories: subcategories,
+                ),
               ),
             ),
-          ),
-      ],
+            const SizedBox(height: AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Text(
+                'product.all_category_products'.tr(
+                  namedArgs: {'categoryName': categoryName},
+                ),
+                style: AppTextStyles.title,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          if (products.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Center(
+                child: Text(
+                  'product.empty'.tr(),
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            )
+          else
+            ProductGrid(
+              products: products,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              onTap: (product) => context.push(
+                RoutePaths.productDetail(categoryId, product.id),
+                extra: (
+                  categoryName: categoryName,
+                  subcategoryId: subcategoryId,
+                  subcategoryName: subcategoryName,
+                  subcategories: subcategories,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

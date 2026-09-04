@@ -11,6 +11,7 @@ import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../../shared/widgets/product_grid.dart';
+import '../../../../shared/widgets/responsive_content_container.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../bloc/wishlist_bloc.dart';
 import '../bloc/wishlist_state.dart';
@@ -59,10 +60,14 @@ class _WishlistBody extends StatelessWidget {
       );
     }
 
-    return ProductGrid(
-      products: state.items,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      onTap: (product) => context.push(RoutePaths.productDetail(product.categoryId, product.id)),
+    return ResponsiveContentContainer(
+      child: ProductGrid(
+        products: state.items,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        onTap: (product) => context.push(
+          RoutePaths.productDetail(product.categoryId, product.id),
+        ),
+      ),
     );
   }
 }

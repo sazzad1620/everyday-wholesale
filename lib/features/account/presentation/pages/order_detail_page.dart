@@ -36,7 +36,10 @@ class OrderDetailPage extends StatelessWidget {
                 order: order,
                 statusWidget: OrderStatusPill(status: order.status),
                 paymentStatusPill: order.stripePaymentIntentId != null
-                    ? PaymentStatusPill(status: order.paymentStatus, createdAt: order.createdAt)
+                    ? PaymentStatusPill(
+                        status: order.paymentStatus,
+                        createdAt: order.createdAt,
+                      )
                     : const CodPaymentPill(),
               ),
             ),

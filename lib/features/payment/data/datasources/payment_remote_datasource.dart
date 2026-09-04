@@ -32,11 +32,15 @@ class PaymentRemoteDatasourceImpl implements PaymentRemoteDatasource {
 
       final clientSecret = result.data['clientSecret'] as String?;
       if (clientSecret == null || clientSecret.isEmpty) {
-        throw const ServerException('Could not start the payment. Please try again.');
+        throw const ServerException(
+          'Could not start the payment. Please try again.',
+        );
       }
       return clientSecret;
     } on FirebaseFunctionsException catch (e) {
-      throw ServerException(e.message ?? 'Could not start the payment. Please try again.');
+      throw ServerException(
+        e.message ?? 'Could not start the payment. Please try again.',
+      );
     }
   }
 }

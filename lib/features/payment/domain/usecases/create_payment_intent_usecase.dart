@@ -12,5 +12,6 @@ class CreatePaymentIntentUseCase extends UseCase<String, String> {
   final PaymentRepository _repository;
 
   @override
-  Future<Either<Failure, String>> call(String params) => _repository.createPaymentIntent(params);
+  Future<Either<Failure, String>> call(String params) =>
+      _repository.createPaymentIntent(params);
 }

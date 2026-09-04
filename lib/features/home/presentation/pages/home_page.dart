@@ -9,6 +9,7 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
+import '../../../../shared/widgets/responsive_content_container.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
@@ -75,12 +76,17 @@ class _HomeBody extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: AppColors.error,
+              ),
               const SizedBox(height: AppSpacing.sm),
               Text('common.generic_error'.tr(), style: AppTextStyles.body),
               const SizedBox(height: AppSpacing.md),
               FilledButton(
-                onPressed: () => context.read<HomeBloc>().add(const HomeStarted()),
+                onPressed: () =>
+                    context.read<HomeBloc>().add(const HomeStarted()),
                 child: Text('common.retry'.tr()),
               ),
             ],
@@ -91,21 +97,29 @@ class _HomeBody extends StatelessWidget {
 
     final loaded = state as HomeLoaded;
 
-    return ListView(
-      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.lg),
-      children: [
-        HomePromoCarousel(banners: loaded.promoBanners),
-        const SizedBox(height: AppSpacing.lg),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: Text('home.explore_categories'.tr(), style: AppTextStyles.title),
+    return ResponsiveContentContainer(
+      child: ListView(
+        padding: const EdgeInsets.only(
+          top: AppSpacing.md,
+          bottom: AppSpacing.lg,
         ),
-        const SizedBox(height: AppSpacing.sm),
-        CategoryGrid(
-          categories: loaded.categories,
-          onCategoryTap: (category) => navigateToCategory(context, category),
-        ),
-      ],
+        children: [
+          HomePromoCarousel(banners: loaded.promoBanners),
+          const SizedBox(height: AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: Text(
+              'home.explore_categories'.tr(),
+              style: AppTextStyles.title,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          CategoryGrid(
+            categories: loaded.categories,
+            onCategoryTap: (category) => navigateToCategory(context, category),
+          ),
+        ],
+      ),
     );
   }
 }

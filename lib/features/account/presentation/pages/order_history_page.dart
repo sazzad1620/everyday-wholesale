@@ -22,6 +22,8 @@ import '../../../order/presentation/widgets/order_info_row.dart';
 import '../../../order/presentation/widgets/order_status_pill.dart';
 import '../../../order/presentation/widgets/payment_status_pill.dart';
 import '../../../payment/presentation/widgets/retry_payment_button.dart';
+import '../widgets/desktop_account_body.dart';
+import '../widgets/desktop_account_nav.dart';
 import 'account_page.dart';
 
 /// Full-screen order-history page, reached from [AccountPage]. Pushed on the
@@ -35,7 +37,8 @@ class OrderHistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<OrderHistoryBloc>()..add(const OrderHistoryRequested()),
+      create: (_) =>
+          getIt<OrderHistoryBloc>()..add(const OrderHistoryRequested()),
       child: const _OrderHistoryView(),
     );
   }
@@ -58,30 +61,35 @@ class _OrderHistoryView extends StatelessWidget {
               onAccountTap: () => openAccountMenu(context),
             ),
             Expanded(
-              child: BlocBuilder<OrderHistoryBloc, OrderHistoryState>(
-                builder: (context, state) {
-                  return switch (state) {
-                    OrderHistoryInitial() || OrderHistoryInProgress() => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    OrderHistoryFailure(:final message) => ComingSoonView(
-                      icon: Icons.error_outline_rounded,
-                      title: 'common.generic_error'.tr(),
-                      message: message,
-                    ),
-                    OrderHistoryLoaded(:final orders) when orders.isEmpty => ComingSoonView(
-                      icon: Icons.receipt_long_outlined,
-                      title: 'order_history.empty_title'.tr(),
-                      message: 'order_history.empty_message'.tr(),
-                    ),
-                    OrderHistoryLoaded(:final orders) => ListView.separated(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      itemCount: orders.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                      itemBuilder: (context, index) => _OrderCard(order: orders[index]),
-                    ),
-                  };
-                },
+              child: DesktopAccountBody(
+                current: AccountNavItem.orderHistory,
+                child: BlocBuilder<OrderHistoryBloc, OrderHistoryState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      OrderHistoryInitial() || OrderHistoryInProgress() =>
+                        const Center(child: CircularProgressIndicator()),
+                      OrderHistoryFailure(:final message) => ComingSoonView(
+                        icon: Icons.error_outline_rounded,
+                        title: 'common.generic_error'.tr(),
+                        message: message,
+                      ),
+                      OrderHistoryLoaded(:final orders) when orders.isEmpty =>
+                        ComingSoonView(
+                          icon: Icons.receipt_long_outlined,
+                          title: 'order_history.empty_title'.tr(),
+                          message: 'order_history.empty_message'.tr(),
+                        ),
+                      OrderHistoryLoaded(:final orders) => ListView.separated(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        itemCount: orders.length,
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: AppSpacing.md),
+                        itemBuilder: (context, index) =>
+                            _OrderCard(order: orders[index]),
+                      ),
+                    };
+                  },
+                ),
               ),
             ),
           ],
@@ -103,7 +111,11 @@ class _OrderCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.14),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -119,18 +131,29 @@ class _OrderCard extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: Column(
                   children: [
-                    OrderInfoRow(label: 'order_history.order_date'.tr(), value: DateFormat.yMMMMd().format(order.createdAt)),
+                    OrderInfoRow(
+                      label: 'order_history.order_date'.tr(),
+                      value: DateFormat.yMMMMd().format(order.createdAt),
+                    ),
                     const SizedBox(height: AppSpacing.xs),
-                    OrderInfoRow(label: 'order_history.payment_method'.tr(), value: order.paymentMethod),
+                    OrderInfoRow(
+                      label: 'order_history.payment_method'.tr(),
+                      value: order.paymentMethod,
+                    ),
                     const SizedBox(height: AppSpacing.xs),
-                    OrderInfoRow(label: 'order_history.total'.tr(), value: formatYen(order.total)),
+                    OrderInfoRow(
+                      label: 'order_history.total'.tr(),
+                      value: formatYen(order.total),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'order_history.order_status'.tr(),
-                          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                         OrderStatusPill(status: order.status),
                       ],
@@ -141,24 +164,35 @@ class _OrderCard extends StatelessWidget {
                       children: [
                         Text(
                           'order_history.payment_status'.tr(),
-                          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                         order.stripePaymentIntentId != null
-                            ? PaymentStatusPill(status: order.paymentStatus, createdAt: order.createdAt)
+                            ? PaymentStatusPill(
+                                status: order.paymentStatus,
+                                createdAt: order.createdAt,
+                              )
                             : const CodPaymentPill(),
                       ],
                     ),
-                    if (order.stripePaymentIntentId != null && order.paymentStatus == PaymentStatus.failed) ...[
+                    if (order.stripePaymentIntentId != null &&
+                        order.paymentStatus == PaymentStatus.failed) ...[
                       const SizedBox(height: AppSpacing.sm),
                       RetryPaymentButton(
                         orderId: order.id,
                         onSucceeded: () async {
                           await context.push(
                             RoutePaths.orderConfirmation,
-                            extra: OrderConfirmationArgs(order: order, isCardOrder: true),
+                            extra: OrderConfirmationArgs(
+                              order: order,
+                              isCardOrder: true,
+                            ),
                           );
                           if (context.mounted) {
-                            context.read<OrderHistoryBloc>().add(const OrderHistoryRequested());
+                            context.read<OrderHistoryBloc>().add(
+                              const OrderHistoryRequested(),
+                            );
                           }
                         },
                       ),

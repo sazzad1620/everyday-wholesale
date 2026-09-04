@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -27,8 +28,19 @@ extension PaymentMethodOptionLabel on PaymentMethodOption {
 /// same one-tap-to-choose pattern as a system picker). Returns `null` if
 /// dismissed without picking, in which case the caller leaves the previous
 /// selection (if any) untouched.
-Future<PaymentMethodOption?> showPaymentMethodSheet(BuildContext context, {PaymentMethodOption? selected}) {
-  return showBlurredBottomSheet<PaymentMethodOption>(
+///
+/// Bottom sheet on phone; centered dialog card at >= [AppBreakpoints.mobile]
+/// — same reasoning as `CardPaymentSheet`, and the same adapt-to-whichever-
+/// shell approach (`_PaymentMethodSheet` checks its own width at build time).
+Future<PaymentMethodOption?> showPaymentMethodSheet(
+  BuildContext context, {
+  PaymentMethodOption? selected,
+}) {
+  final isWide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+  final show = isWide
+      ? showBlurredDialog<PaymentMethodOption>
+      : showBlurredBottomSheet<PaymentMethodOption>;
+  return show(
     context: context,
     builder: (context) => _PaymentMethodSheet(selected: selected),
   );
@@ -41,54 +53,72 @@ class _PaymentMethodSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
     return SafeArea(
-      child: Material(
-        color: AppColors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: AppSpacing.sm),
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.textSecondary.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Row(
-                children: [
-                  const SizedBox(width: 30),
-                  Expanded(
-                    child: Text(
-                      'checkout.choose_payment_method'.tr(),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.title,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: isWide ? 420 : double.infinity),
+        child: Material(
+          color: AppColors.surface,
+          borderRadius: isWide
+              ? BorderRadius.circular(24)
+              : const BorderRadius.vertical(top: Radius.circular(24)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: AppSpacing.sm),
+              // The drag handle only makes sense on the bottom sheet you can
+              // actually drag closed on phone — a leftover pill in a
+              // centered desktop dialog would just look like unexplained
+              // decoration.
+              if (!isWide)
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.textSecondary.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  DialogCloseButton(onTap: () => Navigator.of(context).pop()),
-                ],
+                ),
+              const SizedBox(height: AppSpacing.md),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 30),
+                    Expanded(
+                      child: Text(
+                        'checkout.choose_payment_method'.tr(),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.title,
+                      ),
+                    ),
+                    DialogCloseButton(onTap: () => Navigator.of(context).pop()),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Divider(height: 1, color: AppColors.textSecondary.withValues(alpha: 0.15)),
-            for (final option in PaymentMethodOption.values) ...[
-              _PaymentOptionTile(
-                option: option,
-                selected: selected == option,
-                onTap: () => Navigator.of(context).pop(option),
+              const SizedBox(height: AppSpacing.sm),
+              Divider(
+                height: 1,
+                color: AppColors.textSecondary.withValues(alpha: 0.15),
               ),
-              if (option != PaymentMethodOption.values.last)
-                Divider(height: 1, color: AppColors.textSecondary.withValues(alpha: 0.15)),
+              for (final option in PaymentMethodOption.values) ...[
+                _PaymentOptionTile(
+                  option: option,
+                  selected: selected == option,
+                  onTap: () => Navigator.of(context).pop(option),
+                ),
+                if (option != PaymentMethodOption.values.last)
+                  Divider(
+                    height: 1,
+                    color: AppColors.textSecondary.withValues(alpha: 0.15),
+                  ),
+              ],
+              const SizedBox(height: AppSpacing.xs),
             ],
-            const SizedBox(height: AppSpacing.xs),
-          ],
+          ),
         ),
       ),
     );
@@ -96,7 +126,11 @@ class _PaymentMethodSheet extends StatelessWidget {
 }
 
 class _PaymentOptionTile extends StatelessWidget {
-  const _PaymentOptionTile({required this.option, required this.selected, required this.onTap});
+  const _PaymentOptionTile({
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
 
   final PaymentMethodOption option;
   final bool selected;
@@ -107,18 +141,30 @@ class _PaymentOptionTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
         child: Row(
           children: [
             Icon(
-              selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-              color: selected ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.4),
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
+              color: selected
+                  ? AppColors.primary
+                  : AppColors.textSecondary.withValues(alpha: 0.4),
               size: 22,
             ),
             const SizedBox(width: AppSpacing.sm),
             Icon(option.icon, color: AppColors.primary, size: 22),
             const SizedBox(width: AppSpacing.sm),
-            Expanded(child: Text(option.label(), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600))),
+            Expanded(
+              child: Text(
+                option.label(),
+                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
           ],
         ),
       ),
