@@ -9,6 +9,8 @@ abstract class OrderRemoteDatasource {
   Future<OrderModel> placeOrder(OrderModel order);
 
   Future<List<OrderModel>> getOrderHistory();
+
+  Stream<OrderModel> watchOrder(String orderId);
 }
 
 @LazySingleton(as: OrderRemoteDatasource)
@@ -22,9 +24,20 @@ class OrderRemoteDatasourceImpl implements OrderRemoteDatasource {
 
   @override
   Future<OrderModel> placeOrder(OrderModel order) async {
+    // Firestore's own write Future only resolves once the server
+    // acknowledges it — with no network it just retries with backoff
+    // forever and never completes or throws, which left "Place Order"
+    // spinning indefinitely instead of failing. A timeout turns that into a
+    // real, catchable error the checkout flow can show the customer.
     final docRef = await _firestore
         .collection(_ordersCollection)
-        .add({...order.toMap(), 'createdAt': FieldValue.serverTimestamp()});
+        .add({...order.toMap(), 'createdAt': FieldValue.serverTimestamp()})
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw const ServerException(
+            'Could not place your order. Please check your internet connection and try again.',
+          ),
+        );
     // `createdAt` resolves to "now" here (see OrderModel.fromMap) rather than
     // re-reading the doc for the exact server value — not worth a second
     // round-trip just for the confirmation screen's immediate display.
@@ -43,5 +56,15 @@ class OrderRemoteDatasourceImpl implements OrderRemoteDatasource {
     final orders = snapshot.docs.map((doc) => OrderModel.fromMap(doc.data(), id: doc.id)).toList();
     orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return orders;
+  }
+
+  @override
+  Stream<OrderModel> watchOrder(String orderId) {
+    return _firestore
+        .collection(_ordersCollection)
+        .doc(orderId)
+        .snapshots()
+        .where((snapshot) => snapshot.exists)
+        .map((snapshot) => OrderModel.fromMap(snapshot.data()!, id: snapshot.id));
   }
 }

@@ -11,13 +11,17 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../checkout/presentation/pages/order_confirmation_page.dart';
 import '../../../order/domain/entities/order_entity.dart';
+import '../../../order/domain/entities/payment_status.dart';
 import '../../../order/presentation/bloc/order_history_bloc.dart';
 import '../../../order/presentation/bloc/order_history_event.dart';
 import '../../../order/presentation/bloc/order_history_state.dart';
 import '../../../order/presentation/widgets/order_id_header_bar.dart';
 import '../../../order/presentation/widgets/order_info_row.dart';
 import '../../../order/presentation/widgets/order_status_pill.dart';
+import '../../../order/presentation/widgets/payment_status_pill.dart';
+import '../../../payment/presentation/widgets/retry_payment_button.dart';
 import 'account_page.dart';
 
 /// Full-screen order-history page, reached from [AccountPage]. Pushed on the
@@ -131,6 +135,34 @@ class _OrderCard extends StatelessWidget {
                         OrderStatusPill(status: order.status),
                       ],
                     ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'order_history.payment_status'.tr(),
+                          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                        ),
+                        order.stripePaymentIntentId != null
+                            ? PaymentStatusPill(status: order.paymentStatus, createdAt: order.createdAt)
+                            : const CodPaymentPill(),
+                      ],
+                    ),
+                    if (order.stripePaymentIntentId != null && order.paymentStatus == PaymentStatus.failed) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      RetryPaymentButton(
+                        orderId: order.id,
+                        onSucceeded: () async {
+                          await context.push(
+                            RoutePaths.orderConfirmation,
+                            extra: OrderConfirmationArgs(order: order, isCardOrder: true),
+                          );
+                          if (context.mounted) {
+                            context.read<OrderHistoryBloc>().add(const OrderHistoryRequested());
+                          }
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),

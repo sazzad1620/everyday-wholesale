@@ -6,11 +6,11 @@ import '../../features/account/presentation/pages/address_form_page.dart';
 import '../../features/account/presentation/pages/edit_profile_page.dart';
 import '../../features/account/presentation/pages/order_detail_page.dart';
 import '../../features/account/presentation/pages/order_history_page.dart';
-import '../../features/admin/presentation/pages/admin_account_page.dart';
-import '../../features/admin/presentation/pages/admin_category_form_page.dart';
-import '../../features/admin/presentation/pages/admin_order_detail_page.dart';
-import '../../features/admin/presentation/pages/admin_product_form_page.dart';
-import '../../features/admin/presentation/pages/admin_shell_page.dart';
+import '../../features/admin/presentation/pages/categories/admin_category_form_page.dart';
+import '../../features/admin/presentation/pages/orders/admin_order_detail_page.dart';
+import '../../features/admin/presentation/pages/products/admin_product_form_page.dart';
+import '../../features/admin/presentation/pages/shell/admin_account_page.dart';
+import '../../features/admin/presentation/pages/shell/admin_shell_page.dart';
 import '../../features/auth/presentation/bloc/account_bloc.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
@@ -200,7 +200,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RoutePaths.orderConfirmation,
       parentNavigatorKey: rootNavigatorKey,
-      builder: (context, state) => OrderConfirmationPage(order: state.extra as OrderEntity?),
+      builder: (context, state) => OrderConfirmationPage(args: state.extra as OrderConfirmationArgs?),
     ),
   ],
 );

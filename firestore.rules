@@ -61,7 +61,11 @@ service cloud.firestore {
     // every order or change its status.
     match /orders/{orderId} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.customerId == request.auth.uid);
-      allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid;
+      // Payment fields must start clean — they're only ever advanced
+      // server-side afterwards, by the `createPaymentIntent`/`stripeWebhook`
+      // Cloud Functions (Admin SDK, so this rule doesn't constrain them).
+      allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid &&
+        request.resource.data.paymentStatus == 'unpaid' && request.resource.data.stripePaymentIntentId == null;
       allow update, delete: if isAdmin();
     }
 

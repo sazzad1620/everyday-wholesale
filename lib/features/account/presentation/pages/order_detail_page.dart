@@ -6,6 +6,7 @@ import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/widgets/order_detail_content.dart';
 import '../../../order/presentation/widgets/order_status_pill.dart';
+import '../../../order/presentation/widgets/payment_status_pill.dart';
 import 'account_page.dart';
 
 /// Read-only order detail — reached by tapping a card on [OrderHistoryPage].
@@ -31,7 +32,13 @@ class OrderDetailPage extends StatelessWidget {
               onAccountTap: () => openAccountMenu(context),
             ),
             Expanded(
-              child: OrderDetailContent(order: order, statusWidget: OrderStatusPill(status: order.status)),
+              child: OrderDetailContent(
+                order: order,
+                statusWidget: OrderStatusPill(status: order.status),
+                paymentStatusPill: order.stripePaymentIntentId != null
+                    ? PaymentStatusPill(status: order.paymentStatus, createdAt: order.createdAt)
+                    : const CodPaymentPill(),
+              ),
             ),
           ],
         ),

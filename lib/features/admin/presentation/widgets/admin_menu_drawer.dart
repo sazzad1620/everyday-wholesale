@@ -2,12 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../config/di/injection_container.dart';
-import '../../../../config/routes/route_paths.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_spacing.dart';
-import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/navigation/drawer_header_bar.dart';
+import '../../../../../config/di/injection_container.dart';
+import '../../../../../config/routes/route_paths.dart';
+import '../../../../../shared/theme/app_colors.dart';
+import '../../../../../shared/theme/app_spacing.dart';
+import '../../../../../shared/theme/app_text_styles.dart';
+import '../../../../../shared/widgets/navigation/drawer_header_bar.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../auth/presentation/bloc/account_event.dart';
 

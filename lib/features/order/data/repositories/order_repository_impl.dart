@@ -65,6 +65,8 @@ class OrderRepositoryImpl implements OrderRepository {
       return Right(await _datasource.placeOrder(order));
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -80,4 +82,7 @@ class OrderRepositoryImpl implements OrderRepository {
       return const Left(UnexpectedFailure());
     }
   }
+
+  @override
+  Stream<OrderEntity> watchOrder(String orderId) => _datasource.watchOrder(orderId);
 }

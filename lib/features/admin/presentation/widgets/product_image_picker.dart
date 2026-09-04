@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/widgets/product_image.dart';
+import '../../../../../shared/theme/app_colors.dart';
+import '../../../../../shared/widgets/product_image.dart';
 
 /// Preview + camera-badge affordance for the product form's photo field.
 /// Purely presentational — picking/uploading is driven by the form page

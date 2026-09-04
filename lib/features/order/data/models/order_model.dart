@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/order_status.dart';
+import '../../domain/entities/payment_status.dart';
 import 'order_item_model.dart';
 
 /// Mirrors an `orders/{orderId}` Firestore document. `id` is the document
@@ -24,6 +25,8 @@ class OrderModel extends OrderEntity {
     required super.addressPhone,
     required super.createdAt,
     super.addressReceiverName,
+    super.paymentStatus,
+    super.stripePaymentIntentId,
   });
 
   factory OrderModel.fromMap(Map<String, dynamic> map, {required String id}) {
@@ -45,6 +48,8 @@ class OrderModel extends OrderEntity {
       addressLine: map['addressLine'] as String? ?? '',
       addressPhone: map['addressPhone'] as String? ?? '',
       addressReceiverName: map['addressReceiverName'] as String?,
+      paymentStatus: PaymentStatusX.parse(map['paymentStatus'] as String? ?? 'unpaid'),
+      stripePaymentIntentId: map['stripePaymentIntentId'] as String?,
       // `createdAt` is only a real Timestamp once Firestore has resolved the
       // server-side value on a subsequent read; immediately after `add()` it
       // may still be null, so fall back to "now" for that first return.
@@ -71,5 +76,7 @@ class OrderModel extends OrderEntity {
     'addressLine': addressLine,
     'addressPhone': addressPhone,
     'addressReceiverName': addressReceiverName,
+    'paymentStatus': paymentStatus.name,
+    'stripePaymentIntentId': stripePaymentIntentId,
   };
 }

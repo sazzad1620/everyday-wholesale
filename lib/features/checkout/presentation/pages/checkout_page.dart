@@ -14,12 +14,16 @@ import '../../../account/presentation/pages/account_page.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../cart/presentation/bloc/cart_state.dart';
+import '../../../payment/domain/entities/payment_confirmation_result.dart';
+import '../../../payment/presentation/payment_confirmation.dart';
 import '../bloc/checkout_bloc.dart';
 import '../bloc/checkout_event.dart';
 import '../bloc/checkout_state.dart';
 import '../widgets/delivery_address_card.dart';
 import '../widgets/order_summary_card.dart';
 import '../widgets/payment_method_card.dart';
+import '../widgets/payment_method_sheet.dart';
+import 'order_confirmation_page.dart';
 
 /// Pushed outside the bottom-nav shell (see `app_router.dart`'s root
 /// `navigatorKey`/`parentNavigatorKey`) — checkout is a focused, full-screen
@@ -42,8 +46,20 @@ class CheckoutPage extends StatelessWidget {
   }
 }
 
-class _CheckoutView extends StatelessWidget {
+class _CheckoutView extends StatefulWidget {
   const _CheckoutView();
+
+  @override
+  State<_CheckoutView> createState() => _CheckoutViewState();
+}
+
+class _CheckoutViewState extends State<_CheckoutView> {
+  PaymentMethodOption? _paymentMethod;
+
+  Future<void> _pickPaymentMethod(BuildContext context) async {
+    final picked = await showPaymentMethodSheet(context, selected: _paymentMethod);
+    if (picked != null) setState(() => _paymentMethod = picked);
+  }
 
   void _placeOrder(BuildContext context) {
     final address = getIt<AccountBloc>().state.user?.address;
@@ -51,15 +67,36 @@ class _CheckoutView extends StatelessWidget {
       AppToast.show(context, 'checkout.address_required'.tr(), type: ToastType.error);
       return;
     }
+
+    final paymentMethod = _paymentMethod;
+    if (paymentMethod == null) {
+      AppToast.show(context, 'checkout.payment_method_required'.tr(), type: ToastType.error);
+      return;
+    }
+
     context.read<CheckoutBloc>().add(
       CheckoutOrderPlaceRequested(
-        // Real payment is still Stripe (Phase 6); the address is real now.
-        paymentMethod: 'checkout.mock_payment_method'.tr(),
+        paymentMethod: paymentMethod.label(),
+        requiresCardPayment: paymentMethod == PaymentMethodOption.card,
         addressLine: address.formattedLine,
         addressPhone: address.phoneNumber,
         addressReceiverName: address.receiverName,
       ),
     );
+  }
+
+  Future<void> _confirmPendingPayment(BuildContext context, String clientSecret) async {
+    final bloc = context.read<CheckoutBloc>();
+    final result = await confirmCardPayment(context: context, clientSecret: clientSecret);
+    if (!context.mounted) return;
+    switch (result) {
+      case PaymentConfirmationSucceeded():
+        bloc.add(const CheckoutPaymentConfirmed());
+      case PaymentConfirmationCanceled():
+        bloc.add(const CheckoutPaymentCanceled());
+      case PaymentConfirmationFailed(:final message):
+        bloc.add(CheckoutPaymentFailed(message));
+    }
   }
 
   @override
@@ -77,12 +114,28 @@ class _CheckoutView extends StatelessWidget {
             ),
             Expanded(
               child: BlocConsumer<CheckoutBloc, CheckoutState>(
-                listenWhen: (previous, current) => previous.isPlacingOrder && !current.isPlacingOrder,
-                listener: (context, state) {
+                listenWhen: (previous, current) {
+                  final pendingSecretAppeared =
+                      current.pendingPaymentClientSecret != null &&
+                      previous.pendingPaymentClientSecret != current.pendingPaymentClientSecret;
+                  final placingFinished = previous.isPlacingOrder && !current.isPlacingOrder;
+                  return pendingSecretAppeared || placingFinished;
+                },
+                listener: (context, state) async {
+                  if (state.pendingPaymentClientSecret != null && !state.paymentConfirmed) {
+                    await _confirmPendingPayment(context, state.pendingPaymentClientSecret!);
+                    return;
+                  }
                   if (state.errorMessage != null) {
                     AppToast.show(context, state.errorMessage!, type: ToastType.error);
-                  } else if (state.placedOrder != null) {
-                    context.go(RoutePaths.orderConfirmation, extra: state.placedOrder);
+                  } else if (state.paymentConfirmed && state.placedOrder != null) {
+                    context.go(
+                      RoutePaths.orderConfirmation,
+                      extra: OrderConfirmationArgs(
+                        order: state.placedOrder!,
+                        isCardOrder: _paymentMethod == PaymentMethodOption.card,
+                      ),
+                    );
                   }
                 },
                 builder: (context, checkoutState) {
@@ -96,7 +149,7 @@ class _CheckoutView extends StatelessWidget {
                           const SizedBox(height: AppSpacing.sm),
                           OrderSummaryCard(items: cartState.items, itemTotal: cartState.itemTotal),
                           const SizedBox(height: AppSpacing.sm),
-                          const PaymentMethodCard(),
+                          PaymentMethodCard(selected: _paymentMethod, onTap: () => _pickPaymentMethod(context)),
                           const SizedBox(height: AppSpacing.lg),
                           PrimaryButton(
                             label: 'checkout.place_order'.tr(),

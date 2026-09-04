@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import 'order_item_entity.dart';
 import 'order_status.dart';
+import 'payment_status.dart';
 
 class OrderEntity extends Equatable {
   const OrderEntity({
@@ -21,6 +22,8 @@ class OrderEntity extends Equatable {
     required this.addressPhone,
     required this.createdAt,
     this.addressReceiverName,
+    this.paymentStatus = PaymentStatus.unpaid,
+    this.stripePaymentIntentId,
   });
 
   final String id;
@@ -45,6 +48,15 @@ class OrderEntity extends Equatable {
   /// combined [addressLine] as-is (it already had the name baked in).
   final String? addressReceiverName;
 
+  /// Written `unpaid` by the client at order creation; only ever flipped to
+  /// `paid`/`failed` server-side (see [PaymentStatus]'s own doc comment).
+  final PaymentStatus paymentStatus;
+
+  /// Set by the `createPaymentIntent` Cloud Function once a PaymentIntent
+  /// exists for this order — null until then, and for any order placed
+  /// before Stripe payments existed.
+  final String? stripePaymentIntentId;
+
   @override
   List<Object?> get props => [
     id,
@@ -63,5 +75,7 @@ class OrderEntity extends Equatable {
     addressPhone,
     createdAt,
     addressReceiverName,
+    paymentStatus,
+    stripePaymentIntentId,
   ];
 }

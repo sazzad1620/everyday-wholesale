@@ -31,7 +31,17 @@ class CategoryImage extends StatelessWidget {
               // URLs; a bundled asset path is only ever a local demo
               // stand-in for one.
               child: url.startsWith('http')
-                  ? Image.network(url, fit: BoxFit.cover, width: double.infinity, height: double.infinity)
+                  ? Image.network(
+                      url,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      // Falls back to the same "no image" placeholder on a
+                      // load failure (e.g. no network) instead of Flutter's
+                      // default broken-image icon with raw exception text.
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.black26)),
+                    )
                   : Image.asset(url, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
             ),
           ),

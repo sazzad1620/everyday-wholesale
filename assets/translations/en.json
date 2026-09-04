@@ -52,7 +52,8 @@
   "common": {
     "coming_soon": "{feature} is coming soon.",
     "generic_error": "Something went wrong.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "copied_to_clipboard": "Copied to clipboard."
   },
   "nav": {
     "home": "Home",
@@ -92,15 +93,28 @@
     "add_address": "Add",
     "no_address_saved": "No delivery address saved yet.",
     "address_required": "Please add a delivery address before placing your order.",
-    "mock_payment_method": "Cash on Delivery",
     "order_summary_title": "Order Summary",
     "payment_title": "Payment Method",
-    "payment_message": "Card payments via Stripe will be available soon.",
+    "choose_payment_method": "Select Payment Method",
+    "payment_method_required": "Please select a payment method.",
+    "payment_method_cash": "Cash on Delivery",
+    "payment_method_card": "Card Payment",
+    "payment_message": "Choose how you'd like to pay.",
     "place_order": "Place Order",
     "confirmation_title": "Order Placed!",
     "confirmation_order_id": "Order ID: {id}",
     "confirmation_message": "Thanks for your order. We'll get it ready for delivery soon.",
+    "confirmation_processing_title": "Confirming Your Payment",
+    "confirmation_processing_message": "Please wait while we confirm your payment. This won't take long.",
+    "confirmation_failed_title": "Payment Not Confirmed",
+    "confirmation_failed_message": "We couldn't confirm your payment yet. Please check your order history shortly, or contact support if this continues.",
     "continue_shopping": "Continue Shopping"
+  },
+  "payment": {
+    "card_details_title": "Card Details",
+    "pay_now": "Pay Now",
+    "cancel": "Cancel",
+    "generic_error": "Something went wrong while processing your payment. Please try again."
   },
   "account": {
     "guest_name": "Guest User",
@@ -146,6 +160,13 @@
     "order_date": "Order Date",
     "order_status": "Order Status",
     "payment_method": "Payment Method",
+    "payment_status": "Payment",
+    "payment_status_unpaid": "Unpaid",
+    "payment_status_paid": "Paid",
+    "payment_status_failed": "Failed",
+    "payment_status_cod": "COD",
+    "payment_status_processing": "Processing",
+    "retry_payment": "Retry Payment",
     "total": "Total",
     "items_title": "Items",
     "item_meta": "{unit} • Qty {quantity}"
@@ -252,6 +273,9 @@
     "products_empty_message": "Tap \"Add Product\" to create the first one.",
     "orders_empty_title": "No orders yet",
     "orders_empty_message": "Orders placed by customers will show up here.",
+    "payment_filter_all": "All",
+    "payment_filter_empty_message": "No orders match this filter.",
+    "payment_reference_label": "Payment ID",
     "reviews_empty_title": "No reviews yet",
     "reviews_empty_message": "Reviews submitted by customers will show up here.",
     "reviewed_by": "by {name}"

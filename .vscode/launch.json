@@ -7,19 +7,22 @@
         {
             "name": "everyday_wholesale",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "toolArgs": ["--dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_51UAfxwGkGBNqFcW8jjwTYRXH1kuP8IMp9zF9Hkk89WPL1dP6UEs0Scmi75uKHhli1VHUhNCVx0prWfx1nBJRiNOZ00EYKII3Bi"]
         },
         {
             "name": "everyday_wholesale (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "profile",
+            "toolArgs": ["--dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_51UAfxwGkGBNqFcW8jjwTYRXH1kuP8IMp9zF9Hkk89WPL1dP6UEs0Scmi75uKHhli1VHUhNCVx0prWfx1nBJRiNOZ00EYKII3Bi"]
         },
         {
             "name": "everyday_wholesale (release mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "release",
+            "toolArgs": ["--dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_51UAfxwGkGBNqFcW8jjwTYRXH1kuP8IMp9zF9Hkk89WPL1dP6UEs0Scmi75uKHhli1VHUhNCVx0prWfx1nBJRiNOZ00EYKII3Bi"]
         }
     ]
 }
