@@ -9,7 +9,8 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
-import '../../../../shared/widgets/product_card.dart';
+import '../../../../shared/widgets/navigation/desktop_body.dart';
+import '../../../../shared/widgets/product_grid.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../bloc/wishlist_bloc.dart';
 import '../bloc/wishlist_state.dart';
@@ -29,9 +30,11 @@ class WishlistPage extends StatelessWidget {
               onAccountTap: () => openAccountMenu(context),
             ),
             Expanded(
-              child: BlocBuilder<WishlistBloc, WishlistState>(
-                bloc: getIt<WishlistBloc>(),
-                builder: (context, state) => _WishlistBody(state: state),
+              child: DesktopBody(
+                child: BlocBuilder<WishlistBloc, WishlistState>(
+                  bloc: getIt<WishlistBloc>(),
+                  builder: (context, state) => _WishlistBody(state: state),
+                ),
               ),
             ),
           ],
@@ -56,22 +59,10 @@ class _WishlistBody extends StatelessWidget {
       );
     }
 
-    return GridView.builder(
+    return ProductGrid(
+      products: state.items,
       padding: const EdgeInsets.all(AppSpacing.md),
-      itemCount: state.items.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: AppSpacing.sm,
-        crossAxisSpacing: AppSpacing.sm,
-        childAspectRatio: 0.6,
-      ),
-      itemBuilder: (context, index) {
-        final product = state.items[index];
-        return ProductCard(
-          product: product,
-          onTap: () => context.push(RoutePaths.productDetail(product.categoryId, product.id)),
-        );
-      },
+      onTap: (product) => context.push(RoutePaths.productDetail(product.categoryId, product.id)),
     );
   }
 }

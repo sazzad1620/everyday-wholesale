@@ -59,7 +59,8 @@
     "home": "Home",
     "category": "Category",
     "wishlist": "Wishlist",
-    "cart": "Cart"
+    "cart": "Cart",
+    "account": "Account"
   },
   "wishlist": {
     "empty_title": "Your wishlist is empty",

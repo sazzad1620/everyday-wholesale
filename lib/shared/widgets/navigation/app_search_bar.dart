@@ -140,11 +140,16 @@ class _AppSearchBarState extends State<AppSearchBar> {
                         ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  // Sized (and inset from the edge) to sit clearly inside the
+                  // box's own fully-rounded corner instead of pushing past
+                  // its curve — a circle this close to the box's own radius
+                  // reads as part of the same shape rather than a separate,
+                  // oversized button dropped on top of it.
+                  padding: const EdgeInsets.only(right: 6),
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                    child: const Icon(Icons.search_rounded, color: Colors.white, size: 18),
+                    child: const Icon(Icons.search_rounded, color: Colors.white, size: 15),
                   ),
                 ),
               ],

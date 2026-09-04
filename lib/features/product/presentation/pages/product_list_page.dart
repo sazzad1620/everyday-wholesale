@@ -11,7 +11,8 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
-import '../../../../shared/widgets/product_card.dart';
+import '../../../../shared/widgets/navigation/desktop_body.dart';
+import '../../../../shared/widgets/product_grid.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../../../home/domain/entities/subcategory_entity.dart';
 import '../../../home/presentation/widgets/subcategory_grid.dart';
@@ -80,16 +81,27 @@ class ProductListPage extends StatelessWidget {
                 onMenuTap: () => Scaffold.of(context).openDrawer(),
                 onAccountTap: () => openAccountMenu(context),
               ),
-              BreadcrumbBar(items: breadcrumbItems),
               Expanded(
-                child: BlocBuilder<ProductListBloc, ProductListState>(
-                  builder: (context, state) => _ProductListBody(
-                    state: state,
-                    categoryId: categoryId,
-                    categoryName: categoryLabel,
-                    subcategoryId: subcategoryId,
-                    subcategoryName: subcategoryName,
-                    subcategories: subcategories,
+                child: DesktopBody(
+                  // Breadcrumb lives inside the content column, not spanning
+                  // the full page above the sidebar — so the sidebar starts
+                  // right below the header on every page, same as Home's.
+                  child: Column(
+                    children: [
+                      BreadcrumbBar(items: breadcrumbItems),
+                      Expanded(
+                        child: BlocBuilder<ProductListBloc, ProductListState>(
+                          builder: (context, state) => _ProductListBody(
+                            state: state,
+                            categoryId: categoryId,
+                            categoryName: categoryLabel,
+                            subcategoryId: subcategoryId,
+                            subcategoryName: subcategoryName,
+                            subcategories: subcategories,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -176,33 +188,19 @@ class _ProductListBody extends StatelessWidget {
             ),
           )
         else
-          Padding(
+          ProductGrid(
+            products: products,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: products.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: AppSpacing.sm,
-                crossAxisSpacing: AppSpacing.sm,
-                childAspectRatio: 0.6,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            onTap: (product) => context.push(
+              RoutePaths.productDetail(categoryId, product.id),
+              extra: (
+                categoryName: categoryName,
+                subcategoryId: subcategoryId,
+                subcategoryName: subcategoryName,
+                subcategories: subcategories,
               ),
-              itemBuilder: (context, index) {
-                final product = products[index];
-                return ProductCard(
-                  product: product,
-                  onTap: () => context.push(
-                    RoutePaths.productDetail(categoryId, product.id),
-                    extra: (
-                      categoryName: categoryName,
-                      subcategoryId: subcategoryId,
-                      subcategoryName: subcategoryName,
-                      subcategories: subcategories,
-                    ),
-                  ),
-                );
-              },
             ),
           ),
       ],

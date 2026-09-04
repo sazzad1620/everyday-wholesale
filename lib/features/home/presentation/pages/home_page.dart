@@ -8,6 +8,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
@@ -43,8 +44,10 @@ class _HomeView extends StatelessWidget {
               onAccountTap: () => openAccountMenu(context),
             ),
             Expanded(
-              child: BlocBuilder<HomeBloc, HomeState>(
-                builder: (context, state) => _HomeBody(state: state),
+              child: DesktopBody(
+                child: BlocBuilder<HomeBloc, HomeState>(
+                  builder: (context, state) => _HomeBody(state: state),
+                ),
               ),
             ),
           ],

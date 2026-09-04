@@ -17,8 +17,11 @@ class CategoryGrid extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: categories.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      // Max-extent (not a fixed count) so column count grows with available
+      // width on its own — 2 columns at phone width, more as the sidebar
+      // and wider viewport free up room, no breakpoint branching needed.
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 200,
         mainAxisSpacing: AppSpacing.sm,
         crossAxisSpacing: AppSpacing.sm,
         childAspectRatio: 0.82,

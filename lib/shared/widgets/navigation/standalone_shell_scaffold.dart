@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../config/di/injection_container.dart';
-import '../../../core/usecase/usecase.dart';
-import '../../../features/home/domain/entities/category_entity.dart';
-import '../../../features/home/domain/usecases/get_categories_usecase.dart';
+import '../../../core/utils/responsive/breakpoints.dart';
 import '../../theme/app_colors.dart';
+import 'categories_cache.dart';
 import 'category_drawer.dart';
 import 'main_bottom_nav_bar.dart';
 import 'main_menu_drawer.dart';
@@ -16,6 +14,14 @@ import 'main_menu_drawer.dart';
 /// no [navigationShell] since they aren't one of the shell's branches, so
 /// [MainBottomNavBar] renders with nothing selected and navigates via
 /// `context.go` instead of switching branches.
+///
+/// At width >= [AppBreakpoints.mobile] the bottom bar disappears (its
+/// destinations move into [AppHeader] instead — see there) and the
+/// hamburger/drawer give way to a persistent [DesktopSidebar], but that
+/// sidebar is *not* added here: it needs to sit below each page's header,
+/// not beside the whole page, so [DesktopBody] wraps each page's own content
+/// instead. This widget only owns the drawer/bottom-nav, which apply
+/// uniformly regardless of what a given page's header/content look like.
 class StandaloneShellScaffold extends StatefulWidget {
   const StandaloneShellScaffold({super.key, required this.body, this.navigationShell});
 
@@ -28,30 +34,28 @@ class StandaloneShellScaffold extends StatefulWidget {
 
 class _StandaloneShellScaffoldState extends State<StandaloneShellScaffold> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late final Future<List<CategoryEntity>> _categoriesFuture = _loadCategories();
-
-  Future<List<CategoryEntity>> _loadCategories() async {
-    final result = await getIt<GetCategoriesUseCase>()(const NoParams());
-    return result.match((_) => const [], (categories) => categories);
-  }
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const MainMenuDrawer(),
-      endDrawer: FutureBuilder<List<CategoryEntity>>(
-        future: _categoriesFuture,
+      endDrawer: FutureBuilder(
+        future: cachedCategories(),
         builder: (context, snapshot) {
           return CategoryDrawer(categories: snapshot.data ?? const []);
         },
       ),
       body: widget.body,
-      bottomNavigationBar: MainBottomNavBar(
-        navigationShell: widget.navigationShell,
-        onCategoryTap: () => _scaffoldKey.currentState?.openEndDrawer(),
-      ),
+      bottomNavigationBar: isWide
+          ? null
+          : MainBottomNavBar(
+              navigationShell: widget.navigationShell,
+              onCategoryTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+            ),
     );
   }
 }

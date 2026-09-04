@@ -10,6 +10,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
+import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../../shared/widgets/navigation/standalone_shell_scaffold.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../auth/presentation/bloc/account_event.dart';
@@ -61,11 +62,13 @@ class _AccountView extends StatelessWidget {
             onAccountTap: () => openAccountMenu(context),
           ),
           Expanded(
-            child: _AccountBody(
-              onLogout: () {
-                getIt<AccountBloc>().add(const AccountSignOutRequested());
-                context.go(RoutePaths.home);
-              },
+            child: DesktopBody(
+              child: _AccountBody(
+                onLogout: () {
+                  getIt<AccountBloc>().add(const AccountSignOutRequested());
+                  context.go(RoutePaths.home);
+                },
+              ),
             ),
           ),
         ],
