@@ -14,7 +14,7 @@ class ProductModel extends ProductEntity {
     required super.condition,
     required super.origin,
     super.subcategoryId,
-    super.imageUrl,
+    super.images,
     super.inStock,
     super.ratingSum,
     super.reviewCount,
@@ -32,11 +32,21 @@ class ProductModel extends ProductEntity {
       condition: map['condition'] as String? ?? '',
       origin: map['origin'] as String? ?? '',
       subcategoryId: map['subcategoryId'] as String?,
-      imageUrl: map['imageUrl'] as String?,
+      images: _readImages(map),
       inStock: map['inStock'] as bool? ?? true,
       ratingSum: (map['ratingSum'] as num?) ?? 0,
       reviewCount: (map['reviewCount'] as num?)?.toInt() ?? 0,
     );
+  }
+
+  /// Reads the new `images` array, falling back to the legacy singular
+  /// `imageUrl` field so products written before the multi-image change
+  /// still display their one photo.
+  static List<String> _readImages(Map<String, dynamic> map) {
+    final rawImages = map['images'];
+    if (rawImages is List) return rawImages.whereType<String>().toList();
+    final legacyImageUrl = map['imageUrl'] as String?;
+    return legacyImageUrl == null ? const [] : [legacyImageUrl];
   }
 
   Map<String, dynamic> toMap() => {
@@ -49,7 +59,7 @@ class ProductModel extends ProductEntity {
     'condition': condition,
     'origin': origin,
     'subcategoryId': subcategoryId,
-    'imageUrl': imageUrl,
+    'images': images,
     'inStock': inStock,
     'ratingSum': ratingSum,
     'reviewCount': reviewCount,

@@ -9,7 +9,6 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
-import '../../../../shared/widgets/product_image.dart';
 import '../../../../shared/widgets/quantity_stepper.dart';
 import '../../../../shared/widgets/star_rating.dart';
 import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
@@ -22,6 +21,7 @@ import '../../../wishlist/presentation/bloc/wishlist_event.dart';
 import '../../../wishlist/presentation/bloc/wishlist_state.dart';
 import '../../domain/entities/product_entity.dart';
 import 'product_detail_tabs.dart';
+import 'product_image_gallery.dart';
 import 'product_highlight_boxes.dart';
 import 'product_info_row.dart';
 
@@ -73,13 +73,7 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
   Widget build(BuildContext context) {
     final product = widget.product;
 
-    final image = ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: ProductImage(imageUrl: product.imageUrl),
-      ),
-    );
+    final image = ProductImageGallery(images: product.images);
 
     final infoBlock = _ProductInfoBlock(
       product: product,

@@ -60,7 +60,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
   late bool _inStock = widget.initial?.inStock ?? true;
-  late String? _imageUrl = widget.initial?.imageUrl;
+  late List<String> _images = List.of(widget.initial?.images ?? const []);
   bool _isUploadingImage = false;
 
   List<CategoryEntity> _categories = [];
@@ -76,26 +76,36 @@ class _ProductFormViewState extends State<_ProductFormView> {
     _loadCategories();
   }
 
-  Future<void> _pickAndUploadImage(BuildContext context) async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600, imageQuality: 85);
-    if (picked == null || !mounted) return;
+  Future<void> _pickAndUploadImages(BuildContext context) async {
+    final remainingSlots = ProductEntity.maxImages - _images.length;
+    if (remainingSlots <= 0) return;
 
-    final bytes = await picked.readAsBytes();
-    final extension = picked.name.contains('.') ? picked.name.split('.').last : 'jpg';
-    if (!mounted) return;
+    final picked = await ImagePicker().pickMultiImage(maxWidth: 1600, imageQuality: 85, limit: remainingSlots);
+    if (picked.isEmpty || !mounted) return;
 
     setState(() => _isUploadingImage = true);
-    final result = await getIt<UploadProductImageUseCase>()(
-      UploadProductImageParams(bytes: bytes, fileExtension: extension),
-    );
-    if (!mounted) return;
-    setState(() => _isUploadingImage = false);
+    // Uploaded one at a time (not in parallel) so the picker's thumbnails
+    // appear in the same order the admin picked them, rather than whichever
+    // upload happens to finish first.
+    for (final file in picked.take(remainingSlots)) {
+      final bytes = await file.readAsBytes();
+      final extension = file.name.contains('.') ? file.name.split('.').last : 'jpg';
+      if (!mounted) return;
 
-    result.match(
-      (failure) => AppToast.show(context, failure.message, type: ToastType.error),
-      (url) => setState(() => _imageUrl = url),
-    );
+      final result = await getIt<UploadProductImageUseCase>()(
+        UploadProductImageParams(bytes: bytes, fileExtension: extension),
+      );
+      if (!mounted) return;
+
+      result.match(
+        (failure) => AppToast.show(context, failure.message, type: ToastType.error),
+        (url) => setState(() => _images = [..._images, url]),
+      );
+    }
+    if (mounted) setState(() => _isUploadingImage = false);
   }
+
+  void _removeImage(int index) => setState(() => _images = [..._images]..removeAt(index));
 
   Future<void> _loadCategories() async {
     final result = await getIt<GetCategoriesUseCase>()(const NoParams());
@@ -155,7 +165,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
       condition: _conditionController.text.trim(),
       origin: _originController.text.trim(),
       subcategoryId: _selectedSubcategoryId,
-      imageUrl: _imageUrl,
+      images: _images,
       inStock: _inStock,
       // Preserved as-is — this form has no rating UI, and since
       // `updateProduct` writes the whole doc, omitting these would silently
@@ -199,9 +209,10 @@ class _ProductFormViewState extends State<_ProductFormView> {
               padding: const EdgeInsets.all(AppSpacing.md),
               children: [
                 ProductImagePicker(
-                  imageUrl: _imageUrl,
+                  images: _images,
                   isUploading: _isUploadingImage,
-                  onTap: () => _pickAndUploadImage(context),
+                  onAdd: () => _pickAndUploadImages(context),
+                  onRemove: _removeImage,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 TextFormField(

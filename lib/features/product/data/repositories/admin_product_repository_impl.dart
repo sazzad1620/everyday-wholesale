@@ -74,7 +74,7 @@ class AdminProductRepositoryImpl implements AdminProductRepository {
     condition: product.condition,
     origin: product.origin,
     subcategoryId: product.subcategoryId,
-    imageUrl: product.imageUrl,
+    images: product.images,
     inStock: product.inStock,
     ratingSum: product.ratingSum,
     reviewCount: product.reviewCount,

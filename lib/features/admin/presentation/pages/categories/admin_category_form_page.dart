@@ -18,7 +18,7 @@ import '../../../../product/domain/usecases/upload_product_image_usecase.dart';
 import '../../bloc/categories/category_form_bloc.dart';
 import '../../bloc/categories/category_form_event.dart';
 import '../../bloc/categories/category_form_state.dart';
-import '../../widgets/product_image_picker.dart';
+import '../../widgets/single_image_picker.dart';
 
 /// Add/edit form for a single category — pushed full-screen (root
 /// navigator) rather than a dialog, since the variable-length subcategory
@@ -183,7 +183,7 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.md),
               children: [
-                ProductImagePicker(
+                SingleImagePicker(
                   imageUrl: _imageUrl,
                   isUploading: _isUploadingImage,
                   onTap: () => _pickAndUpload(
@@ -217,7 +217,7 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ProductImagePicker(
+                        SingleImagePicker(
                           size: 56,
                           imageUrl: _subcategories[i].imageUrl,
                           isUploading: _subcategories[i].isUploading,

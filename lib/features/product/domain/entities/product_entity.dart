@@ -12,11 +12,15 @@ class ProductEntity extends Equatable {
     required this.condition,
     required this.origin,
     this.subcategoryId,
-    this.imageUrl,
+    this.images = const [],
     this.inStock = true,
     this.ratingSum = 0,
     this.reviewCount = 0,
   });
+
+  /// Admin upload cap — kept here so the form and its picker widget share a
+  /// single source of truth instead of each hardcoding "5".
+  static const int maxImages = 5;
 
   final String id;
   final String name;
@@ -41,9 +45,14 @@ class ProductEntity extends Equatable {
   /// not yet assigned to one of their category's subcategories.
   final String? subcategoryId;
 
-  /// Set by the admin when they upload a product photo. Null until then —
-  /// presentation falls back to a generic placeholder.
-  final String? imageUrl;
+  /// Photos uploaded by the admin, in display order (up to [maxImages]).
+  /// Empty until the admin uploads at least one — presentation falls back
+  /// to a generic placeholder.
+  final List<String> images;
+
+  /// The primary photo — the first of [images] — for call sites that only
+  /// ever show one image (product cards, search results, order snapshots).
+  String? get imageUrl => images.isEmpty ? null : images.first;
 
   final bool inStock;
 
@@ -74,7 +83,7 @@ class ProductEntity extends Equatable {
     condition,
     origin,
     subcategoryId,
-    imageUrl,
+    images,
     inStock,
     ratingSum,
     reviewCount,
