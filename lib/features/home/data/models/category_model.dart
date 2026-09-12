@@ -1,3 +1,4 @@
+import '../../../../core/localization/localized_text.dart';
 import '../../domain/entities/category_entity.dart';
 import 'subcategory_model.dart';
 
@@ -16,7 +17,7 @@ class CategoryModel extends CategoryEntity {
     final rawSubcategories = map['subcategories'] as List<dynamic>? ?? const [];
     return CategoryModel(
       id: id,
-      name: map['name'] as String? ?? '',
+      name: LocalizedText.fromFirestore(map['name']),
       iconKey: map['iconKey'] as String? ?? '',
       imageUrl: map['imageUrl'] as String?,
       subcategories: rawSubcategories
@@ -26,7 +27,7 @@ class CategoryModel extends CategoryEntity {
   }
 
   Map<String, dynamic> toMap() => {
-    'name': name,
+    'name': name.toMap(),
     'iconKey': iconKey,
     'imageUrl': imageUrl,
     'subcategories': subcategories.map((s) => SubcategoryModel(id: s.id, name: s.name, imageUrl: s.imageUrl).toMap()).toList(),

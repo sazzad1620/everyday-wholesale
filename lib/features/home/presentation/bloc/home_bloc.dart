@@ -23,9 +23,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final bannersResult = await _getPromoBannersUseCase(const NoParams());
 
     categoriesResult.match(
-      (failure) => emit(HomeError(failure.message)),
+      (failure) => emit(HomeError(failure.messageKey)),
       (categories) => bannersResult.match(
-        (failure) => emit(HomeError(failure.message)),
+        (failure) => emit(HomeError(failure.messageKey)),
         (banners) => emit(HomeLoaded(categories: categories, promoBanners: banners)),
       ),
     );

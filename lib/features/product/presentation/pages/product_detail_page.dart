@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
+import '../../../../core/localization/localized_text.dart';
 import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
@@ -16,15 +18,16 @@ import '../../../home/domain/entities/subcategory_entity.dart';
 import '../bloc/product_detail_bloc.dart';
 import '../bloc/product_detail_event.dart';
 import '../bloc/product_detail_state.dart';
+import '../widgets/category_context_resolver.dart';
 import '../widgets/product_detail_content.dart';
 
 /// What `extra` carries on the `product/:productId` route — display-only
 /// data needed to reconstruct the breadcrumb trail, since the URL only
 /// carries ids. Mirrors `ProductListExtra`.
 typedef ProductDetailExtra = ({
-  String? categoryName,
+  LocalizedText? categoryName,
   String? subcategoryId,
-  String? subcategoryName,
+  LocalizedText? subcategoryName,
   List<SubcategoryEntity> subcategories,
 });
 
@@ -41,14 +44,31 @@ class ProductDetailPage extends StatelessWidget {
 
   final String categoryId;
   final String productId;
-  final String? categoryName;
+  final LocalizedText? categoryName;
   final String? subcategoryId;
-  final String? subcategoryName;
+  final LocalizedText? subcategoryName;
   final List<SubcategoryEntity> subcategories;
 
   @override
   Widget build(BuildContext context) {
-    final categoryLabel = categoryName ?? categoryId;
+    // Same shape as ProductListPage: keep the `LocalizedText` for re-pushing,
+    // resolve only for display; the resolver fills in from the category
+    // cache when there's no `extra` (deep link, refresh, language switch).
+    return CategoryContextResolver(
+      categoryId: categoryId,
+      subcategoryId: subcategoryId,
+      categoryName: categoryName,
+      subcategoryName: subcategoryName,
+      subcategories: subcategories,
+      builder: (context, ctx) => _buildPage(context, ctx),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, CategoryContext ctx) {
+    final categoryText = ctx.categoryName;
+    final categoryLabel = context.localized(categoryText);
+    final subcategoryText = ctx.subcategoryName;
+    final subcategories = ctx.subcategories;
 
     return BlocProvider(
       create: (_) => getIt<ProductDetailBloc>()..add(ProductDetailStarted(productId)),
@@ -62,23 +82,23 @@ class ProductDetailPage extends StatelessWidget {
                   label: categoryLabel,
                   onTap: () => context.pushReplacement(
                     RoutePaths.categoryProducts(categoryId),
-                    extra: (categoryName: categoryLabel, subcategories: subcategories),
+                    extra: (categoryName: categoryText, subcategories: subcategories),
                   ),
                 ),
                 if (subcategoryId != null)
                   BreadcrumbItem(
-                    label: subcategoryName ?? subcategoryId!,
+                    label: context.localized(subcategoryText!),
                     onTap: () => context.pushReplacement(
                       RoutePaths.subcategoryProducts(categoryId, subcategoryId!),
                       extra: (
-                        categoryName: categoryLabel,
-                        subcategoryName: subcategoryName ?? subcategoryId!,
+                        categoryName: categoryText,
+                        subcategoryName: subcategoryText,
                         subcategories: subcategories,
                       ),
                     ),
                   ),
                 BreadcrumbItem(
-                  label: state is ProductDetailLoaded ? state.product.name : '',
+                  label: state is ProductDetailLoaded ? context.localized(state.product.name) : '',
                   onTap: () {},
                   isCurrent: true,
                 ),
@@ -126,7 +146,7 @@ class _ProductDetailBody extends StatelessWidget {
     }
 
     if (state is ProductDetailError) {
-      final message = (state as ProductDetailError).message;
+      final message = (state as ProductDetailError).message.tr();
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/localization/localized_text.dart';
 import '../../../config/routes/route_paths.dart';
 import '../../../features/home/domain/entities/category_entity.dart';
 import '../../../features/home/presentation/utils/category_navigation.dart';
@@ -59,7 +60,7 @@ class _CategoryTileState extends State<_CategoryTile> {
     if (category.subcategories.isEmpty) {
       return ListTile(
         contentPadding: widget.padding,
-        title: Text(category.name, style: AppTextStyles.body.copyWith(fontSize: _fontSize)),
+        title: Text(context.localized(category.name), style: AppTextStyles.body.copyWith(fontSize: _fontSize)),
         onTap: () {
           widget.onBeforeNavigate?.call();
           navigateToCategory(context, category);
@@ -78,7 +79,7 @@ class _CategoryTileState extends State<_CategoryTile> {
         trailing: Icon(_expanded ? Icons.remove : Icons.add, color: AppColors.textPrimary),
         onExpansionChanged: (expanded) => setState(() => _expanded = expanded),
         title: Text(
-          category.name,
+          context.localized(category.name),
           style: AppTextStyles.body.copyWith(
             fontSize: _fontSize,
             fontWeight: _expanded ? FontWeight.w700 : FontWeight.w400,
@@ -102,7 +103,7 @@ class _CategoryTileState extends State<_CategoryTile> {
           for (final sub in category.subcategories)
             ListTile(
               contentPadding: widget.padding,
-              title: Text(sub.name, style: AppTextStyles.body.copyWith(fontSize: _fontSize)),
+              title: Text(context.localized(sub.name), style: AppTextStyles.body.copyWith(fontSize: _fontSize)),
               onTap: () {
                 widget.onBeforeNavigate?.call();
                 context.push(

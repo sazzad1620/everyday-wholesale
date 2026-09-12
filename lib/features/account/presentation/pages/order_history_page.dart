@@ -72,7 +72,7 @@ class _OrderHistoryView extends StatelessWidget {
                       OrderHistoryFailure(:final message) => ComingSoonView(
                         icon: Icons.error_outline_rounded,
                         title: 'common.generic_error'.tr(),
-                        message: message,
+                        message: message.tr(),
                       ),
                       OrderHistoryLoaded(:final orders) when orders.isEmpty =>
                         ComingSoonView(

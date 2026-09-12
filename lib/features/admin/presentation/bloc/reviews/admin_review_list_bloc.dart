@@ -18,7 +18,7 @@ class AdminReviewListBloc extends Bloc<AdminReviewListEvent, AdminReviewListStat
     emit(const AdminReviewListState(isLoading: true));
     final result = await _getAllReviewsUseCase(const NoParams());
     result.match(
-      (failure) => emit(AdminReviewListState(errorMessage: failure.message)),
+      (failure) => emit(AdminReviewListState(errorMessage: failure.messageKey)),
       (reviews) => emit(
         AdminReviewListState(reviews: [...reviews]..sort((a, b) => b.createdAt.compareTo(a.createdAt))),
       ),

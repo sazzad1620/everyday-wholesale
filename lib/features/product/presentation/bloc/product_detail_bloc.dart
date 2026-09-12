@@ -21,7 +21,7 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
 
     final result = await _getProductByIdUseCase(event.productId);
 
-    await result.match((failure) async => emit(ProductDetailError(failure.message)), (product) async {
+    await result.match((failure) async => emit(ProductDetailError(failure.messageKey)), (product) async {
       // A failed reviews fetch shouldn't block showing the product itself —
       // the Review tab just falls back to an empty list.
       final reviewsResult = await _getProductReviewsUseCase(event.productId);

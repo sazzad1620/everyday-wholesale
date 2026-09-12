@@ -1,17 +1,20 @@
+/// Data-layer exceptions. Like `Failure`, each carries a **translation key**
+/// rather than display text — repositories forward it into the matching
+/// `Failure` unchanged, and the UI resolves it with `.tr()`.
 class ServerException implements Exception {
-  const ServerException([this.message = 'Something went wrong on the server.']);
+  const ServerException([this.messageKey = 'errors.server']);
 
-  final String message;
+  final String messageKey;
 }
 
 class CacheException implements Exception {
-  const CacheException([this.message = 'Something went wrong reading local data.']);
+  const CacheException([this.messageKey = 'errors.cache']);
 
-  final String message;
+  final String messageKey;
 }
 
 class AuthException implements Exception {
-  const AuthException([this.message = 'Something went wrong with authentication.']);
+  const AuthException([this.messageKey = 'errors.auth']);
 
-  final String message;
+  final String messageKey;
 }

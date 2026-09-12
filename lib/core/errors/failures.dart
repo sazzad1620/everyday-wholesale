@@ -1,25 +1,31 @@
+/// Every failure carries a **translation key** (`errors.*` in
+/// `assets/translations/*.json`), never display text — the data layer has no
+/// locale, so the presentation layer resolves it with `.tr()` at the moment
+/// it's shown. Keeping the key (not the resolved string) in bloc state also
+/// means an error that's still on screen re-renders correctly after a
+/// language switch.
 abstract class Failure {
-  const Failure(this.message);
+  const Failure(this.messageKey);
 
-  final String message;
+  final String messageKey;
 }
 
 class ServerFailure extends Failure {
-  const ServerFailure([super.message = 'Something went wrong on the server.']);
+  const ServerFailure([super.messageKey = 'errors.server']);
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure([super.message = 'Something went wrong reading local data.']);
+  const CacheFailure([super.messageKey = 'errors.cache']);
 }
 
 class UnexpectedFailure extends Failure {
-  const UnexpectedFailure([super.message = 'An unexpected error occurred.']);
+  const UnexpectedFailure([super.messageKey = 'errors.unexpected']);
 }
 
 class NotFoundFailure extends Failure {
-  const NotFoundFailure([super.message = 'The requested item could not be found.']);
+  const NotFoundFailure([super.messageKey = 'errors.not_found']);
 }
 
 class AuthFailure extends Failure {
-  const AuthFailure([super.message = 'Something went wrong with authentication.']);
+  const AuthFailure([super.messageKey = 'errors.auth']);
 }

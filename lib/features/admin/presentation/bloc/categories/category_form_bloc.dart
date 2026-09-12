@@ -22,7 +22,7 @@ class CategoryFormBloc extends Bloc<CategoryFormEvent, CategoryFormState> {
         ? await _updateCategoryUseCase(event.category)
         : await _createCategoryUseCase(event.category);
     result.match(
-      (failure) => emit(CategoryFormState(errorMessage: failure.message)),
+      (failure) => emit(CategoryFormState(errorMessage: failure.messageKey)),
       (_) => emit(const CategoryFormState(success: true)),
     );
   }

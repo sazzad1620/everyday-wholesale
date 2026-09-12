@@ -85,7 +85,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   if (state.errorMessage != null) {
                     AppToast.show(
                       context,
-                      state.errorMessage!,
+                      state.errorMessage!.tr(),
                       type: ToastType.error,
                     );
                   } else if (state.nameUpdated) {

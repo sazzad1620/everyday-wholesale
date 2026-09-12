@@ -55,7 +55,7 @@ class MyReviewsBloc extends Bloc<MyReviewsEvent, MyReviewsState> {
         MyReviewsState(
           reviewableItems: state.reviewableItems,
           historyReviews: state.historyReviews,
-          errorMessage: failure.message,
+          errorMessage: failure.messageKey,
         ),
       ),
       (_) async => _fetchAndEmit(emit),

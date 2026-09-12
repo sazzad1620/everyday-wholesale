@@ -15,6 +15,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import '../core/constants/countries.dart';
+import '../features/product/domain/entities/product_condition.dart';
 import '../firebase_options.dart';
 
 Future<void> main() async {
@@ -62,6 +64,13 @@ class _SeedPageState extends State<_SeedPage> {
       for (final category in _categories) {
         final id = category['id']! as String;
         final data = Map<String, dynamic>.from(category)..remove('id');
+        // Bilingual shape (docs/JAPANESE_BILINGUAL_SUPPORT.md §3): names are
+        // `{en, ja}` maps — seeded English-only, admin adds Japanese later.
+        data['name'] = _localized(data['name'] as String);
+        data['subcategories'] = [
+          for (final sub in data['subcategories'] as List)
+            {...Map<String, dynamic>.from(sub as Map), 'name': _localized(sub['name'] as String)},
+        ];
         categoryBatch.set(firestore.collection('categories').doc(id), data);
       }
       await categoryBatch.commit();
@@ -181,15 +190,17 @@ Map<String, dynamic> _product({
   bool inStock = true,
 }) {
   return {
-    'name': name,
+    'name': _localized(name),
     'price': price,
     'unit': unit,
     'categoryId': categoryId,
     'subcategoryId': subcategoryId,
     'iconKey': iconKey,
-    'condition': condition,
-    'origin': origin,
-    'description': description,
+    // Stored as codes (see `ProductCondition` / `Countries`); the literals
+    // below keep the readable English labels and are mapped here.
+    'condition': ProductCondition.parse(condition).code,
+    'origin': Countries.parse(origin),
+    'description': _localized(description),
     'imageUrl': imageUrl,
     'inStock': inStock,
     // No seeded rating/review data — real reviews start from real orders
@@ -199,6 +210,10 @@ Map<String, dynamic> _product({
     'id': id, // stripped before writing (used only as the doc ID below)
   };
 }
+
+/// English-only `{en, ja}` map — the shape every `LocalizedText` field is
+/// stored in.
+Map<String, String> _localized(String en) => {'en': en, 'ja': ''};
 
 // Same 25 products the old product_mock_datasource.dart hardcoded.
 final List<Map<String, dynamic>> _products = [

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../../core/localization/localized_text.dart';
 import '../../domain/entities/review_entity.dart';
 
 /// Mirrors a `reviews/{reviewId}` Firestore document. `id` is the document
@@ -22,7 +23,7 @@ class ReviewModel extends ReviewEntity {
     return ReviewModel(
       id: id,
       productId: map['productId'] as String? ?? '',
-      productName: map['productName'] as String? ?? '',
+      productName: LocalizedText.fromFirestore(map['productName']),
       productImageUrl: map['productImageUrl'] as String?,
       orderId: map['orderId'] as String? ?? '',
       reviewerId: map['reviewerId'] as String? ?? '',
@@ -39,7 +40,7 @@ class ReviewModel extends ReviewEntity {
   /// `FieldValue.serverTimestamp()` at write time in the datasource instead.
   Map<String, dynamic> toMap() => {
     'productId': productId,
-    'productName': productName,
+    'productName': productName.toMap(),
     'productImageUrl': productImageUrl,
     'orderId': orderId,
     'reviewerId': reviewerId,

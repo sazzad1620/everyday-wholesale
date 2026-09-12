@@ -23,7 +23,7 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     final result = await _checkAppReadyUseCase(const NoParams());
 
     result.match(
-      (failure) => emit(SplashFailure(failure.message)),
+      (failure) => emit(SplashFailure(failure.messageKey)),
       (_) => emit(const SplashReady()),
     );
   }

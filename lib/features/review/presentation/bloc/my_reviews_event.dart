@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/localization/localized_text.dart';
 
 abstract class MyReviewsEvent extends Equatable {
   const MyReviewsEvent();
@@ -23,7 +24,7 @@ class MyReviewsSubmitRequested extends MyReviewsEvent {
 
   final String orderId;
   final String productId;
-  final String productName;
+  final LocalizedText productName;
   final String? productImageUrl;
   final String reviewerName;
   final int rating;

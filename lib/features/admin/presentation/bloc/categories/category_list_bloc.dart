@@ -21,7 +21,7 @@ class CategoryListBloc extends Bloc<CategoryListEvent, CategoryListState> {
     emit(const CategoryListState(isLoading: true));
     final result = await _getCategoriesUseCase(const NoParams());
     result.match(
-      (failure) => emit(CategoryListState(errorMessage: failure.message)),
+      (failure) => emit(CategoryListState(errorMessage: failure.messageKey)),
       (categories) => emit(CategoryListState(categories: categories)),
     );
   }
@@ -30,7 +30,7 @@ class CategoryListBloc extends Bloc<CategoryListEvent, CategoryListState> {
     emit(CategoryListState(categories: state.categories, isDeleting: true));
     final result = await _deleteCategoryUseCase(event.categoryId);
     await result.match(
-      (failure) async => emit(CategoryListState(categories: state.categories, errorMessage: failure.message)),
+      (failure) async => emit(CategoryListState(categories: state.categories, errorMessage: failure.messageKey)),
       (_) async => _onRequested(const CategoryListRequested(), emit),
     );
   }

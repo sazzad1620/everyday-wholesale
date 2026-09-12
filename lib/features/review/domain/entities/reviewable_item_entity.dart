@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/localization/localized_text.dart';
+
 /// One product from one of the customer's completed orders that they
 /// haven't reviewed yet — shown under My Reviews > To Be Reviewed. Carries
 /// [orderDate] (not just the product) since the same product can appear more
@@ -16,7 +18,7 @@ class ReviewableItemEntity extends Equatable {
 
   final String orderId;
   final String productId;
-  final String productName;
+  final LocalizedText productName;
   final String? productImageUrl;
   final DateTime orderDate;
 

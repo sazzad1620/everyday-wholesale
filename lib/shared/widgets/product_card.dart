@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/localization/localized_text.dart';
 import '../../config/di/injection_container.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../features/cart/presentation/bloc/cart_bloc.dart';
@@ -79,7 +80,7 @@ class ProductCard extends StatelessWidget {
                               // titles don't pull the price/rating row up with them.
                               height: 36,
                               child: Text(
-                                product.name,
+                                context.localized(product.name),
                                 style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600, height: 1.3),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,

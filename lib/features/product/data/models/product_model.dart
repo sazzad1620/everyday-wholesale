@@ -1,3 +1,6 @@
+import '../../../../core/localization/localized_text.dart';
+import '../../../../core/constants/countries.dart';
+import '../../domain/entities/product_condition.dart';
 import '../../domain/entities/product_entity.dart';
 
 /// Mirrors a `products/{productId}` Firestore document. `id` is the
@@ -23,14 +26,14 @@ class ProductModel extends ProductEntity {
   factory ProductModel.fromMap(Map<String, dynamic> map, {required String id}) {
     return ProductModel(
       id: id,
-      name: map['name'] as String? ?? '',
+      name: LocalizedText.fromFirestore(map['name']),
       price: (map['price'] as num?)?.toInt() ?? 0,
       unit: map['unit'] as String? ?? '',
       categoryId: map['categoryId'] as String? ?? '',
       iconKey: map['iconKey'] as String? ?? '',
-      description: map['description'] as String? ?? '',
-      condition: map['condition'] as String? ?? '',
-      origin: map['origin'] as String? ?? '',
+      description: LocalizedText.fromFirestore(map['description']),
+      condition: ProductCondition.parse(map['condition'] as String?),
+      origin: Countries.parse(map['origin'] as String?),
       subcategoryId: map['subcategoryId'] as String?,
       images: _readImages(map),
       inStock: map['inStock'] as bool? ?? true,
@@ -50,13 +53,13 @@ class ProductModel extends ProductEntity {
   }
 
   Map<String, dynamic> toMap() => {
-    'name': name,
+    'name': name.toMap(),
     'price': price,
     'unit': unit,
     'categoryId': categoryId,
     'iconKey': iconKey,
-    'description': description,
-    'condition': condition,
+    'description': description.toMap(),
+    'condition': condition.code,
     'origin': origin,
     'subcategoryId': subcategoryId,
     'images': images,

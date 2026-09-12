@@ -1,3 +1,4 @@
+import '../../../../core/localization/localized_text.dart';
 import '../../domain/entities/order_item_entity.dart';
 
 class OrderItemModel extends OrderItemEntity {
@@ -13,7 +14,7 @@ class OrderItemModel extends OrderItemEntity {
   factory OrderItemModel.fromMap(Map<String, dynamic> map) {
     return OrderItemModel(
       productId: map['productId'] as String? ?? '',
-      name: map['name'] as String? ?? '',
+      name: LocalizedText.fromFirestore(map['name']),
       price: (map['price'] as num?)?.toInt() ?? 0,
       unit: map['unit'] as String? ?? '',
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
@@ -23,7 +24,7 @@ class OrderItemModel extends OrderItemEntity {
 
   Map<String, dynamic> toMap() => {
     'productId': productId,
-    'name': name,
+    'name': name.toMap(),
     'price': price,
     'unit': unit,
     'quantity': quantity,

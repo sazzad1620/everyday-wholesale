@@ -52,7 +52,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       );
 
       final placed = result.match((failure) {
-        emit(CheckoutState(errorMessage: failure.message));
+        emit(CheckoutState(errorMessage: failure.messageKey));
         return null;
       }, (o) => o);
       if (placed == null) return;
@@ -70,7 +70,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     final intentResult = await _createPaymentIntentUseCase(order.id);
     intentResult.match(
-      (failure) => emit(CheckoutState(placedOrder: order, errorMessage: failure.message)),
+      (failure) => emit(CheckoutState(placedOrder: order, errorMessage: failure.messageKey)),
       (clientSecret) =>
           emit(CheckoutState(placedOrder: order, isPlacingOrder: true, pendingPaymentClientSecret: clientSecret)),
     );

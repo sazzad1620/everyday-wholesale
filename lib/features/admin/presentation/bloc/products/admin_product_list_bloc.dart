@@ -21,7 +21,7 @@ class AdminProductListBloc extends Bloc<AdminProductListEvent, AdminProductListS
     emit(const AdminProductListState(isLoading: true));
     final result = await _getAllProductsUseCase(const NoParams());
     result.match(
-      (failure) => emit(AdminProductListState(errorMessage: failure.message)),
+      (failure) => emit(AdminProductListState(errorMessage: failure.messageKey)),
       (products) => emit(AdminProductListState(products: products)),
     );
   }
@@ -30,7 +30,7 @@ class AdminProductListBloc extends Bloc<AdminProductListEvent, AdminProductListS
     emit(AdminProductListState(products: state.products, isDeleting: true));
     final result = await _deleteProductUseCase(event.productId);
     await result.match(
-      (failure) async => emit(AdminProductListState(products: state.products, errorMessage: failure.message)),
+      (failure) async => emit(AdminProductListState(products: state.products, errorMessage: failure.messageKey)),
       (_) async => _onRequested(const AdminProductListRequested(), emit),
     );
   }

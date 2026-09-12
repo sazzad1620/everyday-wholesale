@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/localized_text.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -41,7 +42,7 @@ class _ProductDetailTabsState extends State<ProductDetailTabs> {
         const Divider(height: 1, color: AppColors.inputFill),
         const SizedBox(height: AppSpacing.md),
         switch (_selectedIndex) {
-          0 => _DescriptionTab(description: widget.product.description),
+          0 => _DescriptionTab(description: context.localized(widget.product.description)),
           1 => _ReviewTab(reviews: widget.reviews),
           _ => const _FaqTab(),
         },

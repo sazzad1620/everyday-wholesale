@@ -30,7 +30,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required String addressReceiverName,
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
-    if (uid == null) return const Left(AuthFailure('Please sign in to place an order.'));
+    if (uid == null) return const Left(AuthFailure('errors.sign_in_required_place_order'));
 
     try {
       final order = OrderModel(
@@ -64,9 +64,9 @@ class OrderRepositoryImpl implements OrderRepository {
       );
       return Right(await _datasource.placeOrder(order));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -77,7 +77,7 @@ class OrderRepositoryImpl implements OrderRepository {
     try {
       return Right(await _datasource.getOrderHistory());
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

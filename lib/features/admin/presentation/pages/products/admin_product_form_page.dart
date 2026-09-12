@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../../config/di/injection_container.dart';
+import '../../../../../core/constants/countries.dart';
+import '../../../../../core/localization/localized_text.dart';
 import '../../../../../core/usecase/usecase.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_input_style.dart';
@@ -15,11 +17,13 @@ import '../../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../../shared/widgets/inputs/app_dropdown_field.dart';
 import '../../../../home/domain/entities/category_entity.dart';
 import '../../../../home/domain/usecases/get_categories_usecase.dart';
+import '../../../../product/domain/entities/product_condition.dart';
 import '../../../../product/domain/entities/product_entity.dart';
 import '../../../../product/domain/usecases/upload_product_image_usecase.dart';
 import '../../bloc/products/admin_product_form_bloc.dart';
 import '../../bloc/products/admin_product_form_event.dart';
 import '../../bloc/products/admin_product_form_state.dart';
+import '../../widgets/bilingual_text_field.dart';
 import '../../widgets/product_image_picker.dart';
 
 /// Add/edit form for a single product — pushed full-screen (root
@@ -50,12 +54,15 @@ class _ProductFormView extends StatefulWidget {
 
 class _ProductFormViewState extends State<_ProductFormView> {
   final _formKey = GlobalKey<FormState>();
-  late final _nameController = TextEditingController(text: widget.initial?.name ?? '');
+  late final _name = BilingualController(widget.initial?.name);
   late final _priceController = TextEditingController(text: widget.initial?.price.toString() ?? '');
   late final _unitController = TextEditingController(text: widget.initial?.unit ?? '');
-  late final _conditionController = TextEditingController(text: widget.initial?.condition ?? '');
-  late final _originController = TextEditingController(text: widget.initial?.origin ?? '');
-  late final _descriptionController = TextEditingController(text: widget.initial?.description ?? '');
+  late ProductCondition? _condition = widget.initial?.condition;
+  // A legacy free-text origin that didn't map to a known code (see
+  // `Countries.parse`) won't be in the dropdown — starts empty so the admin
+  // has to pick a real one on the next save.
+  late String? _origin = (widget.initial != null && Countries.isKnown(widget.initial!.origin)) ? widget.initial!.origin : null;
+  late final _description = BilingualController(widget.initial?.description);
 
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
@@ -98,7 +105,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
       if (!mounted) return;
 
       result.match(
-        (failure) => AppToast.show(context, failure.message, type: ToastType.error),
+        (failure) => AppToast.show(context, failure.messageKey.tr(), type: ToastType.error),
         (url) => setState(() => _images = [..._images, url]),
       );
     }
@@ -121,12 +128,10 @@ class _ProductFormViewState extends State<_ProductFormView> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _name.dispose();
     _priceController.dispose();
     _unitController.dispose();
-    _conditionController.dispose();
-    _originController.dispose();
-    _descriptionController.dispose();
+    _description.dispose();
     super.dispose();
   }
 
@@ -156,14 +161,14 @@ class _ProductFormViewState extends State<_ProductFormView> {
 
     final product = ProductEntity(
       id: widget.initial?.id ?? '',
-      name: _nameController.text.trim(),
+      name: _name.value,
       price: int.parse(_priceController.text.trim()),
       unit: _unitController.text.trim(),
       categoryId: category.id,
       iconKey: category.iconKey,
-      description: _descriptionController.text.trim(),
-      condition: _conditionController.text.trim(),
-      origin: _originController.text.trim(),
+      description: _description.value,
+      condition: _condition!,
+      origin: _origin!,
       subcategoryId: _selectedSubcategoryId,
       images: _images,
       inStock: _inStock,
@@ -193,7 +198,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
         listenWhen: (previous, current) => previous.isSubmitting && !current.isSubmitting,
         listener: (context, state) {
           if (state.errorMessage != null) {
-            AppToast.show(context, state.errorMessage!, type: ToastType.error);
+            AppToast.show(context, state.errorMessage!.tr(), type: ToastType.error);
           } else if (state.success) {
             context.pop(true);
           }
@@ -215,11 +220,10 @@ class _ProductFormViewState extends State<_ProductFormView> {
                   onRemove: _removeImage,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: AppInputStyle.decoration(hintText: 'admin.product_name_hint'.tr(), radius: 14),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'admin.error_product_name_required'.tr() : null,
+                BilingualTextField(
+                  controller: _name,
+                  hintText: 'admin.product_name_hint'.tr(),
+                  requiredError: 'admin.error_product_name_required'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Row(
@@ -254,7 +258,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
                   radius: 14,
                   items: [
                     for (final category in _categories)
-                      AppDropdownItem(value: category.id, label: category.name),
+                      AppDropdownItem(value: category.id, label: context.localized(category.name)),
                   ],
                   onChanged: _onCategoryChanged,
                   validator: (value) => value == null ? 'admin.category_required'.tr() : null,
@@ -273,33 +277,41 @@ class _ProductFormViewState extends State<_ProductFormView> {
                     radius: 14,
                     items: [
                       for (final subcategory in subcategories)
-                        AppDropdownItem(value: subcategory.id, label: subcategory.name),
+                        AppDropdownItem(value: subcategory.id, label: context.localized(subcategory.name)),
                     ],
                     onChanged: (value) => setState(() => _selectedSubcategoryId = value),
                     validator: (value) => value == null ? 'admin.error_subcategory_required'.tr() : null,
                   ),
                 ],
                 const SizedBox(height: AppSpacing.sm),
-                TextFormField(
-                  controller: _conditionController,
-                  decoration: AppInputStyle.decoration(hintText: 'admin.product_condition_hint'.tr(), radius: 14),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'admin.error_product_condition_required'.tr() : null,
+                AppDropdownField<ProductCondition>(
+                  initialValue: _condition,
+                  hintText: 'admin.product_condition_hint'.tr(),
+                  radius: 14,
+                  items: [
+                    for (final condition in ProductCondition.values)
+                      AppDropdownItem(value: condition, label: condition.labelKey.tr()),
+                  ],
+                  onChanged: (value) => setState(() => _condition = value),
+                  validator: (value) => value == null ? 'admin.error_product_condition_required'.tr() : null,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                TextFormField(
-                  controller: _originController,
-                  decoration: AppInputStyle.decoration(hintText: 'admin.product_origin_hint'.tr(), radius: 14),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'admin.error_product_origin_required'.tr() : null,
+                AppDropdownField<String>(
+                  initialValue: _origin,
+                  hintText: 'admin.product_origin_hint'.tr(),
+                  radius: 14,
+                  items: [
+                    for (final code in Countries.codes) AppDropdownItem(value: code, label: Countries.label(code)),
+                  ],
+                  onChanged: (value) => setState(() => _origin = value),
+                  validator: (value) => value == null ? 'admin.error_product_origin_required'.tr() : null,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                TextFormField(
-                  controller: _descriptionController,
+                BilingualTextField(
+                  controller: _description,
+                  hintText: 'admin.product_description_hint'.tr(),
+                  requiredError: 'admin.error_product_description_required'.tr(),
                   maxLines: 4,
-                  decoration: AppInputStyle.decoration(hintText: 'admin.product_description_hint'.tr(), radius: 14),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'admin.error_product_description_required'.tr() : null,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 SwitchListTile(

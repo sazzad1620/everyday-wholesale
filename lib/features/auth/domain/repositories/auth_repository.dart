@@ -49,4 +49,8 @@ abstract class AuthRepository {
   /// that's actually editable (email/phone are tied to the sign-in
   /// credential itself and shown read-only instead).
   Future<Either<Failure, Unit>> updateName({required String uid, required String name});
+
+  /// Remembers the language the signed-in user picked (see
+  /// `UserEntity.preferredLocale`).
+  Future<Either<Failure, Unit>> updatePreferredLocale({required String uid, required String languageCode});
 }

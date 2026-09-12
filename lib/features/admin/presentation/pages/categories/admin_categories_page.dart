@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/localization/localized_text.dart';
 import '../../../../../config/di/injection_container.dart';
 import '../../../../../config/routes/route_paths.dart';
 import '../../../../../shared/theme/app_colors.dart';
@@ -16,6 +17,7 @@ import '../../../../home/domain/entities/category_entity.dart';
 import '../../bloc/categories/category_list_bloc.dart';
 import '../../bloc/categories/category_list_event.dart';
 import '../../bloc/categories/category_list_state.dart';
+import '../../widgets/bilingual_text_field.dart';
 
 /// Full category CRUD — list with add/edit/delete, replacing the previous
 /// "coming soon" placeholder. Add/edit opens [AdminCategoryFormPage] pushed
@@ -48,7 +50,7 @@ class _CategoryListView extends StatelessWidget {
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.delete_category_title'.tr(),
-      message: 'admin.delete_category_message'.tr(namedArgs: {'name': category.name}),
+      message: 'admin.delete_category_message'.tr(namedArgs: {'name': context.localized(category.name)}),
       confirmLabel: 'admin.delete'.tr(),
       cancelLabel: 'admin.cancel'.tr(),
     );
@@ -63,7 +65,7 @@ class _CategoryListView extends StatelessWidget {
       listenWhen: (previous, current) => previous.isDeleting && !current.isDeleting,
       listener: (context, state) {
         if (state.errorMessage != null) {
-          AppToast.show(context, state.errorMessage!, type: ToastType.error);
+          AppToast.show(context, state.errorMessage!.tr(), type: ToastType.error);
         }
       },
       builder: (context, state) {
@@ -115,7 +117,7 @@ class _CategoryListView extends StatelessWidget {
       return ComingSoonView(
         icon: Icons.error_outline_rounded,
         title: 'common.generic_error'.tr(),
-        message: state.errorMessage!,
+        message: state.errorMessage!.tr(),
       );
     }
     if (state.categories.isEmpty) {
@@ -182,7 +184,7 @@ class _CategoryTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(category.name, style: AppTextStyles.title),
+                      Text(context.localized(category.name), style: AppTextStyles.title),
                       if (category.subcategories.isNotEmpty)
                         Text(
                           'admin.subcategory_count'.tr(namedArgs: {'count': '${category.subcategories.length}'}),
@@ -191,6 +193,7 @@ class _CategoryTile extends StatelessWidget {
                     ],
                   ),
                 ),
+                MissingJaBadge(text: category.name),
                 IconButton(
                   icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
                   onPressed: onDelete,

@@ -37,6 +37,8 @@ abstract class AuthRemoteDatasource {
   Future<void> updateAddress(String uid, AddressModel address);
 
   Future<void> updateName(String uid, String name);
+
+  Future<void> updatePreferredLocale(String uid, String languageCode);
 }
 
 @LazySingleton(as: AuthRemoteDatasource)
@@ -65,7 +67,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       if (user == null) throw const AuthException();
       return _fetchUserDoc(user);
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_messageForCode(e.code));
+      throw AuthException(_keyForCode(e.code));
     }
   }
 
@@ -81,7 +83,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       await _firestore.collection(_usersCollection).doc(user.uid).set(model.toMap());
       return model;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_messageForCode(e.code));
+      throw AuthException(_keyForCode(e.code));
     }
   }
 
@@ -96,7 +98,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       // the normal flow either way.
       verificationCompleted: (_) {},
       verificationFailed: (e) {
-        if (!completer.isCompleted) completer.completeError(AuthException(_messageForCode(e.code)));
+        if (!completer.isCompleted) completer.completeError(AuthException(_keyForCode(e.code)));
       },
       codeSent: (verificationId, _) {
         if (!completer.isCompleted) completer.complete(verificationId);
@@ -128,14 +130,14 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       if (snapshot.exists) {
         if (isSignUp) {
           await _firebaseAuth.signOut();
-          throw const AuthException('An account already exists with this phone number. Please sign in instead.');
+          throw const AuthException('errors.auth_phone_exists');
         }
         return UserModel.fromMap(snapshot.data()!, uid: user.uid);
       }
 
       if (!isSignUp) {
         await _firebaseAuth.signOut();
-        throw const AuthException('No account found for this number. Please sign up first.');
+        throw const AuthException('errors.auth_phone_not_found');
       }
 
       final model = UserModel(uid: user.uid, email: user.email ?? '', name: name, phone: user.phoneNumber);
@@ -145,7 +147,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       }
       return model;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_messageForCode(e.code));
+      throw AuthException(_keyForCode(e.code));
     }
   }
 
@@ -160,7 +162,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_messageForCode(e.code));
+      throw AuthException(_keyForCode(e.code));
     }
   }
 
@@ -200,12 +202,12 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       await docRef.set(model.toMap());
       return model;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_messageForCode(e.code));
+      throw AuthException(_keyForCode(e.code));
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
-        throw const AuthException('Sign-in was cancelled.');
+        throw const AuthException('errors.auth_sign_in_cancelled');
       }
-      throw const AuthException('Google sign-in failed. Please try again.');
+      throw const AuthException('errors.auth_google_failed');
     }
   }
 
@@ -232,6 +234,11 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     await _firebaseAuth.currentUser?.updateDisplayName(name);
   }
 
+  @override
+  Future<void> updatePreferredLocale(String uid, String languageCode) async {
+    await _firestore.collection(_usersCollection).doc(uid).update({'preferredLocale': languageCode});
+  }
+
   /// Reads the `users/{uid}` doc for role/name; falls back to the Auth
   /// profile if the doc is somehow missing (shouldn't happen — created on
   /// sign-up — but a doc read failing the app open is worse than a stale
@@ -244,34 +251,37 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     return UserModel(uid: user.uid, email: user.email ?? '', name: user.displayName ?? '', phone: user.phoneNumber);
   }
 
-  String _messageForCode(String code) {
+  /// Maps a FirebaseAuth error code to an `errors.*` translation key — the
+  /// UI resolves it with `.tr()`, so the copy lives in the JSON files, not
+  /// here.
+  String _keyForCode(String code) {
     switch (code) {
       case 'invalid-email':
-        return 'Please enter a valid email address.';
+        return 'errors.auth_invalid_email';
       case 'user-disabled':
-        return 'This account has been disabled.';
+        return 'errors.auth_user_disabled';
       case 'user-not-found':
       case 'wrong-password':
       case 'invalid-credential':
-        return 'Incorrect email or password.';
+        return 'errors.auth_wrong_credentials';
       case 'email-already-in-use':
-        return 'An account already exists with this email.';
+        return 'errors.auth_email_in_use';
       case 'weak-password':
-        return 'Please choose a stronger password (at least 6 characters).';
+        return 'errors.auth_weak_password';
       case 'network-request-failed':
-        return 'Network error — please check your connection and try again.';
+        return 'errors.auth_network';
       case 'too-many-requests':
       case 'quota-exceeded':
-        return 'Too many attempts — please wait a moment and try again.';
+        return 'errors.auth_too_many_requests';
       case 'invalid-phone-number':
-        return 'Please enter a valid phone number, including the country code.';
+        return 'errors.auth_invalid_phone';
       case 'invalid-verification-code':
-        return 'Incorrect code — please check and try again.';
+        return 'errors.auth_invalid_code';
       case 'invalid-verification-id':
       case 'session-expired':
-        return 'This code has expired — please request a new one.';
+        return 'errors.auth_code_expired';
       default:
-        return 'Something went wrong. Please try again.';
+        return 'errors.auth_generic';
     }
   }
 }

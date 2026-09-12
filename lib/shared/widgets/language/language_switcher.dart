@@ -1,23 +1,29 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../config/di/injection_container.dart';
 import '../../../core/localization/app_locales.dart';
+import '../../../features/auth/presentation/bloc/account_bloc.dart';
+import '../../../features/auth/presentation/bloc/account_event.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
 
-/// Switches the app language and lets easy_localization persist the choice.
-/// Every entry point (header toggle, drawer tile, account row) funnels
-/// through here so there's one place to hook extra work later — e.g.
-/// writing `preferredLocale` to the signed-in user's doc.
-Future<void> setAppLocale(BuildContext context, Locale locale) {
-  if (context.locale == locale) return Future.value();
-  return context.setLocale(locale);
+/// Switches the app language. easy_localization persists the choice on the
+/// device; a signed-in user additionally gets it saved on their profile
+/// (`users/{uid}.preferredLocale`) so it follows them to other devices —
+/// see `EverydayWholesaleApp` for where that's applied at sign-in. Every
+/// entry point (header, drawer tiles, account row) funnels through here.
+Future<void> setAppLocale(BuildContext context, Locale locale) async {
+  if (context.locale == locale) return;
+  await context.setLocale(locale);
+  getIt<AccountBloc>().add(AccountPreferredLocaleUpdateRequested(locale.languageCode));
 }
 
-/// Compact `EN | 日本語` segmented toggle for the tablet/desktop [AppHeader]
-/// row — the standard placement on Japanese e-commerce sites, and reachable
-/// by signed-out visitors, who have no account page to find it in.
+/// Pill-shaped `EN | 日本語` segmented toggle — the active language sits in
+/// a filled brand-green capsule, the other is plain text on the app's
+/// standard input-fill track. One tap switches; no picker step. Used in the
+/// tablet/desktop [AppHeader] and inline in [LanguageMenuTile] on phone.
 class LanguageToggle extends StatelessWidget {
   const LanguageToggle({super.key});
 
@@ -25,30 +31,28 @@ class LanguageToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final current = context.locale;
     return Container(
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.inputFill,
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final (i, locale) in AppLocales.supported.indexed) ...[
-            if (i > 0)
-              Container(width: 1, height: 18, color: AppColors.textSecondary.withValues(alpha: 0.3)),
-            _ToggleSegment(
+          for (final locale in AppLocales.supported)
+            _PillSegment(
               label: AppLocales.shortLabel(locale),
               selected: locale == current,
               onTap: () => setAppLocale(context, locale),
             ),
-          ],
         ],
       ),
     );
   }
 }
 
-class _ToggleSegment extends StatelessWidget {
-  const _ToggleSegment({required this.label, required this.selected, required this.onTap});
+class _PillSegment extends StatelessWidget {
+  const _PillSegment({required this.label, required this.selected, required this.onTap});
 
   final String label;
   final bool selected;
@@ -58,14 +62,20 @@ class _ToggleSegment extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
+      borderRadius: BorderRadius.circular(999),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 2, vertical: 5),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+        ),
         child: Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            color: selected ? AppColors.primary : AppColors.textSecondary,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? Colors.white : AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -73,9 +83,10 @@ class _ToggleSegment extends StatelessWidget {
   }
 }
 
-/// "Language · English ›" list row for phone-width menus — [MainMenuDrawer],
-/// [AdminMenuDrawer] and the account page — where the header is too tight
-/// for [LanguageToggle]. Tapping opens [showLanguagePicker].
+/// "Language" row for phone-width menus — [MainMenuDrawer], [AdminMenuDrawer]
+/// and the account page — with the [LanguageToggle] sitting inline on the
+/// right, so switching is a single tap right in the row rather than a
+/// separate picker.
 ///
 /// [contentPadding] and [labelStyle] let each host match its sibling tiles
 /// (the drawers and the account list each indent/weight rows differently).
@@ -91,56 +102,7 @@ class LanguageMenuTile extends StatelessWidget {
       contentPadding: contentPadding,
       leading: const Icon(Icons.language_rounded, color: AppColors.textSecondary),
       title: Text('language.title'.tr(), style: labelStyle ?? AppTextStyles.body),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            AppLocales.nativeLabel(context.locale),
-            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(width: 2),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-        ],
-      ),
-      onTap: () => showLanguagePicker(context),
+      trailing: const LanguageToggle(),
     );
   }
-}
-
-/// Bottom sheet listing every supported language in its own script, with a
-/// check on the active one. Picking a language applies it immediately and
-/// closes the sheet.
-Future<void> showLanguagePicker(BuildContext context) {
-  return showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: AppColors.surface,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-    builder: (sheetContext) {
-      // Read from the *caller's* context: the sheet is pushed on the root
-      // navigator, whose context sits above EasyLocalization's rebuild scope.
-      final current = context.locale;
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xs),
-              child: Text('language.choose'.tr(), style: AppTextStyles.title),
-            ),
-            for (final locale in AppLocales.supported)
-              ListTile(
-                title: Text(AppLocales.nativeLabel(locale), style: AppTextStyles.body),
-                trailing: locale == current ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  setAppLocale(context, locale);
-                },
-              ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
-        ),
-      );
-    },
-  );
 }

@@ -19,7 +19,7 @@ class CartRepositoryImpl implements CartRepository {
     try {
       return Right(await _datasource.getCart());
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -30,7 +30,7 @@ class CartRepositoryImpl implements CartRepository {
     try {
       return Right(await _datasource.addItem(product, quantity));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -41,7 +41,7 @@ class CartRepositoryImpl implements CartRepository {
     try {
       return Right(await _datasource.updateQuantity(productId, quantity));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -52,7 +52,7 @@ class CartRepositoryImpl implements CartRepository {
     try {
       return Right(await _datasource.removeItem(productId));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -63,7 +63,7 @@ class CartRepositoryImpl implements CartRepository {
     try {
       return Right(await _datasource.clear());
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

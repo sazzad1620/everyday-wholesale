@@ -18,7 +18,7 @@ class AppReadinessRepositoryImpl implements AppReadinessRepository {
       final isReady = await _localDatasource.checkAppReady();
       return Right(isReady);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left(CacheFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

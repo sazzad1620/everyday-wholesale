@@ -17,8 +17,7 @@
     "rate_app": "アプリを評価する"
   },
   "language": {
-    "title": "言語",
-    "choose": "言語を選択"
+    "title": "言語"
   },
   "product": {
     "empty": "このカテゴリーにはまだ商品がありません。",
@@ -51,13 +50,66 @@
       "payment_a": "主要なクレジットカード・デビットカード、および代金引換がご利用いただけます。",
       "returns_q": "返品はできますか？",
       "returns_a": "未開封の商品は、お届けから7日以内であれば全額返金にて返品を承ります。"
+    },
+    "condition": {
+      "fresh": "生鮮",
+      "frozen": "冷凍",
+      "dry_packaged": "乾物・包装品",
+      "ambient": "常温",
+      "freshly_prepared": "できたて"
     }
+  },
+  "country": {
+    "BD": "バングラデシュ",
+    "IN": "インド",
+    "BR": "ブラジル",
+    "JP": "日本",
+    "TH": "タイ",
+    "VN": "ベトナム",
+    "PH": "フィリピン",
+    "ID": "インドネシア",
+    "NP": "ネパール",
+    "LK": "スリランカ",
+    "PK": "パキスタン",
+    "CN": "中国",
+    "US": "アメリカ",
+    "AU": "オーストラリア"
   },
   "common": {
     "coming_soon": "{feature}は近日公開予定です。",
     "generic_error": "エラーが発生しました。",
     "retry": "再試行",
     "copied_to_clipboard": "クリップボードにコピーしました。"
+  },
+  "errors": {
+    "server": "サーバーでエラーが発生しました。",
+    "cache": "端末内のデータの読み込みに失敗しました。",
+    "unexpected": "予期しないエラーが発生しました。",
+    "not_found": "お探しの項目が見つかりませんでした。",
+    "auth": "認証中にエラーが発生しました。",
+    "auth_generic": "エラーが発生しました。もう一度お試しください。",
+    "auth_invalid_email": "有効なメールアドレスを入力してください。",
+    "auth_user_disabled": "このアカウントは無効化されています。",
+    "auth_wrong_credentials": "メールアドレスまたはパスワードが正しくありません。",
+    "auth_email_in_use": "このメールアドレスはすでに登録されています。",
+    "auth_weak_password": "より安全なパスワードを設定してください（6文字以上）。",
+    "auth_network": "ネットワークエラーです。接続を確認してもう一度お試しください。",
+    "auth_too_many_requests": "試行回数が多すぎます。しばらく待ってからもう一度お試しください。",
+    "auth_invalid_phone": "国番号を含む有効な電話番号を入力してください。",
+    "auth_invalid_code": "認証コードが正しくありません。確認してもう一度お試しください。",
+    "auth_code_expired": "この認証コードは期限切れです。新しいコードを取得してください。",
+    "auth_phone_exists": "この電話番号はすでに登録されています。ログインしてください。",
+    "auth_phone_not_found": "この電話番号のアカウントが見つかりません。先に登録してください。",
+    "auth_sign_in_cancelled": "ログインがキャンセルされました。",
+    "auth_google_failed": "Googleログインに失敗しました。もう一度お試しください。",
+    "sign_in_required_cart": "カートを利用するにはログインしてください。",
+    "sign_in_required_orders": "注文履歴を見るにはログインしてください。",
+    "sign_in_required_place_order": "ご注文にはログインが必要です。",
+    "sign_in_required_reviews": "レビューを見るにはログインしてください。",
+    "sign_in_required_submit_review": "レビューを投稿するにはログインしてください。",
+    "order_place_timeout": "ご注文を確定できませんでした。インターネット接続を確認してもう一度お試しください。",
+    "payment_start_timeout": "お支払いを開始できませんでした。インターネット接続を確認してもう一度お試しください。",
+    "payment_start_failed": "お支払いを開始できませんでした。もう一度お試しください。"
   },
   "nav": {
     "home": "ホーム",
@@ -273,10 +325,10 @@
     "category_required": "カテゴリーを選択してください。",
     "product_subcategory_hint": "サブカテゴリー",
     "error_subcategory_required": "サブカテゴリーを選択してください。",
-    "product_condition_hint": "状態（例：生鮮、冷凍）",
-    "error_product_condition_required": "状態を入力してください。",
-    "product_origin_hint": "原産地（例：バングラデシュ）",
-    "error_product_origin_required": "原産地を入力してください。",
+    "product_condition_hint": "状態",
+    "error_product_condition_required": "状態を選択してください。",
+    "product_origin_hint": "原産地",
+    "error_product_origin_required": "原産地を選択してください。",
     "product_description_hint": "商品説明",
     "error_product_description_required": "商品説明を入力してください。",
     "product_in_stock_label": "在庫あり",
@@ -291,6 +343,9 @@
     "payment_reference_label": "決済ID",
     "reviews_empty_title": "レビューはまだありません",
     "reviews_empty_message": "お客様が投稿したレビューがここに表示されます。",
-    "reviewed_by": "投稿者：{name}"
+    "reviewed_by": "投稿者：{name}",
+    "field_en": "{field}（英語）",
+    "field_ja": "{field}（日本語）",
+    "ja_missing": "日本語未入力"
   }
 }

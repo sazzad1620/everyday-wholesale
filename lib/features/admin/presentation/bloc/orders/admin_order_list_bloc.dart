@@ -21,7 +21,7 @@ class AdminOrderListBloc extends Bloc<AdminOrderListEvent, AdminOrderListState> 
     emit(const AdminOrderListState(isLoading: true));
     final result = await _getAllOrdersUseCase(const NoParams());
     result.match(
-      (failure) => emit(AdminOrderListState(errorMessage: failure.message)),
+      (failure) => emit(AdminOrderListState(errorMessage: failure.messageKey)),
       (orders) => emit(AdminOrderListState(orders: orders)),
     );
   }
@@ -35,7 +35,7 @@ class AdminOrderListBloc extends Bloc<AdminOrderListEvent, AdminOrderListState> 
       UpdateOrderStatusParams(orderId: event.orderId, status: event.status),
     );
     await result.match(
-      (failure) async => emit(AdminOrderListState(orders: state.orders, errorMessage: failure.message)),
+      (failure) async => emit(AdminOrderListState(orders: state.orders, errorMessage: failure.messageKey)),
       (_) async => _onRequested(const AdminOrderListRequested(), emit),
     );
   }

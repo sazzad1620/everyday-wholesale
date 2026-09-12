@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/localization/localized_text.dart';
 import '../../../../../config/di/injection_container.dart';
 import '../../../../../config/routes/route_paths.dart';
 import '../../../../../core/utils/currency_formatter.dart';
@@ -16,6 +17,7 @@ import '../../../../product/domain/entities/product_entity.dart';
 import '../../bloc/products/admin_product_list_bloc.dart';
 import '../../bloc/products/admin_product_list_event.dart';
 import '../../bloc/products/admin_product_list_state.dart';
+import '../../widgets/bilingual_text_field.dart';
 
 /// Full product CRUD (minus photo upload, still Phase 5's second pass) —
 /// mirrors [AdminCategoriesPage]'s structure closely: add/edit push
@@ -48,7 +50,7 @@ class _ProductListView extends StatelessWidget {
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.delete_product_title'.tr(),
-      message: 'admin.delete_product_message'.tr(namedArgs: {'name': product.name}),
+      message: 'admin.delete_product_message'.tr(namedArgs: {'name': context.localized(product.name)}),
       confirmLabel: 'admin.delete'.tr(),
       cancelLabel: 'admin.cancel'.tr(),
     );
@@ -63,7 +65,7 @@ class _ProductListView extends StatelessWidget {
       listenWhen: (previous, current) => previous.isDeleting && !current.isDeleting,
       listener: (context, state) {
         if (state.errorMessage != null) {
-          AppToast.show(context, state.errorMessage!, type: ToastType.error);
+          AppToast.show(context, state.errorMessage!.tr(), type: ToastType.error);
         }
       },
       builder: (context, state) {
@@ -115,7 +117,7 @@ class _ProductListView extends StatelessWidget {
       return ComingSoonView(
         icon: Icons.error_outline_rounded,
         title: 'common.generic_error'.tr(),
-        message: state.errorMessage!,
+        message: state.errorMessage!.tr(),
       );
     }
     if (state.products.isEmpty) {
@@ -183,7 +185,7 @@ class _ProductTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(product.name, style: AppTextStyles.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(context.localized(product.name), style: AppTextStyles.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                       Text(
                         '${formatYen(product.price)} · ${product.unit}',
                         style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
@@ -191,6 +193,7 @@ class _ProductTile extends StatelessWidget {
                     ],
                   ),
                 ),
+                MissingJaBadge(text: product.name),
                 if (!product.inStock)
                   Container(
                     margin: const EdgeInsets.only(right: AppSpacing.sm),

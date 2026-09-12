@@ -4,7 +4,9 @@ Goal: the whole system (customer app + admin side, on Android/iOS/Web) works in 
 
 This document is the agreed plan **and** the progress tracker — see **§9 (Roadmap & Status)** for what's done. Sections 1–8 describe the design and are not rewritten as work lands; only §9 checkboxes and §11 status change.
 
-**Status: Phase 1 of 9 done** (locale foundation — `ja` locale, `ja.json`, switcher, font, dates). Next: Phase 2.
+**Status: all 9 phases implemented** — Phases 2–9 awaiting developer commit; Phase 7 migration tool ready to run; Phase 9 has developer-side checks listed (admin + signed-in flows).
+
+**Commit convention:** the developer reviews and commits each phase manually — the assistant never commits. Each phase's checklist notes the commit it landed in once that happens.
 
 ---
 
@@ -153,8 +155,9 @@ The admin pages use the same `en.json` / `ja.json`, so the admin panel itself is
 
 ### 5.1 Language switcher
 
-- **Mobile**: new row in Account page (`account_page.dart`) — "Language / 言語" → opens a simple picker (English / 日本語). Also visible for guests (no login needed).
-- **Web**: small `EN | 日本語` toggle in `app_header.dart` (right side, next to the cart/account icons) and the same Account row.
+- One control everywhere: a **pill toggle** — `EN` and `日本語` side by side on the app's grey input-fill track, the active one in a filled brand-green capsule. One tap switches; there is no separate picker step.
+- **Web / tablet**: the pill sits in `app_header.dart` (right side, next to Wishlist / Cart / Account) — reachable signed-out.
+- **Phone**: a "Language / 言語" row with the same pill inline on the right, in the main-menu drawer (signed-out entry point), the admin drawer, and the account page.
 - Uses `context.setLocale(...)`. `easy_localization` persists the choice on the device automatically. First launch = English (decision #2).
 - Also saved to the user's Firestore doc as `preferredLocale` when logged in — for future emails/push/receipts from Cloud Functions, and so it syncs across devices. (Section 8.)
 
@@ -256,12 +259,13 @@ Admin then fills in Japanese names/descriptions for existing products at their o
 
 Each phase is independently shippable and testable. Update this section as work lands — `✅ done` / `🔄 in progress` / `⬜ not started` on the phase header, `- [x] ~~item~~` for finished items, same convention as `PLAN.md` and `PAYMENTS_PLAN.md`.
 
-### Phase 1 — Locale foundation ✅ done
+### Phase 1 — Locale foundation ✅ done — committed as `35681cc feat: initialize japanese language support`
 - [x] ~~`lib/core/localization/app_locales.dart` — single source of truth for supported locales (`en`, `ja`), start locale (`en`, decision #2), native labels, and the per-locale body font~~
 - [x] ~~`bootstrap.dart` — `supportedLocales: [en, ja]`, `startLocale: en`, `initializeDateFormatting('ja')`~~
 - [x] ~~`ja.json` — full first-pass translation, all 256 keys, polite です/ます form; key parity and `{placeholder}` parity against `en.json` verified by script~~
 - [x] ~~New keys in both files: `language.title` / `language.choose`, `order_history.order_status_{pending,processing,completed,cancelled}`~~
-- [x] ~~Language switcher (`lib/shared/widgets/language/language_switcher.dart`): `LanguageToggle` (`EN | 日本語`) in the tablet/desktop `AppHeader` — reachable signed-out, customer and admin; `LanguageMenuTile` → bottom-sheet picker in the phone `MainMenuDrawer`, `AdminMenuDrawer`, and the account page (decision D: both)~~
+- [x] ~~Language switcher (`lib/shared/widgets/language/language_switcher.dart`): `LanguageToggle` (`EN | 日本語`) in the tablet/desktop `AppHeader` — reachable signed-out, customer and admin; `LanguageMenuTile` in the phone `MainMenuDrawer`, `AdminMenuDrawer`, and the account page (decision D: both)~~
+- [x] ~~**Revised after review:** the toggle is now a pill (active language in a filled green capsule on the input-fill track) and the phone rows embed it inline — the bottom-sheet picker and its `language.choose` key were removed~~
 - [x] ~~Noto Sans JP for `ja` via `ThemeData.fontFamily` (`AppTheme.light/dark({bodyFont})`, `app.dart`) — every existing `AppTextStyles` usage inherits it, no widget changes~~
 - [x] ~~`MaterialApp.router` keyed on the locale so a switch remounts the tree (see §6.7 implementation note — const widgets + context-free `.tr()` otherwise kept the old language)~~
 - [x] ~~`OrderStatusPill` — both the customer chip and the admin dropdown now use `order_history.order_status_*` keys instead of `status.name.toUpperCase()`~~
@@ -269,58 +273,93 @@ Each phase is independently shippable and testable. Update this section as work 
 - [x] ~~`test/widget_test.dart` updated for the new `AppTheme` signature + body-font assertion; `flutter analyze` clean, 4/4 tests pass~~
 - [x] ~~Verified in browser: desktop header toggle switches EN ↔ JA in place (route kept, no reload); phone drawer → picker → JA applied instantly; choice persists across restart~~
 
-### Phase 2 — Error messages → keys ⬜
-- [ ] `Failure` subclasses and `ServerException` / `CacheException` / `AuthException` carry a translation key instead of an English sentence (`core/errors/failures.dart`, `exceptions.dart`)
-- [ ] `auth_remote_datasource.dart` — `_messageForCode()` returns keys; the 4 inline `AuthException('...')` become keys
-- [ ] `cart_remote_datasource.dart`, `order_remote_datasource.dart`, `review_remote_datasource.dart`, `review_repository_impl.dart` — "Please sign in to …" → keys
-- [ ] `errors.*` group added to `en.json` + `ja.json`
-- [ ] Every display site of `failure.message` / `errorMessage` (~18 via `AuthFailure(e.message)` + bloc states) calls `.tr()` on it
+### Phase 2 — Error messages → keys ✅ done — awaiting developer commit
+- [x] ~~`core/errors/failures.dart` + `exceptions.dart` — the field is now `messageKey` (a translation key), defaults `errors.server` / `errors.cache` / `errors.unexpected` / `errors.not_found` / `errors.auth`. Renaming (not just re-purposing `message`) made the compiler surface every site~~
+- [x] ~~`auth_remote_datasource.dart` — `_messageForCode()` → `_keyForCode()` returning `errors.auth_*` keys; the 4 inline `AuthException('...')` → `errors.auth_phone_exists` / `auth_phone_not_found` / `auth_sign_in_cancelled` / `auth_google_failed`~~
+- [x] ~~`cart_remote_datasource.dart`, `order_remote_datasource.dart`, `order_repository_impl.dart`, `review_remote_datasource.dart`, `review_repository_impl.dart` — "Please sign in to …" → `errors.sign_in_required_*`; order-placement timeout → `errors.order_place_timeout`~~
+- [x] ~~`payment_remote_datasource.dart` — timeouts / missing secret → `errors.payment_start_*`; `FirebaseFunctionsException` no longer forwards the server's English text — its `code` is mapped to a key (`unauthenticated` → sign-in-required, `not-found`, `deadline-exceeded`/`unavailable` → timeout, else generic)~~
+- [x] ~~`account_bloc.dart` — the one hardcoded English message in a bloc → `errors.auth_phone_not_found`~~
+- [x] ~~All repositories forward `e.messageKey`; all blocs store `failure.messageKey` in their existing `errorMessage` / `message` state fields (field names kept to avoid churn — the value is now a key, documented on `Failure`)~~
+- [x] ~~`errors.*` group (28 keys) added to `en.json` + `ja.json`; script-verified every key used in Dart exists in both files and none is unused~~
+- [x] ~~Every UI sink calls `.tr()` — 22 sites: toasts in address/edit-profile/checkout/my-reviews/sign-in/sign-up/admin pages, `ErrorView`s in admin lists, `DashboardFailure`, `OrderHistoryFailure`, `ProductDetailError`, `ProductListError`, search bar error, `retry_payment_button`~~
+- [x] ~~Stripe's own `localizedMessage` (already device-localized) still passes through `PaymentConfirmationFailed` as text; `.tr()` on a non-key returns it unchanged, so the checkout toast handles both~~
+- [x] ~~`flutter analyze` clean, 4/4 tests pass; verified in browser: wrong password in JA shows メールアドレスまたはパスワードが正しくありません。~~
 
-### Phase 3 — `LocalizedText` + models ⬜
-- [ ] `lib/core/localization/localized_text.dart` — value object (`en` required, `ja` optional, `resolve(locale)` with JA→EN fallback, tolerant `fromFirestore` accepting plain string **or** `{en, ja}` map, `toMap()`) + `context.localized(...)` extension
-- [ ] `ProductEntity` / `ProductModel` — `name`, `description`
-- [ ] `CategoryEntity` / `CategoryModel` — `name`; `SubcategoryEntity` / `SubcategoryModel` — `name`
-- [ ] `OrderItemEntity` / `OrderItemModel` — `name` (snapshot stores the whole map, §5.3)
-- [ ] `ReviewEntity` / `ReviewModel`, `ReviewableItemEntity` — `productName` (snapshot stores the whole map)
-- [ ] `order_repository_impl.dart` and review submission build snapshots from the map
-- [ ] Route extras (`category_navigation.dart`, `app_router.dart`, `product_list_page.dart`, `product_detail_page.dart`) carry `LocalizedText`, not `String` (§5.2)
-- [ ] Every customer-side display site uses `context.localized(...)`: home category grid, drawer / desktop sidebar category list, category products page title, subcategory chips, product cards, product detail, search results, cart items, checkout summary, order history / detail, wishlist, reviewable item card, review history tile
-- [ ] Admin list pages show the name in the admin's UI language
+### Phase 3 — `LocalizedText` + models ✅ done — awaiting developer commit
+- [x] ~~`lib/core/localization/localized_text.dart` — `LocalizedText(en, ja)`, `resolve(locale)` with JA→EN fallback, tolerant `fromFirestore` (map **or** legacy plain string), `toMap()`, `values` (for search), `hasJa`, `empty`; `context.localized(text)` extension. Unit-tested (`test/core/localized_text_test.dart`, 8 cases)~~
+- [x] ~~`ProductEntity` / `ProductModel` — `name`, `description`~~
+- [x] ~~`CategoryEntity` / `CategoryModel`, `SubcategoryEntity` / `SubcategoryModel` — `name` (incl. the nested `subcategories[]` array in `CategoryModel.toMap`)~~
+- [x] ~~`OrderItemEntity` / `OrderItemModel` — `name`; `order_repository_impl.dart` snapshots the whole map from `item.product.name`~~
+- [x] ~~`ReviewEntity` / `ReviewModel`, `ReviewableItemEntity` — `productName`; typed as `LocalizedText` through `SubmitReviewUseCase` → `ReviewRepository` → `MyReviewsEvent`, so the review doc stores the map~~
+- [x] ~~Route extras: `CategoryProductsExtra`, `ProductListExtra`, `ProductDetailExtra` carry `LocalizedText`; `ProductListPage` / `ProductDetailPage` keep the object for re-pushing and resolve only for display (deep link with no extra falls back to the raw id, as before)~~
+- [x] ~~19 display sites use `context.localized(...)`: home category card, subcategory card, category nav list (drawer + desktop sidebar, 3 sites), product card, product detail title/description, breadcrumbs, search results, cart item, order item tile, reviewable item card, review history tile, admin product/category lists + delete dialogs, admin reviews list, admin product form's category/subcategory dropdown labels~~
+- [x] ~~Search datasource matches against every stored language (`name.values`) — normalisation comes in Phase 6~~
+- [x] ~~Admin forms: minimal compile-correct change only (EN input → `LocalizedText`, existing JA preserved on edit) — dual inputs are Phase 5~~
+- [x] ~~`flutter analyze` clean, 11/11 tests pass~~
 
-### Phase 4 — Codes for condition / origin ⬜
-- [ ] `ProductCondition` enum (`fresh`, `frozen`, `dry_packaged`, `ambient`, `freshly_prepared`) — decision C: keep all five
-- [ ] Country code list in `lib/core/constants/` — decision B: short list (BD, IN, BR, JP, TH, VN, PH, ID, NP, LK, PK, CN, US, AU)
-- [ ] `product.condition.*` and `country.*` keys in both JSON files
-- [ ] `ProductEntity` / `ProductModel` store the codes; `ProductInfoRow` on product detail displays translated labels
-- [ ] `unit` stays a single language-neutral free-text field — decision A1, **no change**
+### Phase 4 — Codes for condition / origin ✅ done — awaiting developer commit
+- [x] ~~`lib/features/product/domain/entities/product_condition.dart` — `ProductCondition` enum (`fresh`, `frozen`, `dry_packaged`, `ambient`, `freshly_prepared`; decision 7), `code` for storage, `labelKey` → `product.condition.<code>`, tolerant `parse()` that also maps the legacy English labels ("Dry / Packaged" → `dryPackaged`) so unmigrated docs still load~~
+- [x] ~~`lib/core/constants/countries.dart` — short ISO list (decision 6), `label(code)` (translated, unknown code shown verbatim), tolerant `parse()` mapping legacy names ("Bangladesh" → `BD`)~~
+- [x] ~~`product.condition.*` (5) and `country.*` (14) keys in both JSON files~~
+- [x] ~~`ProductEntity.condition` is `ProductCondition`; `origin` stays `String` but holds a code; `ProductModel` parses/serialises both~~
+- [x] ~~`ProductInfoRow` displays `condition.labelKey.tr()` and `Countries.label(origin)`; `unit` untouched (decision 5)~~
+- [x] ~~Admin product form: condition and origin are now `AppDropdownField`s (pulled forward from Phase 5 since the type change forced the form to change anyway); hint/error copy updated to "choose"~~
+- [x] ~~Parser tests in `test/core/product_codes_test.dart` (7 cases); `flutter analyze` clean, 18/18 tests pass, translation parity 303/303~~
 
-### Phase 5 — Admin forms ⬜
-- [ ] `admin_product_form_page.dart` — `Name (English) *` + `Name (日本語)`, `Description (English) *` + `Description (日本語)`; side-by-side on wide, stacked on narrow; EN required, JA optional
-- [ ] Condition dropdown (5 options, translated); origin dropdown (country list, translated)
-- [ ] `admin_category_form_page.dart` — category name EN * + JA; each subcategory row EN * + JA
-- [ ] Form blocs / validation updated (EN required, JA optional, condition + origin required)
-- [ ] Admin product / category lists show the other language in small grey text when JA is missing (§4.3)
+### Phase 5 — Admin forms ✅ done — awaiting developer commit
+- [x] ~~`lib/features/admin/presentation/widgets/bilingual_text_field.dart` — `BilingualController` (owns the EN + JA `TextEditingController`s, `.value` → `LocalizedText`), `BilingualTextField` (EN required / JA optional, `EN`/`JA` tag inside each box, side-by-side ≥ 600 px, stacked on phone), `MissingJaBadge`~~
+- [x] ~~`admin_product_form_page.dart` — name and description use `BilingualTextField`; condition + origin dropdowns (done in Phase 4)~~
+- [x] ~~`admin_category_form_page.dart` — category name uses `BilingualTextField`; every subcategory row too (optional — a blank row is still skipped at submit, ids still slugified from the English name)~~
+- [x] ~~Validation: EN required, JA optional, condition + origin required (dropdown validators)~~
+- [x] ~~Admin product and category lists show a "JA missing" badge on rows without a Japanese name (§4.3)~~
+- [x] ~~New keys `admin.field_en` ("{field} (English)"), `admin.field_ja` ("{field} (日本語)"), `admin.ja_missing` in both files~~
+- [x] ~~Widget tests `test/features/admin/bilingual_text_field_test.dart` (5 cases: EN required, JA optional, initial value + composition, responsive layout, badge); `flutter analyze` clean, 23/23 tests pass~~
+- Not verified in the browser: the admin pages need an admin sign-in, which the developer should do during the Phase 9 QA pass
 
-### Phase 6 — Search ⬜
-- [ ] `lib/core/utils/text_normalizer.dart` — lowercase, trim, full-width → half-width, katakana ↔ hiragana
-- [ ] `product_remote_datasource.dart` — match against both `name.en` and `name.ja`, normalised, regardless of current locale
+### Phase 6 — Search ✅ done — awaiting developer commit
+- [x] ~~`lib/core/utils/text_normalizer.dart` — `normalizeForSearch`: lowercase, whitespace collapse, full-width ASCII → half-width, ideographic space, katakana → hiragana, half-width katakana → hiragana (pure Dart, no package)~~
+- [x] ~~`product_remote_datasource.dart` — query and every stored language (`name.values`) are normalised before `contains`, regardless of current locale~~
+- [x] ~~Tests `test/core/text_normalizer_test.dart` (6 cases incl. "rice / ライス / らいす / ＢＡＳＭＡＴＩ all match"); `flutter analyze` clean~~
 
-### Phase 7 — Migration ⬜
-- [ ] `lib/tools/migrate_localized_fields.dart` — idempotent one-off: products (`name`, `description` → map; `condition` / `origin` → codes), categories (`name` + `subcategories[].name`), orders (`items[].name`), reviews (`productName`)
-- [ ] Run it against the live project
-- [ ] `seed_data.dart` updated to the new shape
+### Phase 7 — Migration ✅ tool done — **developer must run it** — awaiting commit
+- [x] ~~`lib/tools/migrate_localized_fields.dart` — same sign-in-as-admin shape as `seed_data.dart`; **Dry run** checkbox (default on) lists every doc/field that would change, untick to apply; batches of 400; idempotent (docs already in the new shape are skipped, existing `ja` never overwritten)~~
+  - `products`: `name`, `description` → `{en, ja: ""}`; `condition` label → code; `origin` name → ISO code
+  - `categories`: `name` + every `subcategories[].name` (array rewritten whole)
+  - `orders`: every `items[].name`
+  - **`reviews.productName` is not migrated** — `firestore.rules` makes review docs immutable (`allow update: if false`, admins included) and §12 promised no rules change. The tolerant parser reads the old plain string, so those snapshots just show the English name in Japanese mode. Acceptable; revisit only if the client cares about old review rows.
+- [x] ~~`seed_data.dart` writes the new shape (`_localized()` for names/descriptions, `ProductCondition.parse(...).code`, `Countries.parse(...)`) — data literals unchanged~~
+- [x] ~~`test/tools/migrate_localized_fields_test.dart` locks the legacy → new-shape contract and idempotence; `flutter analyze` clean, 31/31 tests pass~~
+- [ ] **Developer:** `flutter run -t lib/tools/migrate_localized_fields.dart -d chrome` → sign in as admin → *Preview changes* → review the log → untick Dry run → *Migrate Firestore*. Until this runs, the app still works (tolerant parsers) but admin list rows all show "JA missing" and legacy origins that didn't map to a known country show verbatim.
 
-### Phase 8 — `users/{uid}.preferredLocale` ⬜
-- [ ] Write on language change when signed in (hook in `setAppLocale`, `language_switcher.dart`)
-- [ ] Apply on login if the doc has one
-- [ ] `user_model.dart` field
+### Phase 8 — `users/{uid}.preferredLocale` ✅ done — awaiting developer commit
+- [x] ~~`UserEntity.preferredLocale` (+ `copyWith`, which `AccountBloc` now uses for its local user updates instead of re-listing every field), `UserModel` reads/writes it~~
+- [x] ~~`AuthRemoteDatasource.updatePreferredLocale` → `AuthRepository` → `UpdatePreferredLocaleUseCase` (DI regenerated)~~
+- [x] ~~`AccountPreferredLocaleUpdateRequested` — fired from `setAppLocale` in `language_switcher.dart`; the bloc writes it best-effort for a signed-in user (no error toast: the device already switched) and skips when unchanged~~
+- [x] ~~Applied at sign-in: `EverydayWholesaleApp` wraps the router in a `BlocListener<AccountBloc>` that fires only when a different uid becomes signed in (covers the session restored at launch) and calls `context.setLocale` if the profile's preference differs. Profile edits / the preference write itself don't re-trigger it. Sign-out leaves the device language alone~~
+- [x] ~~No rules change needed — a user may already update their own `users/{uid}` doc (role unchanged)~~
+- [x] ~~`flutter analyze` clean, 31/31 tests pass~~
 
-### Phase 9 — QA pass ⬜
-- [ ] Walk every screen in JA on phone + web: overflow, fonts, dates, empty-JA fallback, search
-- [ ] Native-speaker review of `ja.json` (decision E — client to confirm reviewer)
+### Phase 9 — QA pass 🔄 developer-side items remain
+Verified by the assistant (Flutter web, debug build, against the **unmigrated** live Firestore data, so the tolerant parsers were exercised for real):
+- [x] ~~Static checks: `flutter analyze` clean; 31/31 tests; `en.json` / `ja.json` 306 / 306 keys, 0 missing, 0 placeholder mismatches; all 238 statically-referenced `.tr()` keys exist~~
+- [x] ~~Home (phone + desktop) in JA — header, search hint, "カテゴリーから探す", bottom nav, drawer, sidebar~~
+- [x] ~~Category page in JA — subcategory grid, breadcrumb, "Frozen Foodのすべての商品" (`{categoryName}` from `LocalizedText`)~~
+- [x] ~~Product detail in JA on legacy data — 状態 **冷凍** (from stored `"Frozen"`), 原産地 **バングラデシュ** (from stored `"Bangladesh"`), unit `10pcs` neutral, description falls back to EN, tabs/highlights/stock/add-to-cart translated~~
+- [x] ~~Runtime switch JA ↔ EN on the product page — stays on the page; condition/origin flip to "Frozen"/"Bangladesh"; no reload~~
+- [x] ~~Search: full-width `ＰＡＲＡＴＨＡ` finds "Frozen Paratha 10pcs" (normaliser live)~~
+- [x] ~~Deep link / refresh with no route `extra` — breadcrumb and subcategory grid now resolve from the category cache (new `CategoryContextResolver`; fixed during QA — previously showed raw ids and lost the grid, and the language switch's remount exposed it)~~
+- [x] ~~Error path in JA: wrong password → メールアドレスまたはパスワードが正しくありません。(Phase 2)~~
+- [x] ~~Font: Noto Sans JP applied on switch; brief tofu on the very first JA load while it downloads (documented, §6.7)~~
+- [x] ~~Language persists across restart~~
 
----
----
+Needs the developer (requires accounts / data I don't have):
+- [ ] **Run the migration** (Phase 7 step) on the live project, then confirm in the admin lists that "JA missing" badges are the only ones expected
+- [ ] **Admin, signed in as admin:** product form (EN/JA name + description, condition/origin dropdowns, edit an existing product and confirm nothing is lost on save), category form (EN/JA category + subcategory rows), "JA missing" badges, admin lists in JA
+- [ ] Enter Japanese names for a few products/categories and check the customer app shows them in JA mode and English in EN mode
+- [ ] **Signed-in customer flows in JA:** cart item names, checkout summary, place an order → order history / detail (item names, `2026年9月12日` dates, 受付中 status pill), My Reviews (reviewable item card, review history tile), Stripe card sheet
+- [ ] `preferredLocale`: switch language while signed in → check `users/{uid}.preferredLocale` in the console → sign in on another device/browser and confirm it applies
+- [ ] Android + iOS build: system fonts for JA, bottom-sheet language picker, drawer tile; check for label overflow in JA on the narrowest supported phone
+- [ ] Native-speaker review of `ja.json` (decision 9)
 
 ## 10. Future ideas (out of scope now)
 

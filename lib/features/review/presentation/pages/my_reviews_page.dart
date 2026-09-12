@@ -96,7 +96,7 @@ class _MyReviewsView extends StatelessWidget {
                               current.errorMessage != null,
                           listener: (context, state) => AppToast.show(
                             context,
-                            state.errorMessage!,
+                            state.errorMessage!.tr(),
                             type: ToastType.error,
                           ),
                           builder: (context, state) {

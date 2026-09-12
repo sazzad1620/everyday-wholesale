@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/localization/localized_text.dart';
 import '../../../config/di/injection_container.dart';
 import '../../../config/routes/route_paths.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -197,7 +198,7 @@ class _SearchResultsCard extends StatelessWidget {
               if (state.errorMessage != null) {
                 return Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Text(state.errorMessage!, style: AppTextStyles.body.copyWith(color: AppColors.error)),
+                  child: Text(state.errorMessage!.tr(), style: AppTextStyles.body.copyWith(color: AppColors.error)),
                 );
               }
               if (state.results.isEmpty) {
@@ -247,7 +248,7 @@ class _SearchResultTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.name, style: AppTextStyles.body, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(context.localized(product.name), style: AppTextStyles.body, maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
                   Text(formatYen(product.price), style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
                 ],

@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/localization/localized_text.dart';
+
 /// A single 1–5 star rating a customer left for a product, tied to the
 /// specific completed order that made them eligible to review it. Doc id is
 /// `{orderId}_{productId}` (see `ReviewRemoteDatasource.submitReview`), so a
@@ -19,7 +21,7 @@ class ReviewEntity extends Equatable {
 
   final String id;
   final String productId;
-  final String productName;
+  final LocalizedText productName;
   final String? productImageUrl;
   final String orderId;
   final String reviewerId;

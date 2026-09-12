@@ -25,22 +25,26 @@ class PaymentRemoteDatasourceImpl implements PaymentRemoteDatasource {
           .call<Map<String, dynamic>>({'orderId': orderId})
           .timeout(
             const Duration(seconds: 15),
-            onTimeout: () => throw const ServerException(
-              'Could not start the payment. Please check your internet connection and try again.',
-            ),
+            onTimeout: () => throw const ServerException('errors.payment_start_timeout'),
           );
 
       final clientSecret = result.data['clientSecret'] as String?;
       if (clientSecret == null || clientSecret.isEmpty) {
-        throw const ServerException(
-          'Could not start the payment. Please try again.',
-        );
+        throw const ServerException('errors.payment_start_failed');
       }
       return clientSecret;
     } on FirebaseFunctionsException catch (e) {
-      throw ServerException(
-        e.message ?? 'Could not start the payment. Please try again.',
-      );
+      throw ServerException(_keyForCode(e.code));
     }
   }
+
+  /// The function's own error text is developer-facing English (see
+  /// `functions/src/index.ts`), so it never reaches the customer — the code
+  /// picks the translated copy instead.
+  String _keyForCode(String code) => switch (code) {
+    'unauthenticated' => 'errors.sign_in_required_place_order',
+    'not-found' => 'errors.not_found',
+    'deadline-exceeded' || 'unavailable' => 'errors.payment_start_timeout',
+    _ => 'errors.payment_start_failed',
+  };
 }

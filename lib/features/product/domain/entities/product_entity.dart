@@ -1,5 +1,8 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/localization/localized_text.dart';
+import 'product_condition.dart';
+
 class ProductEntity extends Equatable {
   const ProductEntity({
     required this.id,
@@ -23,7 +26,7 @@ class ProductEntity extends Equatable {
   static const int maxImages = 5;
 
   final String id;
-  final String name;
+  final LocalizedText name;
 
   /// Whole yen (¥), no decimals — matches the reference site's pricing style.
   final int price;
@@ -32,13 +35,12 @@ class ProductEntity extends Equatable {
   final String iconKey;
 
   /// Longer copy shown in the Product Detail page's Description tab.
-  final String description;
+  final LocalizedText description;
 
-  /// E.g. "Fresh", "Frozen", "Dry / Packaged". Hardcoded mock data for now —
-  /// becomes admin-editable once there's an admin UI, same spirit as [imageUrl].
-  final String condition;
+  /// Admin-picked from a fixed set; see [ProductCondition] for why it's a code.
+  final ProductCondition condition;
 
-  /// E.g. "Bangladesh", "Brazil". Same admin-editable-later note as [condition].
+  /// ISO 3166-1 alpha-2 code (see `Countries`) — translated at display time.
   final String origin;
 
   /// Null for products in categories with no subcategories, or for products

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/localized_text.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/category_palette.dart';
 import '../../../../shared/widgets/category_image.dart';
@@ -48,7 +49,7 @@ class SubcategoryCard extends StatelessWidget {
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                     child: Text(
-                      subcategory.name,
+                      context.localized(subcategory.name),
                       style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
                       textAlign: TextAlign.center,
                       maxLines: 2,

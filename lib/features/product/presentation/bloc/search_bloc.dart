@@ -36,7 +36,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     if (requestId != _requestId || emit.isDone) return;
 
     result.match(
-      (failure) => emit(SearchState(query: query, errorMessage: failure.message)),
+      (failure) => emit(SearchState(query: query, errorMessage: failure.messageKey)),
       (products) => emit(SearchState(query: query, results: products)),
     );
   }

@@ -23,7 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return Right(await _remoteDatasource.signIn(email: email, password: password));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -38,7 +38,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return Right(await _remoteDatasource.signUp(name: name, email: email, password: password));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -49,7 +49,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return Right(await _remoteDatasource.sendPhoneOtp(phoneNumber));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -64,7 +64,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return Right(await _remoteDatasource.verifyPhoneOtp(verificationId: verificationId, smsCode: smsCode, name: name));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -75,7 +75,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return Right(await _remoteDatasource.isPhoneRegistered(phoneNumber));
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -86,7 +86,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return Right(await _remoteDatasource.signInWithGoogle());
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -98,7 +98,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _remoteDatasource.sendPasswordResetEmail(email);
       return const Right(unit);
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -110,7 +110,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _remoteDatasource.signOut();
       return const Right(unit);
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -134,7 +134,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return const Right(unit);
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -146,7 +146,19 @@ class AuthRepositoryImpl implements AuthRepository {
       await _remoteDatasource.updateName(uid, name);
       return const Right(unit);
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> updatePreferredLocale({required String uid, required String languageCode}) async {
+    try {
+      await _remoteDatasource.updatePreferredLocale(uid, languageCode);
+      return const Right(unit);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

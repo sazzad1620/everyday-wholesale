@@ -104,3 +104,14 @@ class AccountNameUpdateRequested extends AccountEvent {
   @override
   List<Object?> get props => [name];
 }
+
+/// Fired by the language switcher when a signed-in user picks a language —
+/// persists it on their profile so it follows them to other devices.
+class AccountPreferredLocaleUpdateRequested extends AccountEvent {
+  const AccountPreferredLocaleUpdateRequested(this.languageCode);
+
+  final String languageCode;
+
+  @override
+  List<Object?> get props => [languageCode];
+}

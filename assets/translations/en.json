@@ -17,8 +17,7 @@
     "rate_app": "Rate the App"
   },
   "language": {
-    "title": "Language",
-    "choose": "Choose language"
+    "title": "Language"
   },
   "product": {
     "empty": "No products in this category yet.",
@@ -51,13 +50,66 @@
       "payment_a": "We accept major credit/debit cards and cash on delivery.",
       "returns_q": "Can I return this product?",
       "returns_a": "Unopened items can be returned within 7 days of delivery for a full refund."
+    },
+    "condition": {
+      "fresh": "Fresh",
+      "frozen": "Frozen",
+      "dry_packaged": "Dry / Packaged",
+      "ambient": "Ambient",
+      "freshly_prepared": "Freshly Prepared"
     }
+  },
+  "country": {
+    "BD": "Bangladesh",
+    "IN": "India",
+    "BR": "Brazil",
+    "JP": "Japan",
+    "TH": "Thailand",
+    "VN": "Vietnam",
+    "PH": "Philippines",
+    "ID": "Indonesia",
+    "NP": "Nepal",
+    "LK": "Sri Lanka",
+    "PK": "Pakistan",
+    "CN": "China",
+    "US": "United States",
+    "AU": "Australia"
   },
   "common": {
     "coming_soon": "{feature} is coming soon.",
     "generic_error": "Something went wrong.",
     "retry": "Retry",
     "copied_to_clipboard": "Copied to clipboard."
+  },
+  "errors": {
+    "server": "Something went wrong on the server.",
+    "cache": "Something went wrong reading local data.",
+    "unexpected": "An unexpected error occurred.",
+    "not_found": "The requested item could not be found.",
+    "auth": "Something went wrong with authentication.",
+    "auth_generic": "Something went wrong. Please try again.",
+    "auth_invalid_email": "Please enter a valid email address.",
+    "auth_user_disabled": "This account has been disabled.",
+    "auth_wrong_credentials": "Incorrect email or password.",
+    "auth_email_in_use": "An account already exists with this email.",
+    "auth_weak_password": "Please choose a stronger password (at least 6 characters).",
+    "auth_network": "Network error — please check your connection and try again.",
+    "auth_too_many_requests": "Too many attempts — please wait a moment and try again.",
+    "auth_invalid_phone": "Please enter a valid phone number, including the country code.",
+    "auth_invalid_code": "Incorrect code — please check and try again.",
+    "auth_code_expired": "This code has expired — please request a new one.",
+    "auth_phone_exists": "An account already exists with this phone number. Please sign in instead.",
+    "auth_phone_not_found": "No account found for this number. Please sign up first.",
+    "auth_sign_in_cancelled": "Sign-in was cancelled.",
+    "auth_google_failed": "Google sign-in failed. Please try again.",
+    "sign_in_required_cart": "Please sign in to use your cart.",
+    "sign_in_required_orders": "Please sign in to view your orders.",
+    "sign_in_required_place_order": "Please sign in to place an order.",
+    "sign_in_required_reviews": "Please sign in to view your reviews.",
+    "sign_in_required_submit_review": "Please sign in to submit a review.",
+    "order_place_timeout": "Could not place your order. Please check your internet connection and try again.",
+    "payment_start_timeout": "Could not start the payment. Please check your internet connection and try again.",
+    "payment_start_failed": "Could not start the payment. Please try again."
   },
   "nav": {
     "home": "Home",
@@ -273,10 +325,10 @@
     "category_required": "Please choose a category.",
     "product_subcategory_hint": "Subcategory",
     "error_subcategory_required": "Please choose a subcategory.",
-    "product_condition_hint": "Condition (e.g. Fresh, Frozen)",
-    "error_product_condition_required": "Please enter a condition.",
-    "product_origin_hint": "Origin (e.g. Bangladesh)",
-    "error_product_origin_required": "Please enter an origin.",
+    "product_condition_hint": "Condition",
+    "error_product_condition_required": "Please choose a condition.",
+    "product_origin_hint": "Origin",
+    "error_product_origin_required": "Please choose an origin.",
     "product_description_hint": "Description",
     "error_product_description_required": "Please enter a description.",
     "product_in_stock_label": "In Stock",
@@ -291,6 +343,9 @@
     "payment_reference_label": "Payment ID",
     "reviews_empty_title": "No reviews yet",
     "reviews_empty_message": "Reviews submitted by customers will show up here.",
-    "reviewed_by": "by {name}"
+    "reviewed_by": "by {name}",
+    "field_en": "{field} (English)",
+    "field_ja": "{field} (日本語)",
+    "ja_missing": "JA missing"
   }
 }

@@ -34,9 +34,7 @@ class OrderRemoteDatasourceImpl implements OrderRemoteDatasource {
         .add({...order.toMap(), 'createdAt': FieldValue.serverTimestamp()})
         .timeout(
           const Duration(seconds: 15),
-          onTimeout: () => throw const ServerException(
-            'Could not place your order. Please check your internet connection and try again.',
-          ),
+          onTimeout: () => throw const ServerException('errors.order_place_timeout'),
         );
     // `createdAt` resolves to "now" here (see OrderModel.fromMap) rather than
     // re-reading the doc for the exact server value — not worth a second
@@ -47,7 +45,7 @@ class OrderRemoteDatasourceImpl implements OrderRemoteDatasource {
   @override
   Future<List<OrderModel>> getOrderHistory() async {
     final uid = _firebaseAuth.currentUser?.uid;
-    if (uid == null) throw const AuthException('Please sign in to view your orders.');
+    if (uid == null) throw const AuthException('errors.sign_in_required_orders');
     // Sorted client-side rather than via `.orderBy('createdAt')` — combining
     // that with the `customerId` equality filter would need a composite
     // index set up in the Firebase console first; not worth that setup step

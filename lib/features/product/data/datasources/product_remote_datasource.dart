@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/utils/text_normalizer.dart';
 import '../models/product_model.dart';
 
 abstract class ProductRemoteDatasource {
@@ -43,12 +44,14 @@ class ProductRemoteDatasourceImpl implements ProductRemoteDatasource {
     // Firestore has no case-insensitive substring query, and the catalog is
     // small enough (tens of products) that fetching everything and filtering
     // client-side is simpler and cheap enough — no search index service
-    // needed at this scale.
+    // needed at this scale. Both sides go through `normalizeForSearch` and
+    // every stored language is checked, so "rice", "ライス" and "らいす" all
+    // find the same product.
     final snapshot = await _firestore.collection(_productsCollection).get();
-    final lowerQuery = query.toLowerCase();
+    final normalizedQuery = normalizeForSearch(query);
     return snapshot.docs
         .map((doc) => ProductModel.fromMap(doc.data(), id: doc.id))
-        .where((product) => product.name.toLowerCase().contains(lowerQuery))
+        .where((product) => product.name.values.any((name) => normalizeForSearch(name).contains(normalizedQuery)))
         .toList();
   }
 }

@@ -58,7 +58,7 @@ class _AdminOrderListViewState extends State<_AdminOrderListView> {
       listenWhen: (previous, current) => previous.isUpdating && !current.isUpdating,
       listener: (context, state) {
         if (state.errorMessage != null) {
-          AppToast.show(context, state.errorMessage!, type: ToastType.error);
+          AppToast.show(context, state.errorMessage!.tr(), type: ToastType.error);
         }
       },
       builder: (context, state) {
@@ -87,7 +87,7 @@ class _AdminOrderListViewState extends State<_AdminOrderListView> {
       return ComingSoonView(
         icon: Icons.error_outline_rounded,
         title: 'common.generic_error'.tr(),
-        message: state.errorMessage!,
+        message: state.errorMessage!.tr(),
       );
     }
     if (state.orders.isEmpty) {

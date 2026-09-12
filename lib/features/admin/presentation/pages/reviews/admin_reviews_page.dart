@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/localization/localized_text.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../config/di/injection_container.dart';
 import '../../../../../shared/theme/app_colors.dart';
@@ -51,7 +52,7 @@ class _AdminReviewListView extends StatelessWidget {
                 return ComingSoonView(
                   icon: Icons.error_outline_rounded,
                   title: 'common.generic_error'.tr(),
-                  message: state.errorMessage!,
+                  message: state.errorMessage!.tr(),
                 );
               }
               if (state.reviews.isEmpty) {
@@ -104,7 +105,7 @@ class _AdminReviewTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  review.productName,
+                  context.localized(review.productName),
                   style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

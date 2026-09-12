@@ -28,7 +28,7 @@ class ReviewRemoteDatasourceImpl implements ReviewRemoteDatasource {
   @override
   Future<List<ReviewModel>> getMyReviews() async {
     final uid = _firebaseAuth.currentUser?.uid;
-    if (uid == null) throw const AuthException('Please sign in to view your reviews.');
+    if (uid == null) throw const AuthException('errors.sign_in_required_reviews');
     // Sorted client-side, matching `OrderRemoteDatasourceImpl` — no composite
     // index needed for a single-field equality filter.
     final snapshot = await _firestore.collection(_reviewsCollection).where('reviewerId', isEqualTo: uid).get();

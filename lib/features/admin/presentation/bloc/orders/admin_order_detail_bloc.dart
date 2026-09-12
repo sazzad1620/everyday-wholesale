@@ -24,7 +24,7 @@ class AdminOrderDetailBloc extends Bloc<AdminOrderDetailEvent, AdminOrderDetailS
       UpdateOrderStatusParams(orderId: event.orderId, status: event.status),
     );
     result.match(
-      (failure) => emit(AdminOrderDetailState(errorMessage: failure.message)),
+      (failure) => emit(AdminOrderDetailState(errorMessage: failure.messageKey)),
       (_) => emit(const AdminOrderDetailState(success: true)),
     );
   }

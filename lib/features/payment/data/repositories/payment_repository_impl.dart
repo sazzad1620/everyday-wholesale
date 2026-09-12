@@ -17,7 +17,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     try {
       return Right(await _datasource.createPaymentIntent(orderId));
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

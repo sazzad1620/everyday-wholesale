@@ -12,6 +12,7 @@ class UserModel extends UserEntity {
     super.phone,
     super.role,
     super.address,
+    super.preferredLocale,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, {required String uid}) {
@@ -23,6 +24,7 @@ class UserModel extends UserEntity {
       phone: map['phone'] as String?,
       role: map['role'] as String? ?? 'customer',
       address: rawAddress == null ? null : AddressModel.fromMap(Map<String, dynamic>.from(rawAddress)),
+      preferredLocale: map['preferredLocale'] as String?,
     );
   }
 
@@ -31,6 +33,7 @@ class UserModel extends UserEntity {
     'name': name,
     'phone': phone,
     'role': role,
+    'preferredLocale': preferredLocale,
     'address': address == null
         ? null
         : AddressModel(

@@ -18,7 +18,7 @@ class OrderHistoryBloc extends Bloc<OrderHistoryEvent, OrderHistoryState> {
     emit(const OrderHistoryInProgress());
     final result = await _getOrderHistoryUseCase(const NoParams());
     result.match(
-      (failure) => emit(OrderHistoryFailure(failure.message)),
+      (failure) => emit(OrderHistoryFailure(failure.messageKey)),
       (orders) => emit(OrderHistoryLoaded(orders)),
     );
   }

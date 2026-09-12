@@ -107,7 +107,7 @@ class _SignUpDialogState extends State<SignUpDialog> {
       listenWhen: (previous, current) => previous.isSubmitting && !current.isSubmitting,
       listener: (context, state) {
         if (state.errorMessage != null) {
-          AppToast.show(context, state.errorMessage!, type: ToastType.error);
+          AppToast.show(context, state.errorMessage!.tr(), type: ToastType.error);
         } else if (state.isLoggedIn) {
           Navigator.of(context).pop();
           // The route itself is also guarded (see app_router.dart's

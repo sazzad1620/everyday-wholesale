@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
+import '../../../../core/localization/localized_text.dart';
 import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
@@ -20,10 +21,11 @@ import '../../../home/presentation/widgets/subcategory_grid.dart';
 import '../bloc/product_list_bloc.dart';
 import '../bloc/product_list_event.dart';
 import '../bloc/product_list_state.dart';
+import '../widgets/category_context_resolver.dart';
 
 /// What `extra` carries on the `category/:categoryId` route.
 typedef CategoryProductsExtra = ({
-  String? categoryName,
+  LocalizedText? categoryName,
   List<SubcategoryEntity> subcategories,
 });
 
@@ -33,8 +35,8 @@ typedef CategoryProductsExtra = ({
 /// category" breadcrumb tap can restore the merged subcategory+product view
 /// without re-fetching the category.
 typedef ProductListExtra = ({
-  String categoryName,
-  String subcategoryName,
+  LocalizedText categoryName,
+  LocalizedText subcategoryName,
   List<SubcategoryEntity> subcategories,
 });
 
@@ -49,9 +51,9 @@ class ProductListPage extends StatelessWidget {
   });
 
   final String categoryId;
-  final String? categoryName;
+  final LocalizedText? categoryName;
   final String? subcategoryId;
-  final String? subcategoryName;
+  final LocalizedText? subcategoryName;
 
   /// The category's subcategories — shown as a card grid above the products
   /// when `subcategoryId` is null (the top-level category view), so browsing
@@ -63,7 +65,25 @@ class ProductListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryLabel = categoryName ?? categoryId;
+    // Names travel as `LocalizedText` (not resolved strings) so the trail
+    // re-renders in the new language if the user switches while here. When
+    // there's no `extra` (deep link, refresh, or the switcher's remount) the
+    // resolver fills the names and subcategories from the category cache.
+    return CategoryContextResolver(
+      categoryId: categoryId,
+      subcategoryId: subcategoryId,
+      categoryName: categoryName,
+      subcategoryName: subcategoryName,
+      subcategories: subcategories,
+      builder: (context, ctx) => _buildPage(context, ctx),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, CategoryContext ctx) {
+    final categoryText = ctx.categoryName;
+    final categoryLabel = context.localized(categoryText);
+    final subcategoryLabel = ctx.subcategoryName == null ? subcategoryId : context.localized(ctx.subcategoryName!);
+    final subcategories = ctx.subcategories;
 
     final breadcrumbItems = subcategoryId == null
         ? [BreadcrumbItem(label: categoryLabel, onTap: () {}, isCurrent: true)]
@@ -73,13 +93,13 @@ class ProductListPage extends StatelessWidget {
               onTap: () => context.pushReplacement(
                 RoutePaths.categoryProducts(categoryId),
                 extra: (
-                  categoryName: categoryLabel,
+                  categoryName: categoryText,
                   subcategories: subcategories,
                 ),
               ),
             ),
             BreadcrumbItem(
-              label: subcategoryName ?? subcategoryId!,
+              label: subcategoryLabel!,
               onTap: () {},
               isCurrent: true,
             ),
@@ -111,9 +131,9 @@ class ProductListPage extends StatelessWidget {
                           builder: (context, state) => _ProductListBody(
                             state: state,
                             categoryId: categoryId,
-                            categoryName: categoryLabel,
+                            categoryName: categoryText,
                             subcategoryId: subcategoryId,
-                            subcategoryName: subcategoryName,
+                            subcategoryName: ctx.subcategoryName,
                             subcategories: subcategories,
                           ),
                         ),
@@ -142,9 +162,9 @@ class _ProductListBody extends StatelessWidget {
 
   final ProductListState state;
   final String categoryId;
-  final String categoryName;
+  final LocalizedText categoryName;
   final String? subcategoryId;
-  final String? subcategoryName;
+  final LocalizedText? subcategoryName;
   final List<SubcategoryEntity> subcategories;
 
   @override
@@ -154,7 +174,7 @@ class _ProductListBody extends StatelessWidget {
     }
 
     if (state is ProductListError) {
-      final message = (state as ProductListError).message;
+      final message = (state as ProductListError).message.tr();
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -208,7 +228,7 @@ class _ProductListBody extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Text(
                 'product.all_category_products'.tr(
-                  namedArgs: {'categoryName': categoryName},
+                  namedArgs: {'categoryName': context.localized(categoryName)},
                 ),
                 style: AppTextStyles.title,
               ),

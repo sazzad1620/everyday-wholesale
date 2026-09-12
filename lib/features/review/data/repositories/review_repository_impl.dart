@@ -8,6 +8,7 @@ import '../../domain/entities/review_entity.dart';
 import '../../domain/repositories/review_repository.dart';
 import '../datasources/review_remote_datasource.dart';
 import '../models/review_model.dart';
+import '../../../../core/localization/localized_text.dart';
 
 @LazySingleton(as: ReviewRepository)
 class ReviewRepositoryImpl implements ReviewRepository {
@@ -21,7 +22,7 @@ class ReviewRepositoryImpl implements ReviewRepository {
     try {
       return Right(await _datasource.getMyReviews());
     } on AuthException catch (e) {
-      return Left(AuthFailure(e.message));
+      return Left(AuthFailure(e.messageKey));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
@@ -49,13 +50,13 @@ class ReviewRepositoryImpl implements ReviewRepository {
   Future<Either<Failure, void>> submitReview({
     required String orderId,
     required String productId,
-    required String productName,
+    required LocalizedText productName,
     required String reviewerName,
     required int rating,
     String? productImageUrl,
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
-    if (uid == null) return const Left(AuthFailure('Please sign in to submit a review.'));
+    if (uid == null) return const Left(AuthFailure('errors.sign_in_required_submit_review'));
 
     try {
       final review = ReviewModel(

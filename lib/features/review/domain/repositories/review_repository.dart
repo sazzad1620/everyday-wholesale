@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../entities/review_entity.dart';
+import '../../../../core/localization/localized_text.dart';
 
 abstract class ReviewRepository {
   /// Every review the signed-in customer has submitted, newest first.
@@ -17,7 +18,7 @@ abstract class ReviewRepository {
   Future<Either<Failure, void>> submitReview({
     required String orderId,
     required String productId,
-    required String productName,
+    required LocalizedText productName,
     required String reviewerName,
     required int rating,
     String? productImageUrl,

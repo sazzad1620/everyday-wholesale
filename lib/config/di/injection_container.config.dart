@@ -9,6 +9,7 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:cloud_functions/cloud_functions.dart' as _i809;
 import 'package:everyday_wholesale/config/di/firebase_module.dart' as _i301;
@@ -60,6 +61,8 @@ import 'package:everyday_wholesale/features/auth/domain/usecases/update_address_
     as _i379;
 import 'package:everyday_wholesale/features/auth/domain/usecases/update_name_usecase.dart'
     as _i171;
+import 'package:everyday_wholesale/features/auth/domain/usecases/update_preferred_locale_usecase.dart'
+    as _i86;
 import 'package:everyday_wholesale/features/auth/domain/usecases/verify_phone_otp_usecase.dart'
     as _i133;
 import 'package:everyday_wholesale/features/auth/presentation/bloc/account_bloc.dart'
@@ -203,7 +206,7 @@ import 'package:everyday_wholesale/features/splash/domain/repositories/app_readi
 import 'package:everyday_wholesale/features/splash/domain/usecases/check_app_ready_usecase.dart'
     as _i105;
 import 'package:everyday_wholesale/features/splash/presentation/bloc/splash_bloc.dart'
-    as _i86;
+    as _i87;
 import 'package:everyday_wholesale/features/wishlist/data/datasources/wishlist_local_datasource.dart'
     as _i51;
 import 'package:everyday_wholesale/features/wishlist/data/repositories/wishlist_repository_impl.dart'
@@ -399,6 +402,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i171.UpdateNameUseCase>(
       () => _i171.UpdateNameUseCase(gh<_i870.AuthRepository>()),
     );
+    gh.factory<_i86.UpdatePreferredLocaleUseCase>(
+      () => _i86.UpdatePreferredLocaleUseCase(gh<_i870.AuthRepository>()),
+    );
     gh.factory<_i133.VerifyPhoneOtpUseCase>(
       () => _i133.VerifyPhoneOtpUseCase(gh<_i870.AuthRepository>()),
     );
@@ -499,6 +505,22 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i424.SubmitReviewUseCase>(),
       ),
     );
+    gh.lazySingleton<_i569.AccountBloc>(
+      () => _i569.AccountBloc(
+        gh<_i870.AuthRepository>(),
+        gh<_i456.SignInUseCase>(),
+        gh<_i260.SignUpUseCase>(),
+        gh<_i736.SignOutUseCase>(),
+        gh<_i309.SendPhoneOtpUseCase>(),
+        gh<_i133.VerifyPhoneOtpUseCase>(),
+        gh<_i188.IsPhoneRegisteredUseCase>(),
+        gh<_i877.SignInWithGoogleUseCase>(),
+        gh<_i577.SendPasswordResetEmailUseCase>(),
+        gh<_i379.UpdateAddressUseCase>(),
+        gh<_i171.UpdateNameUseCase>(),
+        gh<_i86.UpdatePreferredLocaleUseCase>(),
+      ),
+    );
     gh.factory<_i978.CategoryListBloc>(
       () => _i978.CategoryListBloc(
         gh<_i353.GetCategoriesUseCase>(),
@@ -520,28 +542,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i58.SearchProductsUseCase>(
       () => _i58.SearchProductsUseCase(gh<_i411.ProductRepository>()),
     );
-    gh.factory<_i86.SplashBloc>(
-      () => _i86.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),
+    gh.factory<_i87.SplashBloc>(
+      () => _i87.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),
     );
     gh.factory<_i643.AdminOrderListBloc>(
       () => _i643.AdminOrderListBloc(
         gh<_i772.GetAllOrdersUseCase>(),
         gh<_i640.UpdateOrderStatusUseCase>(),
-      ),
-    );
-    gh.lazySingleton<_i569.AccountBloc>(
-      () => _i569.AccountBloc(
-        gh<_i870.AuthRepository>(),
-        gh<_i456.SignInUseCase>(),
-        gh<_i260.SignUpUseCase>(),
-        gh<_i736.SignOutUseCase>(),
-        gh<_i309.SendPhoneOtpUseCase>(),
-        gh<_i133.VerifyPhoneOtpUseCase>(),
-        gh<_i188.IsPhoneRegisteredUseCase>(),
-        gh<_i877.SignInWithGoogleUseCase>(),
-        gh<_i577.SendPasswordResetEmailUseCase>(),
-        gh<_i379.UpdateAddressUseCase>(),
-        gh<_i171.UpdateNameUseCase>(),
       ),
     );
     gh.factory<_i785.ProductDetailBloc>(

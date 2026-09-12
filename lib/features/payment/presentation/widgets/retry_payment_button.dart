@@ -43,7 +43,7 @@ class _RetryPaymentButtonState extends State<RetryPaymentButton> {
     );
     final clientSecret = intentResult.match((failure) {
       if (mounted) {
-        AppToast.show(context, failure.message, type: ToastType.error);
+        AppToast.show(context, failure.messageKey.tr(), type: ToastType.error);
       }
       return null;
     }, (secret) => secret);

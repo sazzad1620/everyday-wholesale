@@ -33,7 +33,7 @@ class CartRemoteDatasourceImpl implements CartRemoteDatasource {
 
   CollectionReference<Map<String, dynamic>> get _cartCollection {
     final uid = _firebaseAuth.currentUser?.uid;
-    if (uid == null) throw const AuthException('Please sign in to use your cart.');
+    if (uid == null) throw const AuthException('errors.sign_in_required_cart');
     return _firestore.collection('users').doc(uid).collection('cart');
   }
 

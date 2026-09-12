@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../repositories/review_repository.dart';
+import '../../../../core/localization/localized_text.dart';
 
 @injectable
 class SubmitReviewUseCase extends UseCase<void, SubmitReviewParams> {
@@ -35,7 +36,7 @@ class SubmitReviewParams extends Equatable {
 
   final String orderId;
   final String productId;
-  final String productName;
+  final LocalizedText productName;
   final String? productImageUrl;
   final String reviewerName;
   final int rating;

@@ -17,6 +17,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   Future<void> _onStatsRequested(DashboardStatsRequested event, Emitter<DashboardState> emit) async {
     emit(const DashboardInProgress());
     final result = await _getDashboardStatsUseCase(const NoParams());
-    result.match((failure) => emit(DashboardFailure(failure.message)), (stats) => emit(DashboardLoaded(stats)));
+    result.match((failure) => emit(DashboardFailure(failure.messageKey)), (stats) => emit(DashboardLoaded(stats)));
   }
 }

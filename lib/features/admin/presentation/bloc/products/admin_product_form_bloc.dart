@@ -22,7 +22,7 @@ class AdminProductFormBloc extends Bloc<AdminProductFormEvent, AdminProductFormS
         ? await _updateProductUseCase(event.product)
         : await _createProductUseCase(event.product);
     result.match(
-      (failure) => emit(AdminProductFormState(errorMessage: failure.message)),
+      (failure) => emit(AdminProductFormState(errorMessage: failure.messageKey)),
       (_) => emit(const AdminProductFormState(success: true)),
     );
   }

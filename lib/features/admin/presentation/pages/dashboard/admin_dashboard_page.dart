@@ -49,7 +49,7 @@ class _DashboardView extends StatelessWidget {
                   child: Center(child: CircularProgressIndicator()),
                 ),
                 DashboardFailure(:final message) => Text(
-                  message,
+                  message.tr(),
                   style: AppTextStyles.body.copyWith(color: AppColors.error),
                 ),
                 DashboardLoaded(:final stats) => _StatsGrid(stats: stats),

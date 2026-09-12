@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/localization/localized_text.dart';
 import 'subcategory_entity.dart';
 
 class CategoryEntity extends Equatable {
@@ -12,7 +13,7 @@ class CategoryEntity extends Equatable {
   });
 
   final String id;
-  final String name;
+  final LocalizedText name;
   final String iconKey;
 
   /// Set by the admin when they upload a category image. Null until then —

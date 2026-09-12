@@ -120,7 +120,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   if (state.errorMessage != null) {
                     AppToast.show(
                       context,
-                      state.errorMessage!,
+                      state.errorMessage!.tr(),
                       type: ToastType.error,
                     );
                   } else if (state.addressUpdated) {

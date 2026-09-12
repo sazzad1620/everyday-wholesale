@@ -1,17 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/countries.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../domain/entities/product_condition.dart';
 
-/// Weight / Condition / Origin — hardcoded mock values for now; becomes
-/// admin-editable once there's an admin UI.
+/// Weight / Condition / Origin. Weight is the admin's free-text pack size
+/// (language-neutral, e.g. "400g"); condition and origin are codes translated
+/// here so the labels follow the app language.
 class ProductInfoRow extends StatelessWidget {
   const ProductInfoRow({super.key, required this.weight, required this.condition, required this.origin});
 
   final String weight;
-  final String condition;
+  final ProductCondition condition;
+
+  /// ISO country code — see `Countries`.
   final String origin;
 
   @override
@@ -21,10 +26,10 @@ class ProductInfoRow extends StatelessWidget {
         Expanded(child: _InfoBox(icon: Icons.scale_outlined, label: 'product.weight_label'.tr(), value: weight)),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: _InfoBox(icon: Icons.eco_outlined, label: 'product.condition_label'.tr(), value: condition),
+          child: _InfoBox(icon: Icons.eco_outlined, label: 'product.condition_label'.tr(), value: condition.labelKey.tr()),
         ),
         const SizedBox(width: AppSpacing.sm),
-        Expanded(child: _InfoBox(icon: Icons.public_outlined, label: 'product.origin_label'.tr(), value: origin)),
+        Expanded(child: _InfoBox(icon: Icons.public_outlined, label: 'product.origin_label'.tr(), value: Countries.label(origin))),
       ],
     );
   }

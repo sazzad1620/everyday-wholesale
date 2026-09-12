@@ -21,7 +21,7 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
     );
 
     result.match(
-      (failure) => emit(ProductListError(failure.message)),
+      (failure) => emit(ProductListError(failure.messageKey)),
       (products) => emit(ProductListLoaded(products)),
     );
   }
