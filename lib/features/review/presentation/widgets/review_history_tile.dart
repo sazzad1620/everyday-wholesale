@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -46,7 +47,7 @@ class ReviewHistoryTile extends StatelessWidget {
                 StarRating(rating: review.rating.toDouble(), size: 16),
                 const SizedBox(height: 2),
                 Text(
-                  'my_reviews.reviewed_on'.tr(namedArgs: {'date': DateFormat.yMMMMd().format(review.createdAt)}),
+                  'my_reviews.reviewed_on'.tr(namedArgs: {'date': formatLongDate(context, review.createdAt)}),
                   style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                 ),
               ],

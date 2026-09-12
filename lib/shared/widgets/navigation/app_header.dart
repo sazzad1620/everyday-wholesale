@@ -16,6 +16,7 @@ import '../../../features/cart/presentation/bloc/cart_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
+import '../language/language_switcher.dart';
 import 'app_search_bar.dart';
 
 /// Menu + logo/wordmark + account icon, with the search bar folded into the
@@ -188,6 +189,8 @@ class _WideHeaderRow extends StatelessWidget {
           else
             const Spacer(),
           const SizedBox(width: AppSpacing.md),
+          const LanguageToggle(),
+          const SizedBox(width: AppSpacing.sm),
           _HeaderNavAction(
             icon: Icons.favorite_border_rounded,
             label: 'nav.wishlist'.tr(),

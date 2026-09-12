@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -55,7 +56,7 @@ class ReviewableItemCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'my_reviews.purchased_on'.tr(namedArgs: {'date': DateFormat.yMMMMd().format(item.orderDate)}),
+                          'my_reviews.purchased_on'.tr(namedArgs: {'date': formatLongDate(context, item.orderDate)}),
                           style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                         ),
                       ],

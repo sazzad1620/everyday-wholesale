@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/cart_totals.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
@@ -62,7 +63,7 @@ class OrderDetailContent extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: Column(
                   children: [
-                    OrderInfoRow(label: 'order_history.order_date'.tr(), value: DateFormat.yMMMMd().format(order.createdAt)),
+                    OrderInfoRow(label: 'order_history.order_date'.tr(), value: formatLongDate(context, order.createdAt)),
                     const SizedBox(height: AppSpacing.xs),
                     OrderInfoRow(label: 'order_history.payment_method'.tr(), value: order.paymentMethod),
                     const SizedBox(height: AppSpacing.sm),

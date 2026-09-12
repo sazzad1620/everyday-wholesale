@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -133,7 +134,7 @@ class _OrderCard extends StatelessWidget {
                   children: [
                     OrderInfoRow(
                       label: 'order_history.order_date'.tr(),
-                      value: DateFormat.yMMMMd().format(order.createdAt),
+                      value: formatLongDate(context, order.createdAt),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     OrderInfoRow(

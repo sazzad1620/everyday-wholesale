@@ -6,15 +6,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import '../config/di/injection_container.dart';
 import '../core/constants/stripe_config.dart';
+import '../core/localization/app_locales.dart';
 import '../firebase_options.dart';
 import 'app.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  // `DateFormat` only knows English out of the box — every other locale's
+  // month/day names have to be loaded first, and easy_localization doesn't
+  // do it for us. Without this, a Japanese-locale `DateFormat` throws.
+  await initializeDateFormatting(AppLocales.ja.languageCode);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   Stripe.publishableKey = StripeConfig.publishableKey;
@@ -56,9 +62,12 @@ Future<void> bootstrap() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('en')],
+      supportedLocales: AppLocales.supported,
       path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
+      // Only applies when nothing has been saved yet — once the user picks a
+      // language, easy_localization persists it and that wins on next launch.
+      startLocale: AppLocales.start,
+      fallbackLocale: AppLocales.fallback,
       child: const EverydayWholesaleApp(),
     ),
   );

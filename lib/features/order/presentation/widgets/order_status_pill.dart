@@ -1,8 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../domain/entities/order_status.dart';
+
+/// `.name` is the Firestore storage key, never UI text — the label goes
+/// through a translation key so it follows the app language.
+String _labelFor(OrderStatus status) => 'order_history.order_status_${status.name}'.tr();
 
 Color _colorFor(OrderStatus status) => switch (status) {
   OrderStatus.pending => AppColors.secondary,
@@ -29,7 +34,7 @@ class OrderStatusPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(status.name.toUpperCase(), style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.bold)),
+          Text(_labelFor(status).toUpperCase(), style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.bold)),
           if (onChanged != null) ...[
             const SizedBox(width: 2),
             Icon(Icons.keyboard_arrow_down_rounded, color: color, size: 16),
@@ -51,7 +56,7 @@ class OrderStatusPill extends StatelessWidget {
           PopupMenuItem<OrderStatus>(
             value: value,
             child: Text(
-              value.name.toUpperCase(),
+              _labelFor(value).toUpperCase(),
               style: AppTextStyles.body.copyWith(
                 color: value == status ? AppColors.primary : AppColors.textPrimary,
                 fontWeight: value == status ? FontWeight.w600 : FontWeight.normal,

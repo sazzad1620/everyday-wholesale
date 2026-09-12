@@ -7,6 +7,7 @@ import '../../../../../config/routes/route_paths.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_spacing.dart';
 import '../../../../../shared/theme/app_text_styles.dart';
+import '../../../../../shared/widgets/language/language_switcher.dart';
 import '../../../../../shared/widgets/navigation/drawer_header_bar.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../../../auth/presentation/bloc/account_event.dart';
@@ -72,6 +73,7 @@ class AdminMenuDrawer extends StatelessWidget {
               ),
             const Spacer(),
             Divider(height: 1, color: AppColors.textSecondary.withValues(alpha: 0.15)),
+            const LanguageMenuTile(contentPadding: _AdminMenuTile.padding),
             _AdminMenuTile(
               icon: Icons.logout_rounded,
               label: 'admin.logout'.tr(),
@@ -105,11 +107,14 @@ class _AdminMenuTile extends StatelessWidget {
   final bool selected;
   final bool isDestructive;
 
+  /// Shared with [LanguageMenuTile] so it lines up with the rows above it.
+  static const EdgeInsets padding = EdgeInsets.fromLTRB(DrawerHeaderBar.contentLeftPadding, 4, AppSpacing.md, 4);
+
   @override
   Widget build(BuildContext context) {
     final iconColor = isDestructive ? AppColors.error : (selected ? AppColors.primary : AppColors.textSecondary);
     return ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(DrawerHeaderBar.contentLeftPadding, 4, AppSpacing.md, 4),
+      contentPadding: padding,
       leading: Icon(icon, color: iconColor),
       title: Text(
         label,

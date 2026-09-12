@@ -10,6 +10,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
+import '../../../../shared/widgets/language/language_switcher.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/standalone_shell_scaffold.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
@@ -153,6 +154,13 @@ class _AccountBody extends StatelessWidget {
                 icon: Icons.star_outline_rounded,
                 label: 'account.my_reviews'.tr(),
                 onTap: () => context.push(RoutePaths.myReviews),
+              ),
+              LanguageMenuTile(
+                contentPadding: EdgeInsets.zero,
+                labelStyle: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               _AccountRow(
                 icon: Icons.logout_rounded,

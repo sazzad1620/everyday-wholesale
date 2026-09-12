@@ -4,9 +4,16 @@ import 'app_colors.dart';
 import 'app_text_styles.dart';
 
 abstract final class AppTheme {
-  static ThemeData get light => ThemeData(
+  /// [bodyFont] is the locale's body face (see `AppLocales.bodyFontFor`) —
+  /// `null` keeps the platform default. Applied through `ThemeData.fontFamily`
+  /// rather than baked into [AppTextStyles], so every `const` style below and
+  /// every `AppTextStyles.x.copyWith(...)` at call sites inherits it via
+  /// `DefaultTextStyle` without touching a single widget.
+  static ThemeData light({TextStyle? bodyFont}) => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
+        fontFamily: bodyFont?.fontFamily,
+        fontFamilyFallback: bodyFont?.fontFamilyFallback,
         scaffoldBackgroundColor: AppColors.background,
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,
@@ -34,9 +41,11 @@ abstract final class AppTheme {
         ),
       );
 
-  static ThemeData get dark => ThemeData(
+  static ThemeData dark({TextStyle? bodyFont}) => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
+        fontFamily: bodyFont?.fontFamily,
+        fontFamilyFallback: bodyFont?.fontFamilyFallback,
         scaffoldBackgroundColor: AppColors.backgroundDark,
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,

@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
 import '../../utils/toast.dart';
+import '../language/language_switcher.dart';
 import 'drawer_header_bar.dart';
 
 /// Opened from the hamburger menu icon on every page's [AppHeader] — always
@@ -40,6 +41,9 @@ class MainMenuDrawer extends StatelessWidget {
               label: 'drawer.rate_app'.tr(),
               onTap: () => showComingSoonToast(context, 'drawer.rate_app'.tr()),
             ),
+            // Phone's only signed-out language entry point — the header
+            // toggle exists at tablet/desktop width only.
+            const LanguageMenuTile(contentPadding: _MenuTile.padding),
           ],
         ),
       ),
@@ -54,15 +58,18 @@ class _MenuTile extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
+  /// Shared with [LanguageMenuTile] so it lines up with the rows above it.
+  static const EdgeInsets padding = EdgeInsets.fromLTRB(
+    DrawerHeaderBar.contentLeftPadding,
+    4,
+    AppSpacing.md,
+    4,
+  );
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(
-        DrawerHeaderBar.contentLeftPadding,
-        4,
-        AppSpacing.md,
-        4,
-      ),
+      contentPadding: padding,
       leading: Icon(icon, color: AppColors.textSecondary),
       title: Text(label, style: AppTextStyles.body),
       onTap: onTap,
