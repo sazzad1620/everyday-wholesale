@@ -42,15 +42,15 @@ Custom domain flow, once you get to Phase C: Firebase Console → Hosting → **
 
 Do these before touching any DNS record, in order:
 
-- [ ] Confirm CLI access: `firebase projects:list` shows `everyday-wholesale` and you can deploy to it (same account already used for Functions deploys).
-- [ ] Confirm `flutter build web --release` completes clean locally and produces a working `build/web/` (this doc assumes that output, doesn't change how it's built).
-- [ ] **Check what's already on the domain's DNS before adding anything** — if the client already receives email at this domain (Google Workspace, Microsoft 365, or anything else), it'll have existing `MX` records. Only ever *add* the records Firebase's wizard specifies; never delete or replace an existing record you don't recognize without asking the client what it's for first. This is the single most common way a hosting migration accidentally breaks a client's email.
-- [ ] Confirm who has access to the domain's DNS panel — the client (registrar account holder) or a developer with delegated access. Either can add the records; just needs to be settled before Phase C so it isn't a blocker mid-setup.
+- [x] Confirm CLI access: `firebase projects:list` shows `everyday-wholesale` and you can deploy to it (same account already used for Functions deploys).
+- [x] Confirm `flutter build web --release` completes clean locally and produces a working `build/web/` (this doc assumes that output, doesn't change how it's built).
+- [x] **Check what's already on the domain's DNS before adding anything** — if the client already receives email at this domain (Google Workspace, Microsoft 365, or anything else), it'll have existing `MX` records. Only ever *add* the records Firebase's wizard specifies; never delete or replace an existing record you don't recognize without asking the client what it's for first. This is the single most common way a hosting migration accidentally breaks a client's email. **Result:** no email runs on this domain — the client's address is `everydaywholesale.jp@gmail.com`, a plain Gmail account that doesn't use the domain's DNS, so there are no `MX` records to protect.
+- [x] Confirm who has access to the domain's DNS panel (the client) — the client (registrar account holder) or a developer with delegated access. Either can add the records; just needs to be settled before Phase C so it isn't a blocker mid-setup.
 
 ## 5. Environment & access (your action items, not code)
 
-- [ ] Domain name + registrar confirmed (e.g. GoDaddy, Namecheap, Cloudflare, Google Domains/Squarespace, etc.) — the exact click-path for adding a DNS record differs slightly by registrar; this doc stays generic and points to "your registrar's DNS management page" rather than hardcoding one.
-- [ ] Decide who applies the DNS records in Phase C: client applies them themselves (developer supplies the exact values), or client grants the developer temporary DNS access.
+- [x] Domain name + registrar confirmed — **`everydaywholesale.jp`, registered at Xserver**; DNS records are managed in Xserver's DNS settings panel.
+- [x] Decide who applies the DNS records in Phase C (the client, with values supplied by the developer): client applies them themselves (developer supplies the exact values), or client grants the developer temporary DNS access.
 - [ ] (Carried over from [PAYMENTS_PLAN.md](PAYMENTS_PLAN.md) §5, not done yet) — the Stripe **publishable** key still needs to go into the Flutter app's build-time config before Phase 6 can be considered finished. Unrelated to hosting mechanically, but worth doing in the same pass since both are "getting ready for the real domain" work.
 
 ## 6. Roadmap & Status
@@ -89,43 +89,52 @@ Manual QA run on `everyday-wholesale.web.app`, signed in as a real (test) custom
 
 **Found, not fixed — flagged for you:** one real product ("Keri Samba Rice") has what look like unrelated app screenshots (a checkout confirmation page, a payment-method sheet) mixed into its 5 product photos alongside what appears to be the real rice-bag photo. Left untouched since it's live catalog content, not something to silently edit — worth a look in Admin → Products → Keri Samba Rice.
 
-### Phase C — Connect the custom domain ⬜
+### Phase C — Connect the custom domain ✅ done
 
-- [ ] Firebase Console → Hosting → **Add custom domain** → enter the apex domain (e.g. `everydaywholesale.com`)
-- [ ] Add the **TXT** verification record Firebase gives you at the registrar; wait for Firebase to confirm ownership
-- [ ] Add the **A/AAAA** records Firebase gives you for the apex
-- [ ] Repeat "Add custom domain" for the `www` subdomain, or accept Firebase's offer to auto-redirect it if prompted during the apex setup — add the **CNAME** record it gives you for `www`
-- [ ] Confirm in the registrar's DNS panel that no pre-existing record (especially `MX`) was overwritten — cross-check against the pre-flight snapshot from §4
-- [ ] Wait for DNS propagation (minutes to a few hours depending on the registrar's TTL) and SSL provisioning (Firebase-managed, typically under 24h) — check status in the Hosting console, or independently via a DNS checker
-- [ ] **Record the exact records Firebase issued in this doc** (append a small table below once you have them) so there's a single source of truth if DNS ever needs to be re-verified or moved to a new registrar later
+Domain: **`everydaywholesale.jp`** (apex primary, per §2). DNS records are applied by the client at their registrar; the developer supplies the exact values.
 
-### Phase D — Post-connect verification & cutover ⬜
+- [x] Firebase Console → Hosting → **Add custom domain** → `everydaywholesale.jp`
+- [x] Added the **TXT** verification record at the registrar; Firebase confirmed ownership
+- [x] Added the **A** record Firebase gave for the apex
+- [x] Waited for DNS propagation + SSL provisioning — Firebase showed "Minting certificate" for a few hours, then **Connected**; `https://everydaywholesale.jp` now serves over valid HTTPS
+- [x] Added `www.everydaywholesale.jp` in Hosting as a redirect to the apex — Firebase issued one **CNAME** (`www` → `everyday-wholesale.web.app`)
+- [x] Client added the `www` CNAME at the registrar; verified in Hosting and **Connected**
+- [x] No `MX`/email records at risk — the client uses a Gmail address, not domain email (see §4)
 
-- [ ] `https://<domain>` loads the app, padlock/SSL valid, `www` correctly redirects to the apex (or vice versa, per §2)
-- [ ] **Firebase Console → Authentication → Settings → Authorized domains → add the new domain.** Easy to forget, and sign-in (Google popup especially) will fail with an unauthorized-domain error on the new domain until this is added — the `*.web.app` default domain is authorized automatically, but a custom domain is not.
-- [ ] Re-run the Phase B QA checklist once more, this time against the real domain specifically (Google Sign-In popup is the item most likely to behave differently here — worth testing explicitly)
-- [ ] Confirm nothing in the app hardcodes the old `*.web.app` URL (share links, meta tags, etc.) — a quick grep, not expected to find anything since the app has never referenced its own hosting URL
+**Note for whoever debugs this next:** right after the apex went Connected, the developer's own browser still showed "Not secure" while an Incognito window showed the padlock — just the browser's cached pre-SSL `http://` visit, not a server problem. Fixed by clearing site data (and, if needed, `chrome://net-internals/#hsts` → delete domain). Real visitors aren't affected.
+
+A second, stickier variant showed up in Brave only: "Not secure" even though the popup said **"Certificate is valid"**. DevTools → Security tab explained it — *"active content with certificate errors… recently allowed"*: the developer had clicked **"Proceed anyway"** on the certificate warning while SSL was still being minted, and the browser remembers that exception. Clearing cache/site data doesn't remove it; **fully quitting the browser** (including its background process) does, and it also expires on its own after about a week. Again, only affects a browser that clicked through the warning, never real visitors.
+
+### Phase D — Post-connect verification & cutover ✅ done
+
+- [x] `https://everydaywholesale.jp` loads the app, padlock/SSL valid (checked across browsers/devices)
+- [x] `https://www.everydaywholesale.jp` redirects to the apex
+- [x] **Firebase Console → Authentication → Settings → Authorized domains → added `everydaywholesale.jp`.** Easy to forget, and sign-in (Google popup especially) will fail with an unauthorized-domain error on the new domain until this is added — the `*.web.app` default domain is authorized automatically, but a custom domain is not.
+- [x] Re-ran the Phase B QA checklist against the real domain, including the Google Sign-In popup
+- [x] Confirmed nothing in the app hardcodes the old `*.web.app` URL — grep of `lib/`, `web/`, `functions/src/` found only `authDomain: 'everyday-wholesale.firebaseapp.com'` in `firebase_options.dart`, which is Firebase Auth's own handler domain and is correct as-is (see Phase E for the optional switch)
 
 ### Phase E — Ongoing / later ⬜
 
 - [ ] Once deploys become frequent, consider a GitHub Actions workflow for `firebase deploy --only hosting` on merge to `main` — not needed yet, called out here so it isn't forgotten as a "someday" item
 - [x] ~~Cache-control tuning for `main.dart.js`/`index.html`~~ — done early, in Phase A, after hitting the stale-JS problem firsthand during Phase B testing
+- [ ] **Google Sign-In popup branding** (deferred by decision, revisit later) — the popup currently reads "Sign in to everyday-wholesale.firebaseapp.com". Two independent fixes, both standard for a production store:
+  1. Show `everydaywholesale.jp` instead: set the web `authDomain` in `lib/firebase_options.dart` to `everydaywholesale.jp`, and add `https://everydaywholesale.jp/__/auth/handler` to the Web OAuth client's **Authorized redirect URIs** (Google Cloud Console → APIs & Services → Credentials). Note: re-running `flutterfire configure` overwrites this file.
+  2. Show "Everyday Wholesale" + logo: fill in Google Cloud Console → Google Auth Platform → **Branding** (app name, logo, support email, home/privacy/terms links, authorized domain) and submit for **brand verification** — Google only displays the name/logo once approved (days, not instant).
 
-## 7. DNS records reference (fill in once Phase C is run)
+## 7. DNS records reference (`everydaywholesale.jp`, registrar: Xserver)
 
 | Type | Host | Value | Purpose |
 |---|---|---|---|
-| TXT | _(from Firebase)_ | _(from Firebase)_ | Domain ownership verification |
-| A | `@` (apex) | _(from Firebase)_ | Points apex at Hosting |
-| AAAA | `@` (apex) | _(from Firebase)_ | IPv6 equivalent, if Firebase issues one |
-| CNAME | `www` | _(from Firebase)_ | Points `www` at Hosting / apex redirect |
+| TXT | `@` (apex) | `hosting-site=everyday-wholesale` | Domain ownership verification |
+| A | `@` (apex) | `199.36.158.100` | Points apex at Hosting |
+| CNAME | `www` | `everyday-wholesale.web.app` | `www` → Hosting, redirects to apex |
+
+No AAAA record was issued in Firebase's quick setup.
 
 ## 8. Open questions
 
 All resolved so far:
 - Primary domain form → **resolved: apex primary, `www` redirects** (§2)
 - Rollout sequencing → **resolved: deploy to `*.web.app` first, attach domain after review** (§2)
+- Who applies DNS records → **resolved: the client applies them at their registrar; the developer sends exact values** (§5)
 
-Still open — flag if either comes up during Phase C:
-- Exact registrar and who holds DNS access — not blocking to start Phase A/B, only needed by Phase C (§5)
-- Whether the domain already has email/MX records to protect (§4) — unknown until someone actually looks at the registrar's current DNS panel

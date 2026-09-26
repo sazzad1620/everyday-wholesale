@@ -31,7 +31,7 @@ class DrawerHeaderBar extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(contentLeftPadding, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
         child: Row(
           children: [
-            Image.asset(AssetPaths.logo, height: 30),
+            Image.asset(AssetPaths.logo, height: 36),
             const SizedBox(width: AppSpacing.sm),
             Text(title, style: AppTextStyles.title),
           ],

@@ -229,7 +229,9 @@ class _BrandMark extends StatelessWidget {
     final mark = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(AssetPaths.logo, height: 30),
+        // The emblem is nearly square (unlike the old wide logo), so it gets
+        // a little more height to stay recognizable next to the wordmark.
+        Image.asset(AssetPaths.logo, height: 40),
         const SizedBox(width: 6),
         Text.rich(
           TextSpan(
