@@ -5,6 +5,7 @@ import '../../../../../core/utils/responsive/responsive_builder.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../account/presentation/pages/account_page.dart';
+import '../banners/admin_banners_page.dart';
 import '../categories/admin_categories_page.dart';
 import '../dashboard/admin_dashboard_page.dart';
 import '../orders/admin_orders_page.dart';
@@ -38,6 +39,7 @@ class _AdminShellPageState extends State<AdminShellPage> {
     AdminCategoriesPage(),
     AdminOrdersPage(),
     AdminReviewsPage(),
+    AdminBannersPage(),
   ];
 
   List<AdminDestination> _destinations() => [
@@ -46,6 +48,7 @@ class _AdminShellPageState extends State<AdminShellPage> {
     AdminDestination(icon: Icons.category_outlined, selectedIcon: Icons.category_rounded, label: 'admin.nav_categories'.tr()),
     AdminDestination(icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long_rounded, label: 'admin.nav_orders'.tr()),
     AdminDestination(icon: Icons.reviews_outlined, selectedIcon: Icons.reviews_rounded, label: 'admin.nav_user_reviews'.tr()),
+    AdminDestination(icon: Icons.view_carousel_outlined, selectedIcon: Icons.view_carousel_rounded, label: 'admin.nav_banners'.tr()),
   ];
 
   void _select(int index) => setState(() => _selectedIndex = index);

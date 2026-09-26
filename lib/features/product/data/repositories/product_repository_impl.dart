@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../../home/domain/entities/most_popular_category.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_remote_datasource.dart';
@@ -17,8 +18,18 @@ class ProductRepositoryImpl implements ProductRepository {
     String categoryId, {
     String? subcategoryId,
   }) async {
+    if (categoryId == mostPopularCategoryId) return getMostPopularProducts();
     try {
       return Right(await _datasource.getProductsByCategory(categoryId, subcategoryId: subcategoryId));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getMostPopularProducts() async {
+    try {
+      return Right(await _datasource.getMostPopularProducts());
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/localized_text.dart';
 import '../../../../core/utils/cart_totals.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -42,7 +43,7 @@ class OrderSummaryCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      '${item.product.name} x${item.quantity}',
+                      '${context.localized(item.product.name)} x${item.quantity}',
                       style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

@@ -1,22 +1,31 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/injection_container.dart';
+import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
+import '../../../../shared/widgets/product_grid.dart';
 import '../../../../shared/widgets/responsive_content_container.dart';
 import '../../../account/presentation/pages/account_page.dart';
+import '../../domain/entities/most_popular_category.dart';
+import '../../domain/entities/subcategory_entity.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
 import '../utils/category_navigation.dart';
 import '../widgets/category_grid.dart';
 import '../widgets/home_promo_carousel.dart';
+
+/// The home page previews this many Most Popular products; "View All" opens
+/// the full category.
+const int _homeMostPopularLimit = 12;
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -104,8 +113,10 @@ class _HomeBody extends StatelessWidget {
           bottom: AppSpacing.lg,
         ),
         children: [
-          HomePromoCarousel(banners: loaded.promoBanners),
-          const SizedBox(height: AppSpacing.lg),
+          if (loaded.promoBanners.isNotEmpty) ...[
+            HomePromoCarousel(banners: loaded.promoBanners),
+            const SizedBox(height: AppSpacing.lg),
+          ],
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Text(
@@ -118,6 +129,39 @@ class _HomeBody extends StatelessWidget {
             categories: loaded.categories,
             onCategoryTap: (category) => navigateToCategory(context, category),
           ),
+          if (loaded.mostPopularProducts.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Row(
+                children: [
+                  Expanded(child: Text('home.most_popular'.tr(), style: AppTextStyles.title)),
+                  TextButton(
+                    onPressed: () => navigateToCategory(context, mostPopularCategory),
+                    child: Text('home.view_all'.tr()),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            ProductGrid(
+              products: loaded.mostPopularProducts.take(_homeMostPopularLimit).toList(),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              // Opened "under" Most Popular so the breadcrumb leads back to
+              // it, same as tapping the product inside that category.
+              onTap: (product) => context.push(
+                RoutePaths.productDetail(mostPopularCategoryId, product.id),
+                extra: (
+                  categoryName: mostPopularCategory.name,
+                  subcategoryId: null,
+                  subcategoryName: null,
+                  subcategories: const <SubcategoryEntity>[],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

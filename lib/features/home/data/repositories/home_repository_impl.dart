@@ -5,15 +5,13 @@ import '../../../../core/errors/failures.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/promo_banner_entity.dart';
 import '../../domain/repositories/home_repository.dart';
-import '../datasources/home_local_datasource.dart';
 import '../datasources/home_remote_datasource.dart';
 
 @LazySingleton(as: HomeRepository)
 class HomeRepositoryImpl implements HomeRepository {
-  HomeRepositoryImpl(this._remoteDatasource, this._localDatasource);
+  HomeRepositoryImpl(this._remoteDatasource);
 
   final HomeRemoteDatasource _remoteDatasource;
-  final HomeLocalDatasource _localDatasource;
 
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
@@ -27,7 +25,7 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<Either<Failure, List<PromoBannerEntity>>> getPromoBanners() async {
     try {
-      return Right(await _localDatasource.getPromoBanners());
+      return Right(await _remoteDatasource.getPromoBanners());
     } catch (_) {
       return const Left(UnexpectedFailure());
     }

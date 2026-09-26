@@ -1,7 +1,7 @@
 import '../../../config/di/injection_container.dart';
 import '../../../core/usecase/usecase.dart';
 import '../../../features/home/domain/entities/category_entity.dart';
-import '../../../features/home/domain/usecases/get_categories_usecase.dart';
+import '../../../features/home/domain/usecases/get_storefront_categories_usecase.dart';
 
 /// Categories rarely change within a session, and every page needs the same
 /// list for its [CategoryDrawer] (mobile) or [DesktopSidebar] (tablet/
@@ -12,6 +12,6 @@ Future<List<CategoryEntity>>? _cachedCategories;
 Future<List<CategoryEntity>> cachedCategories() => _cachedCategories ??= _loadCategories();
 
 Future<List<CategoryEntity>> _loadCategories() async {
-  final result = await getIt<GetCategoriesUseCase>()(const NoParams());
+  final result = await getIt<GetStorefrontCategoriesUseCase>()(const NoParams());
   return result.match((_) => const [], (categories) => categories);
 }

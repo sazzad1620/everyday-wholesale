@@ -6,7 +6,9 @@
   },
   "home": {
     "search_hint": "商品を検索...",
-    "explore_categories": "カテゴリーから探す"
+    "explore_categories": "カテゴリーから探す",
+    "most_popular": "人気商品",
+    "view_all": "すべて見る"
   },
   "drawer": {
     "main_menu_title": "メインメニュー",
@@ -288,6 +290,7 @@
     "nav_categories": "カテゴリー",
     "nav_orders": "注文",
     "nav_user_reviews": "レビュー",
+    "nav_banners": "バナー",
     "section_coming_soon": "近日公開予定です。",
     "dashboard_greeting": "ようこそ、{name}さん",
     "stat_products": "商品",
@@ -332,6 +335,9 @@
     "product_description_hint": "商品説明",
     "error_product_description_required": "商品説明を入力してください。",
     "product_in_stock_label": "在庫あり",
+    "product_most_popular_label": "人気商品に設定",
+    "product_most_popular_hint": "この商品を「人気商品」とホーム画面にも表示します。",
+    "most_popular_badge": "人気",
     "delete_product_title": "商品を削除しますか？",
     "delete_product_message": "「{name}」はカタログから完全に削除されます。",
     "products_empty_title": "商品はまだありません",
@@ -346,6 +352,15 @@
     "reviewed_by": "投稿者：{name}",
     "field_en": "{field}（英語）",
     "field_ja": "{field}（日本語）",
-    "ja_missing": "日本語未入力"
+    "ja_missing": "日本語未入力",
+    "add_banner": "バナーを追加",
+    "banners_hint": "お客様のホーム画面にこの順番で表示され、自動で切り替わります。最大{max}枚まで。推奨サイズ：2400 × 1000 px（12:5）。",
+    "banners_full": "バナーは最大{max}枚です。追加するには1枚削除してください。",
+    "banners_empty_title": "バナーがまだありません",
+    "banners_empty_message": "「バナーを追加」から最初のバナーをアップロードしてください。それまでホーム画面にバナーは表示されません。",
+    "delete_banner_title": "バナーを削除しますか？",
+    "delete_banner_message": "このバナーはホーム画面から削除されます。",
+    "move_earlier": "前へ移動",
+    "move_later": "後ろへ移動"
   }
 }

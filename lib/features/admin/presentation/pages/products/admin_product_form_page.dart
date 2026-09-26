@@ -67,6 +67,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
   late bool _inStock = widget.initial?.inStock ?? true;
+  late bool _isMostPopular = widget.initial?.isMostPopular ?? false;
   late List<String> _images = List.of(widget.initial?.images ?? const []);
   bool _isUploadingImage = false;
 
@@ -172,6 +173,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
       subcategoryId: _selectedSubcategoryId,
       images: _images,
       inStock: _inStock,
+      isMostPopular: _isMostPopular,
       // Preserved as-is — this form has no rating UI, and since
       // `updateProduct` writes the whole doc, omitting these would silently
       // reset an existing product's accumulated rating back to zero.
@@ -320,6 +322,18 @@ class _ProductFormViewState extends State<_ProductFormView> {
                   onChanged: (value) => setState(() => _inStock = value),
                   activeThumbColor: AppColors.primary,
                   title: Text('admin.product_in_stock_label'.tr(), style: AppTextStyles.body),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: _isMostPopular,
+                  onChanged: (value) => setState(() => _isMostPopular = value ?? false),
+                  activeColor: AppColors.primary,
+                  title: Text('admin.product_most_popular_label'.tr(), style: AppTextStyles.body),
+                  subtitle: Text(
+                    'admin.product_most_popular_hint'.tr(),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 PrimaryButton(

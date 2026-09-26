@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../product/domain/entities/product_entity.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/promo_banner_entity.dart';
 
@@ -19,13 +20,16 @@ class HomeLoading extends HomeState {
 }
 
 class HomeLoaded extends HomeState {
-  const HomeLoaded({required this.categories, required this.promoBanners});
+  const HomeLoaded({required this.categories, required this.promoBanners, required this.mostPopularProducts});
 
+  /// Already led by the virtual Most Popular category when
+  /// [mostPopularProducts] is non-empty.
   final List<CategoryEntity> categories;
   final List<PromoBannerEntity> promoBanners;
+  final List<ProductEntity> mostPopularProducts;
 
   @override
-  List<Object?> get props => [categories, promoBanners];
+  List<Object?> get props => [categories, promoBanners, mostPopularProducts];
 }
 
 class HomeError extends HomeState {

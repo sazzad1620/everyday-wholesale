@@ -19,6 +19,7 @@ class ProductModel extends ProductEntity {
     super.subcategoryId,
     super.images,
     super.inStock,
+    super.isMostPopular,
     super.ratingSum,
     super.reviewCount,
   });
@@ -37,6 +38,7 @@ class ProductModel extends ProductEntity {
       subcategoryId: map['subcategoryId'] as String?,
       images: _readImages(map),
       inStock: map['inStock'] as bool? ?? true,
+      isMostPopular: map['isMostPopular'] as bool? ?? false,
       ratingSum: (map['ratingSum'] as num?) ?? 0,
       reviewCount: (map['reviewCount'] as num?)?.toInt() ?? 0,
     );
@@ -64,6 +66,7 @@ class ProductModel extends ProductEntity {
     'subcategoryId': subcategoryId,
     'images': images,
     'inStock': inStock,
+    'isMostPopular': isMostPopular,
     'ratingSum': ratingSum,
     'reviewCount': reviewCount,
   };

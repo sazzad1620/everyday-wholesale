@@ -1,91 +1,92 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/widgets/auto_slide_carousel.dart';
 import '../../domain/entities/promo_banner_entity.dart';
 
-/// Matches the banner artwork's own aspect ratio so it's never cropped or
-/// squeezed, regardless of screen width.
-const double _bannerAspectRatio = 1536 / 778;
+/// Every banner slot has this shape (12:5, e.g. the 4800×2000 artwork the
+/// store uses); uploads are cropped to it with `BoxFit.cover`, so the admin
+/// Banners page recommends a size in this ratio.
+const double bannerAspectRatio = 12 / 5;
 
-class HomePromoCarousel extends StatefulWidget {
+const double _gap = 12;
+const double _radius = 20;
+
+/// Admin-managed, auto-rotating home banners. Phones show one banner at a
+/// time; wider screens show the current banner plus a faded peek of the
+/// next one, so it's obvious there's more to see. With no banners uploaded
+/// the carousel takes up no space at all.
+class HomePromoCarousel extends StatelessWidget {
   const HomePromoCarousel({super.key, required this.banners});
 
   final List<PromoBannerEntity> banners;
 
-  @override
-  State<HomePromoCarousel> createState() => _HomePromoCarouselState();
-}
-
-class _HomePromoCarouselState extends State<HomePromoCarousel> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  /// Share of the width one banner takes: the rest is the next banner's peek.
+  static double _viewportFraction(double width) {
+    if (width < AppBreakpoints.mobile) return 1;
+    if (width < AppBreakpoints.tablet) return 0.86;
+    return 0.74;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.banners.isEmpty) return const SizedBox.shrink();
+    if (banners.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: AspectRatio(
-            aspectRatio: _bannerAspectRatio,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: widget.banners.length,
-              onPageChanged: (index) => setState(() => _currentPage = index),
-              itemBuilder: (context, index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      widget.banners[index].imagePath,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  ),
-                );
-              },
-            ),
+    // Each slide carries half the gap on either side, so the outer padding
+    // is trimmed by the same amount to keep the banner edges aligned with
+    // the content below it.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md - _gap / 2),
+      child: AutoSlideCarousel(
+        itemCount: banners.length,
+        aspectRatio: bannerAspectRatio,
+        viewportFraction: _viewportFraction,
+        itemSpacing: _gap,
+        arrowsMinWidth: AppBreakpoints.mobile,
+        itemBuilder: (context, index, isActive) => _BannerSlide(banner: banners[index], isActive: isActive),
+      ),
+    );
+  }
+}
+
+class _BannerSlide extends StatelessWidget {
+  const _BannerSlide({required this.banner, required this.isActive});
+
+  final PromoBannerEntity banner;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    // The peeking neighbour is dimmed so the current banner reads as the
+    // focus; on phones only one banner is ever fully in view anyway.
+    return AnimatedOpacity(
+      opacity: isActive ? 1 : 0.55,
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeInOut,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_radius),
+        child: ColoredBox(
+          color: AppColors.primary.withValues(alpha: 0.06),
+          child: Image.network(
+            banner.imageUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (wasSynchronouslyLoaded) return child;
+              return AnimatedOpacity(
+                opacity: frame == null ? 0 : 1,
+                duration: const Duration(milliseconds: 300),
+                child: child,
+              );
+            },
+            errorBuilder: (context, error, stackTrace) =>
+                const Center(child: Icon(Icons.image_outlined, size: 40, color: Colors.black26)),
           ),
         ),
-        if (widget.banners.length > 1) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(widget.banners.length, (index) {
-              final isActive = index == _currentPage;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: isActive ? 20 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: isActive ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              );
-            }),
-          ),
-        ],
-      ],
+      ),
     );
   }
 }

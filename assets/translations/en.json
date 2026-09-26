@@ -6,7 +6,9 @@
   },
   "home": {
     "search_hint": "Search for products...",
-    "explore_categories": "Explore By Categories"
+    "explore_categories": "Explore By Categories",
+    "most_popular": "Most Popular",
+    "view_all": "View All"
   },
   "drawer": {
     "main_menu_title": "Main Menu",
@@ -288,6 +290,7 @@
     "nav_categories": "Categories",
     "nav_orders": "Orders",
     "nav_user_reviews": "User Reviews",
+    "nav_banners": "Banners",
     "section_coming_soon": "Coming soon.",
     "dashboard_greeting": "Welcome, {name}",
     "stat_products": "Products",
@@ -332,6 +335,9 @@
     "product_description_hint": "Description",
     "error_product_description_required": "Please enter a description.",
     "product_in_stock_label": "In Stock",
+    "product_most_popular_label": "Mark as Most Popular",
+    "product_most_popular_hint": "Also shows this product in Most Popular and on the home page.",
+    "most_popular_badge": "Popular",
     "delete_product_title": "Delete product?",
     "delete_product_message": "\"{name}\" will be permanently removed from the catalog.",
     "products_empty_title": "No products yet",
@@ -346,6 +352,15 @@
     "reviewed_by": "by {name}",
     "field_en": "{field} (English)",
     "field_ja": "{field} (日本語)",
-    "ja_missing": "JA missing"
+    "ja_missing": "JA missing",
+    "add_banner": "Add Banner",
+    "banners_hint": "Shown on the customer home page in this order and rotated automatically. Up to {max} banners. Recommended size: 2400 × 1000 px (12:5).",
+    "banners_full": "You've reached the limit of {max} banners. Delete one to add another.",
+    "banners_empty_title": "No banners yet",
+    "banners_empty_message": "Tap \"Add Banner\" to upload the first one. Until then, the home page shows no banner.",
+    "delete_banner_title": "Delete banner?",
+    "delete_banner_message": "This banner will be removed from the home page.",
+    "move_earlier": "Move earlier",
+    "move_later": "Move later"
   }
 }

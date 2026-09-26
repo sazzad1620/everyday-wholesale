@@ -17,6 +17,7 @@ class ProductEntity extends Equatable {
     this.subcategoryId,
     this.images = const [],
     this.inStock = true,
+    this.isMostPopular = false,
     this.ratingSum = 0,
     this.reviewCount = 0,
   });
@@ -58,6 +59,11 @@ class ProductEntity extends Equatable {
 
   final bool inStock;
 
+  /// Admin-flagged — lists the product under the storefront's virtual
+  /// "Most Popular" category (see `mostPopularCategoryId`) and the home
+  /// page's Most Popular section, in addition to its real [categoryId].
+  final bool isMostPopular;
+
   /// Sum of every submitted review's star rating for this product —
   /// denormalized on the product doc (updated via `FieldValue.increment` the
   /// moment a review is submitted, see `ReviewRemoteDatasource.submitReview`)
@@ -87,6 +93,7 @@ class ProductEntity extends Equatable {
     subcategoryId,
     images,
     inStock,
+    isMostPopular,
     ratingSum,
     reviewCount,
   ];

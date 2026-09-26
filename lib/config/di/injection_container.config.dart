@@ -21,6 +21,8 @@ import 'package:everyday_wholesale/features/admin/domain/repositories/admin_dash
     as _i444;
 import 'package:everyday_wholesale/features/admin/domain/usecases/get_dashboard_stats_usecase.dart'
     as _i1031;
+import 'package:everyday_wholesale/features/admin/presentation/bloc/banners/banner_list_bloc.dart'
+    as _i146;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/categories/category_form_bloc.dart'
     as _i180;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/categories/category_list_bloc.dart'
@@ -89,28 +91,40 @@ import 'package:everyday_wholesale/features/checkout/presentation/bloc/checkout_
     as _i441;
 import 'package:everyday_wholesale/features/checkout/presentation/bloc/order_confirmation_bloc.dart'
     as _i458;
+import 'package:everyday_wholesale/features/home/data/datasources/admin_banner_remote_datasource.dart'
+    as _i663;
 import 'package:everyday_wholesale/features/home/data/datasources/admin_category_remote_datasource.dart'
     as _i639;
-import 'package:everyday_wholesale/features/home/data/datasources/home_local_datasource.dart'
-    as _i940;
 import 'package:everyday_wholesale/features/home/data/datasources/home_remote_datasource.dart'
     as _i1056;
+import 'package:everyday_wholesale/features/home/data/repositories/admin_banner_repository_impl.dart'
+    as _i274;
 import 'package:everyday_wholesale/features/home/data/repositories/admin_category_repository_impl.dart'
     as _i157;
 import 'package:everyday_wholesale/features/home/data/repositories/home_repository_impl.dart'
     as _i734;
+import 'package:everyday_wholesale/features/home/domain/repositories/admin_banner_repository.dart'
+    as _i960;
 import 'package:everyday_wholesale/features/home/domain/repositories/admin_category_repository.dart'
     as _i683;
 import 'package:everyday_wholesale/features/home/domain/repositories/home_repository.dart'
     as _i339;
+import 'package:everyday_wholesale/features/home/domain/usecases/add_promo_banner_usecase.dart'
+    as _i495;
 import 'package:everyday_wholesale/features/home/domain/usecases/create_category_usecase.dart'
     as _i175;
 import 'package:everyday_wholesale/features/home/domain/usecases/delete_category_usecase.dart'
     as _i872;
+import 'package:everyday_wholesale/features/home/domain/usecases/delete_promo_banner_usecase.dart'
+    as _i1059;
 import 'package:everyday_wholesale/features/home/domain/usecases/get_categories_usecase.dart'
     as _i353;
 import 'package:everyday_wholesale/features/home/domain/usecases/get_promo_banners_usecase.dart'
     as _i674;
+import 'package:everyday_wholesale/features/home/domain/usecases/get_storefront_categories_usecase.dart'
+    as _i886;
+import 'package:everyday_wholesale/features/home/domain/usecases/reorder_promo_banners_usecase.dart'
+    as _i28;
 import 'package:everyday_wholesale/features/home/domain/usecases/update_category_usecase.dart'
     as _i819;
 import 'package:everyday_wholesale/features/home/presentation/bloc/home_bloc.dart'
@@ -156,7 +170,7 @@ import 'package:everyday_wholesale/features/product/data/repositories/admin_prod
 import 'package:everyday_wholesale/features/product/data/repositories/product_repository_impl.dart'
     as _i137;
 import 'package:everyday_wholesale/features/product/domain/repositories/admin_product_repository.dart'
-    as _i960;
+    as _i961;
 import 'package:everyday_wholesale/features/product/domain/repositories/product_repository.dart'
     as _i411;
 import 'package:everyday_wholesale/features/product/domain/usecases/create_product_usecase.dart'
@@ -165,6 +179,8 @@ import 'package:everyday_wholesale/features/product/domain/usecases/delete_produ
     as _i185;
 import 'package:everyday_wholesale/features/product/domain/usecases/get_all_products_usecase.dart'
     as _i49;
+import 'package:everyday_wholesale/features/product/domain/usecases/get_most_popular_products_usecase.dart'
+    as _i20;
 import 'package:everyday_wholesale/features/product/domain/usecases/get_product_by_id_usecase.dart'
     as _i682;
 import 'package:everyday_wholesale/features/product/domain/usecases/get_products_by_category_usecase.dart'
@@ -245,8 +261,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i204.AppReadinessLocalDatasource>(
       () => _i204.AppReadinessLocalDatasourceImpl(),
     );
-    gh.lazySingleton<_i940.HomeLocalDatasource>(
-      () => _i940.HomeLocalDatasourceImpl(),
+    gh.lazySingleton<_i663.AdminBannerRemoteDatasource>(
+      () => _i663.AdminBannerRemoteDatasourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i457.FirebaseStorage>(),
+      ),
     );
     gh.lazySingleton<_i967.AdminProductRemoteDatasource>(
       () => _i967.AdminProductRemoteDatasourceImpl(
@@ -296,17 +315,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i639.AdminCategoryRemoteDatasource>(),
       ),
     );
+    gh.lazySingleton<_i960.AdminBannerRepository>(
+      () => _i274.AdminBannerRepositoryImpl(
+        gh<_i663.AdminBannerRemoteDatasource>(),
+      ),
+    );
     gh.lazySingleton<_i1056.HomeRemoteDatasource>(
       () => _i1056.HomeRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
     );
     gh.lazySingleton<_i625.AdminOrderRemoteDatasource>(
       () => _i625.AdminOrderRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
-    );
-    gh.lazySingleton<_i339.HomeRepository>(
-      () => _i734.HomeRepositoryImpl(
-        gh<_i1056.HomeRemoteDatasource>(),
-        gh<_i940.HomeLocalDatasource>(),
-      ),
     );
     gh.lazySingleton<_i427.ReviewRepository>(
       () => _i789.ReviewRepositoryImpl(
@@ -333,13 +351,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i581.ProductRemoteDatasource>(),
       ),
     );
-    gh.factory<_i353.GetCategoriesUseCase>(
-      () => _i353.GetCategoriesUseCase(gh<_i339.HomeRepository>()),
-    );
-    gh.factory<_i674.GetPromoBannersUseCase>(
-      () => _i674.GetPromoBannersUseCase(gh<_i339.HomeRepository>()),
-    );
-    gh.lazySingleton<_i960.AdminProductRepository>(
+    gh.lazySingleton<_i961.AdminProductRepository>(
       () => _i289.AdminProductRepositoryImpl(
         gh<_i967.AdminProductRemoteDatasource>(),
       ),
@@ -355,18 +367,21 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i59.FirebaseAuth>(),
       ),
     );
+    gh.factory<_i495.AddPromoBannerUseCase>(
+      () => _i495.AddPromoBannerUseCase(gh<_i960.AdminBannerRepository>()),
+    );
+    gh.factory<_i1059.DeletePromoBannerUseCase>(
+      () => _i1059.DeletePromoBannerUseCase(gh<_i960.AdminBannerRepository>()),
+    );
+    gh.factory<_i28.ReorderPromoBannersUseCase>(
+      () => _i28.ReorderPromoBannersUseCase(gh<_i960.AdminBannerRepository>()),
+    );
     gh.lazySingleton<_i108.PaymentRepository>(
       () => _i52.PaymentRepositoryImpl(gh<_i726.PaymentRemoteDatasource>()),
     );
     gh.lazySingleton<_i444.AdminDashboardRepository>(
       () => _i702.AdminDashboardRepositoryImpl(
         gh<_i660.AdminDashboardRemoteDatasource>(),
-      ),
-    );
-    gh.factory<_i1013.HomeBloc>(
-      () => _i1013.HomeBloc(
-        gh<_i353.GetCategoriesUseCase>(),
-        gh<_i674.GetPromoBannersUseCase>(),
       ),
     );
     gh.lazySingleton<_i193.OrderRepository>(
@@ -422,6 +437,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i625.AdminOrderRemoteDatasource>(),
       ),
     );
+    gh.lazySingleton<_i339.HomeRepository>(
+      () => _i734.HomeRepositoryImpl(gh<_i1056.HomeRemoteDatasource>()),
+    );
     gh.factory<_i105.CheckAppReadyUseCase>(
       () => _i105.CheckAppReadyUseCase(gh<_i246.AppReadinessRepository>()),
     );
@@ -453,19 +471,19 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i192.CreatePaymentIntentUseCase(gh<_i108.PaymentRepository>()),
     );
     gh.factory<_i311.CreateProductUseCase>(
-      () => _i311.CreateProductUseCase(gh<_i960.AdminProductRepository>()),
+      () => _i311.CreateProductUseCase(gh<_i961.AdminProductRepository>()),
     );
     gh.factory<_i185.DeleteProductUseCase>(
-      () => _i185.DeleteProductUseCase(gh<_i960.AdminProductRepository>()),
+      () => _i185.DeleteProductUseCase(gh<_i961.AdminProductRepository>()),
     );
     gh.factory<_i49.GetAllProductsUseCase>(
-      () => _i49.GetAllProductsUseCase(gh<_i960.AdminProductRepository>()),
+      () => _i49.GetAllProductsUseCase(gh<_i961.AdminProductRepository>()),
     );
     gh.factory<_i994.UpdateProductUseCase>(
-      () => _i994.UpdateProductUseCase(gh<_i960.AdminProductRepository>()),
+      () => _i994.UpdateProductUseCase(gh<_i961.AdminProductRepository>()),
     );
     gh.factory<_i113.UploadProductImageUseCase>(
-      () => _i113.UploadProductImageUseCase(gh<_i960.AdminProductRepository>()),
+      () => _i113.UploadProductImageUseCase(gh<_i961.AdminProductRepository>()),
     );
     gh.factory<_i320.AdminProductFormBloc>(
       () => _i320.AdminProductFormBloc(
@@ -484,6 +502,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i176.CartRepository>(
       () => _i184.CartRepositoryImpl(gh<_i490.CartRemoteDatasource>()),
+    );
+    gh.factory<_i353.GetCategoriesUseCase>(
+      () => _i353.GetCategoriesUseCase(gh<_i339.HomeRepository>()),
+    );
+    gh.factory<_i674.GetPromoBannersUseCase>(
+      () => _i674.GetPromoBannersUseCase(gh<_i339.HomeRepository>()),
     );
     gh.factory<_i1031.GetDashboardStatsUseCase>(
       () =>
@@ -533,6 +557,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i185.DeleteProductUseCase>(),
       ),
     );
+    gh.factory<_i20.GetMostPopularProductsUseCase>(
+      () => _i20.GetMostPopularProductsUseCase(gh<_i411.ProductRepository>()),
+    );
     gh.factory<_i682.GetProductByIdUseCase>(
       () => _i682.GetProductByIdUseCase(gh<_i411.ProductRepository>()),
     );
@@ -560,6 +587,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1054.AdminOrderDetailBloc>(
       () => _i1054.AdminOrderDetailBloc(gh<_i640.UpdateOrderStatusUseCase>()),
     );
+    gh.factory<_i146.BannerListBloc>(
+      () => _i146.BannerListBloc(
+        gh<_i674.GetPromoBannersUseCase>(),
+        gh<_i495.AddPromoBannerUseCase>(),
+        gh<_i1059.DeletePromoBannerUseCase>(),
+        gh<_i28.ReorderPromoBannersUseCase>(),
+      ),
+    );
     gh.factory<_i180.CategoryFormBloc>(
       () => _i180.CategoryFormBloc(
         gh<_i175.CreateCategoryUseCase>(),
@@ -581,8 +616,21 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i900.UpdateCartQuantityUseCase>(
       () => _i900.UpdateCartQuantityUseCase(gh<_i176.CartRepository>()),
     );
+    gh.factory<_i886.GetStorefrontCategoriesUseCase>(
+      () => _i886.GetStorefrontCategoriesUseCase(
+        gh<_i339.HomeRepository>(),
+        gh<_i411.ProductRepository>(),
+      ),
+    );
     gh.factory<_i380.SearchBloc>(
       () => _i380.SearchBloc(gh<_i58.SearchProductsUseCase>()),
+    );
+    gh.factory<_i1013.HomeBloc>(
+      () => _i1013.HomeBloc(
+        gh<_i353.GetCategoriesUseCase>(),
+        gh<_i674.GetPromoBannersUseCase>(),
+        gh<_i20.GetMostPopularProductsUseCase>(),
+      ),
     );
     gh.factory<_i37.ProductListBloc>(
       () => _i37.ProductListBloc(gh<_i706.GetProductsByCategoryUseCase>()),

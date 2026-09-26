@@ -7,6 +7,8 @@ import '../models/product_model.dart';
 abstract class ProductRemoteDatasource {
   Future<List<ProductModel>> getProductsByCategory(String categoryId, {String? subcategoryId});
 
+  Future<List<ProductModel>> getMostPopularProducts();
+
   Future<ProductModel?> getProductById(String id);
 
   Future<List<ProductModel>> searchProducts(String query);
@@ -29,6 +31,12 @@ class ProductRemoteDatasourceImpl implements ProductRemoteDatasource {
       query = query.where('subcategoryId', isEqualTo: subcategoryId);
     }
     final snapshot = await query.get();
+    return snapshot.docs.map((doc) => ProductModel.fromMap(doc.data(), id: doc.id)).toList();
+  }
+
+  @override
+  Future<List<ProductModel>> getMostPopularProducts() async {
+    final snapshot = await _firestore.collection(_productsCollection).where('isMostPopular', isEqualTo: true).get();
     return snapshot.docs.map((doc) => ProductModel.fromMap(doc.data(), id: doc.id)).toList();
   }
 

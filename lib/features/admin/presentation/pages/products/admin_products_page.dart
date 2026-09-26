@@ -194,6 +194,26 @@ class _ProductTile extends StatelessWidget {
                   ),
                 ),
                 MissingJaBadge(text: product.name),
+                if (product.isMostPopular)
+                  Container(
+                    margin: const EdgeInsets.only(right: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, size: 14, color: AppColors.primary),
+                        const SizedBox(width: 2),
+                        Text(
+                          'admin.most_popular_badge'.tr(),
+                          style: AppTextStyles.caption.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
                 if (!product.inStock)
                   Container(
                     margin: const EdgeInsets.only(right: AppSpacing.sm),
