@@ -34,13 +34,19 @@ class _HomePromoCarouselState extends State<HomePromoCarousel> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // The first banner loads as it's drawn; the rest are fetched in the
-    // background right away, so auto-play never slides to a blank one.
-    if (_precached) return;
+    // The rest are fetched in the background so auto-play never slides to a
+    // blank banner — but only once the first (the one actually on screen)
+    // has loaded; fetching all of them at once made the visible one compete
+    // for bandwidth with four hidden ones on a slow connection.
+    if (_precached || widget.banners.isEmpty) return;
     _precached = true;
-    for (final banner in widget.banners.skip(1)) {
-      precacheImage(NetworkImage(banner.imageUrl), context, onError: (_, _) {});
-    }
+    final first = NetworkImage(widget.banners.first.imageUrl);
+    precacheImage(first, context, onError: (_, _) {}).whenComplete(() {
+      if (!mounted) return;
+      for (final banner in widget.banners.skip(1)) {
+        precacheImage(NetworkImage(banner.imageUrl), context, onError: (_, _) {});
+      }
+    });
   }
 
   /// Share of the width one banner takes: the rest is the next banner's peek.

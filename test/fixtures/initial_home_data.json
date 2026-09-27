@@ -1,0 +1,69 @@
+{
+  "categories": [
+    {
+      "id": "frozen_food",
+      "iconKey": "frozen_food",
+      "name": "Frozen Food",
+      "subcategories": [
+        {
+          "id": "frozen_snacks",
+          "name": "Frozen Snacks"
+        },
+        {
+          "id": "frozen_vegetables",
+          "name": "Frozen Vegetables"
+        },
+        {
+          "id": "frozen_meat",
+          "name": "Frozen Meat"
+        }
+      ],
+      "imageUrl": null
+    },
+    {
+      "id": "beans_and_dal",
+      "subcategories": [],
+      "iconKey": "beans_and_dal",
+      "name": {
+        "en": "Beans and Dal",
+        "ja": ""
+      },
+      "imageUrl": null
+    }
+  ],
+  "banners": [
+    {
+      "id": "IxoeJ3anGPKL9YNrC2ub",
+      "order": 0,
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/everyday-wholesale.firebasestorage.app/o/banner_images%2F1790430295507000.jpg?alt=media&token=9e669445-8d28-47b8-9515-a0bc82ae9062",
+      "storagePath": "banner_images/1790430295507000.jpg"
+    }
+  ],
+  "popular": [
+    {
+      "id": "81qlS4T9eFTn6oW8KuQ0",
+      "name": {
+        "en": "Keri Samba Rice",
+        "ja": "ケリサンバライス"
+      },
+      "price": 3550,
+      "unit": "5 kg",
+      "categoryId": "rice_grains",
+      "iconKey": "rice_grains",
+      "description": {
+        "en": "Keri Samba Rice – Traditional, flavorful rice with a satisfying texture. Perfect for everyday meals, curries, and a variety of delicious dishes.",
+        "ja": ""
+      },
+      "condition": "dry_packaged",
+      "origin": "LK",
+      "subcategoryId": null,
+      "images": [
+        "https://firebasestorage.googleapis.com/v0/b/everyday-wholesale.firebasestorage.app/o/product_images%2F1790435370119000.png?alt=media&token=77b4ffd1-4037-4a3e-959a-114cbcaac3b3"
+      ],
+      "inStock": true,
+      "isMostPopular": true,
+      "ratingSum": 0,
+      "reviewCount": 0
+    }
+  ]
+}

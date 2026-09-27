@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -40,7 +41,13 @@ class SplashPage extends StatelessWidget {
       child: BlocListener<SplashBloc, SplashState>(
         listener: (context, state) async {
           if (state is SplashReady) {
-            await _waitForAccountResolution();
+            // Web goes straight to Home: waiting here held every visitor on
+            // the splash for ~2s on a cold load. `appRouter`'s redirect
+            // (re-run on every AccountBloc change) still moves an admin to
+            // the dashboard the moment their restored session resolves.
+            // Mobile keeps the wait — there it overlaps the minimum splash
+            // time anyway, so it costs nothing and avoids a visible hop.
+            if (!kIsWeb) await _waitForAccountResolution();
             if (!context.mounted) return;
             final isAdmin = getIt<AccountBloc>().state.user?.isAdmin ?? false;
             context.go(isAdmin ? RoutePaths.admin : RoutePaths.home);

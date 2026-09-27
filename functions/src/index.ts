@@ -7,6 +7,8 @@ import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import Stripe from "stripe";
 
+import {seoHandlers} from "./seo/handlers";
+
 initializeApp();
 const db = getFirestore();
 
@@ -209,3 +211,7 @@ export const reconcilePendingPayments = onSchedule(
     }
   }
 );
+
+// Server-rendered storefront pages + sitemap for SEO and a fast first
+// paint — see src/seo/render.ts and docs/WEB_PERFORMANCE.md (R3-4).
+export const {ssr, sitemap} = seoHandlers(db);

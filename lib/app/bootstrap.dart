@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -15,6 +17,17 @@ import '../firebase_options.dart';
 import 'app.dart';
 
 Future<void> bootstrap() async {
+  // Real paths (`/home/category/…`) instead of Flutter's default `/#/home/…`:
+  // search engines treat everything after `#` as the same page, so no
+  // category or product could ever be indexed on its own. Hosting already
+  // rewrites every path to index.html; old `#/` links are converted by a
+  // small script in web/index.html. No-op on mobile.
+  usePathUrlStrategy();
+  // The app navigates with `context.push` (category → product …), which
+  // go_router doesn't write to the address bar by default — the URL would
+  // stay `/home`, so a product page couldn't be copied, shared or
+  // bookmarked. Must be set before `appRouter` is created.
+  GoRouter.optionURLReflectsImperativeAPIs = true;
   WidgetsFlutterBinding.ensureInitialized();
   // Independent of each other, so they run concurrently — on web
   // `Firebase.initializeApp` is a network round-trip (it loads the Firebase

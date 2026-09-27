@@ -8,14 +8,10 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/utils/toast.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/quantity_stepper.dart';
 import '../../../../shared/widgets/star_rating.dart';
-import '../../../../shared/widgets/dialogs/sign_in_dialog.dart';
-import '../../../auth/presentation/bloc/account_bloc.dart';
-import '../../../cart/presentation/bloc/cart_bloc.dart';
-import '../../../cart/presentation/bloc/cart_event.dart';
+import '../../../cart/presentation/add_to_cart.dart';
 import '../../../review/domain/entities/review_entity.dart';
 import '../../../wishlist/presentation/bloc/wishlist_bloc.dart';
 import '../../../wishlist/presentation/bloc/wishlist_event.dart';
@@ -51,23 +47,9 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
   void _decrement() =>
       setState(() => _quantity = _quantity > 1 ? _quantity - 1 : 1);
 
-  void _addToCart(BuildContext context, ProductEntity product) {
-    if (!getIt<AccountBloc>().state.isLoggedIn) {
-      AppToast.show(
-        context,
-        'cart.sign_in_required'.tr(),
-        type: ToastType.error,
-      );
-      showSignInDialog(context);
-      return;
-    }
-    getIt<CartBloc>().add(CartItemAdded(product, _quantity));
-    AppToast.show(
-      context,
-      'product.added_to_cart'.tr(),
-      type: ToastType.success,
-    );
-    setState(() => _quantity = 1);
+  Future<void> _addToCart(BuildContext context, ProductEntity product) async {
+    final added = await addToCart(context, product, quantity: _quantity);
+    if (added && mounted) setState(() => _quantity = 1);
   }
 
   @override

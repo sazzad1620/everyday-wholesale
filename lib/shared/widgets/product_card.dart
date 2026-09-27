@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/localization/localized_text.dart';
 import '../../config/di/injection_container.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../../features/cart/presentation/add_to_cart.dart';
 import '../../features/cart/presentation/bloc/cart_bloc.dart';
 import '../../features/cart/presentation/bloc/cart_event.dart';
 import '../../features/cart/presentation/bloc/cart_state.dart';
@@ -133,7 +134,10 @@ class ProductCard extends StatelessWidget {
                   builder: (context, state) {
                     final quantity = _quantityInCart(state, product.id);
                     return quantity == 0
-                        ? _AddToCartButton(onTap: () => cartBloc.add(CartItemAdded(product, 1)))
+                        // Same sign-in check + feedback as the detail page;
+                        // no success toast here — the button turning into the
+                        // quantity pill already shows it worked.
+                        ? _AddToCartButton(onTap: () => addToCart(context, product, showSuccessToast: false))
                         : _QuantityPill(
                             quantity: quantity,
                             onIncrement: () => cartBloc.add(CartQuantityChanged(product.id, quantity + 1)),

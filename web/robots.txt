@@ -1,0 +1,12 @@
+# Public storefront pages are server-rendered for search engines (see the
+# `ssr` Cloud Function); account, cart, checkout and admin pages are private.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-confirmation
+Disallow: /wishlist
+
+Sitemap: https://everydaywholesale.jp/sitemap.xml

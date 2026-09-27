@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'japanese_font.dart';
 
 /// Single source of truth for which languages the app ships — `bootstrap.dart`
 /// registers these with `EasyLocalization`, and the language switcher widgets
@@ -33,11 +34,12 @@ abstract final class AppLocales {
   ///
   /// English stays on the platform default (Roboto / SF / Flutter web's
   /// Roboto) exactly as before. Japanese switches the whole text theme to
-  /// Noto Sans JP so kana/kanji render in one consistent face on every
-  /// platform — without this, web mixes the engine's CJK fallback with
-  /// Roboto, and desktop browsers can show mismatched weights.
+  /// Noto Sans JP (see [JapaneseFont], which must be loaded for it) so
+  /// kana/kanji render in one consistent face on every platform — without
+  /// this, web mixes the engine's CJK fallback with Roboto, and desktop
+  /// browsers can show mismatched weights.
   static TextStyle? bodyFontFor(Locale locale) => switch (locale.languageCode) {
-    'ja' => GoogleFonts.notoSansJp(),
+    'ja' => const TextStyle(fontFamily: JapaneseFont.family),
     _ => null,
   };
 }

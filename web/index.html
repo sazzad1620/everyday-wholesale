@@ -17,6 +17,14 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <!--
+    Same viewport Flutter's engine sets when it starts (full_page_embedding_
+    strategy.dart). Without it here, phones lay out the loading screen on a
+    ~980px-wide virtual page, so the logo shows tiny and then jumps to full
+    size once Flutter adds its own tag. `flt-viewport` marks it as the
+    engine's, so Flutter swaps it without a warning.
+  -->
+  <meta flt-viewport name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Halal groceries and wholesale food from Everyday Wholesale, Hanyu, Saitama.">
   <meta name="theme-color" content="#2E7D32">
@@ -46,9 +54,20 @@
   <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
   <link rel="dns-prefetch" href="https://identitytoolkit.googleapis.com">
   <link rel="dns-prefetch" href="https://securetoken.googleapis.com">
-  <!-- Start the app-code download right away instead of after
-       flutter_bootstrap.js has loaded and asked for it. -->
-  <link rel="preload" href="main.dart.js" as="script">
+  <!--
+    The Firebase JS SDK is otherwise only requested once the app has
+    downloaded and started — fetch it in parallel instead. The version must
+    match `supportedFirebaseJsSdkVersion` in the firebase_core_web package
+    (currently 12.18.0); after upgrading the Firebase packages, update it
+    here too (a mismatch only wastes this prefetch, nothing breaks).
+    (No preload for main.dart.js/.wasm: which one is needed depends on the
+    browser, and the versioned URLs are only known to the bootstrap script.)
+  -->
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore-pipelines.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js" crossorigin>
 
   <style>
     html, body { margin: 0; height: 100%; background: #FFFFFF; }
@@ -78,12 +97,24 @@
   </style>
 </head>
 <body>
+  <script>
+    // The app used to live at /#/home/…; it now uses real paths. Turn any
+    // old bookmarked/shared `#/` link into its path form before Flutter
+    // reads the URL, so it still opens the right page.
+    if (location.hash.indexOf('#/') === 0) {
+      history.replaceState(null, '', location.hash.slice(1) + location.search);
+    }
+  </script>
   <div id="app-loader" role="progressbar" aria-label="Loading Everyday Wholesale">
     <img src="icons/loader-logo.webp" alt="Everyday Wholesale" width="180" height="168">
     <div class="spinner"></div>
   </div>
   <script>
+    // Flutter's first frame replaces both the plain loader and, on pages
+    // served by the `ssr` Cloud Function, the server-rendered HTML content.
     window.addEventListener('flutter-first-frame', function () {
+      var ssr = document.getElementById('ssr-content');
+      if (ssr) ssr.remove();
       var loader = document.getElementById('app-loader');
       if (!loader) return;
       loader.classList.add('done');
@@ -91,13 +122,13 @@
     });
   </script>
   <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
+    web/flutter_bootstrap.js, inlined at build time — saves a round trip
+    before the app download can even start. See that file for the
+    versioned-URL caching it sets up.
+    https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    {{flutter_bootstrap_js}}
+  </script>
 </body>
 </html>

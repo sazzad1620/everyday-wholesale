@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../config/di/injection_container.dart';
 import '../config/routes/app_router.dart';
 import '../core/localization/app_locales.dart';
+import '../core/localization/japanese_font.dart';
 import '../features/auth/presentation/bloc/account_bloc.dart';
 import '../features/auth/presentation/bloc/account_state.dart';
 import '../shared/theme/app_theme.dart';
@@ -18,6 +19,9 @@ class EverydayWholesaleApp extends StatelessWidget {
     // body font follows the active locale (Noto Sans JP for Japanese).
     final locale = context.locale;
     final bodyFont = AppLocales.bodyFontFor(locale);
+    // Fetched only once Japanese is actually in use (at launch for a saved
+    // Japanese preference, or on switching) — idempotent, never throws.
+    if (locale.languageCode == AppLocales.ja.languageCode) JapaneseFont.ensureLoaded();
 
     return BlocListener<AccountBloc, AccountState>(
       bloc: getIt<AccountBloc>(),

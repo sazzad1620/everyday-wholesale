@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -42,7 +44,6 @@ dependencies:
   fpdart: ^1.2.0
   easy_localization: ^3.0.8
   intl: ^0.20.2
-  google_fonts: ^8.2.1
   firebase_core: ^4.14.0
   firebase_auth: ^6.6.0
   cloud_firestore: ^6.9.0
@@ -53,6 +54,7 @@ dependencies:
   cloud_functions: ^6.4.0
   flutter_stripe_web: ^8.2.0
   image: ^4.10.1
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -81,8 +83,11 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/
+    # Noto Sans JP subsets — loaded on demand by `JapaneseFont`, deliberately
+    # NOT under `fonts:` (declared fonts are fetched before the first frame).
+    - assets/fonts/jp/
 
-  # Header wordmark font, bundled (not fetched via google_fonts at runtime)
+  # Header wordmark font, bundled (not fetched from Google Fonts at runtime)
   # so the first frame never waits on a request to Google Fonts.
   fonts:
     - family: Oswald
