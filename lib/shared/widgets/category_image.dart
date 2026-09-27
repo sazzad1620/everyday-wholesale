@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'image_fade_in.dart';
+
 /// A category's photo, or — until an admin uploads one — one plain, generic
 /// placeholder (same for every category, deliberately not themed) so it
 /// reads clearly as "no image set yet" rather than a designed icon.
@@ -39,6 +41,7 @@ class CategoryImage extends StatelessWidget {
                       // Falls back to the same "no image" placeholder on a
                       // load failure (e.g. no network) instead of Flutter's
                       // default broken-image icon with raw exception text.
+                      frameBuilder: imageFadeIn,
                       errorBuilder: (context, error, stackTrace) =>
                           const Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.black26)),
                     )

@@ -1,30 +1,44 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '../config/di/injection_container.dart';
-import '../core/constants/stripe_config.dart';
 import '../core/localization/app_locales.dart';
+import '../core/utils/stripe_setup.dart';
 import '../firebase_options.dart';
 import 'app.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
-  // `DateFormat` only knows English out of the box — every other locale's
-  // month/day names have to be loaded first, and easy_localization doesn't
-  // do it for us. Without this, a Japanese-locale `DateFormat` throws.
-  await initializeDateFormatting(AppLocales.ja.languageCode);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Independent of each other, so they run concurrently — on web
+  // `Firebase.initializeApp` is a network round-trip (it loads the Firebase
+  // JS SDK), and nothing else here should queue behind it.
+  await Future.wait([
+    EasyLocalization.ensureInitialized(),
+    // `DateFormat` only knows English out of the box — every other locale's
+    // month/day names have to be loaded first, and easy_localization doesn't
+    // do it for us. Without this, a Japanese-locale `DateFormat` throws.
+    initializeDateFormatting(AppLocales.ja.languageCode),
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+  ]);
 
-  Stripe.publishableKey = StripeConfig.publishableKey;
-  await Stripe.instance.applySettings();
+  // Native Stripe setup is local and fast, so mobile keeps doing it up
+  // front. On web it downloads Stripe.js, which only checkout needs — warm
+  // it up in the background once the app is showing instead of delaying
+  // the first frame (payment still awaits it via `StripeSetup.ensureReady`).
+  if (kIsWeb) {
+    unawaited(
+      Future<void>.delayed(const Duration(seconds: 4), StripeSetup.ensureReady).catchError((_) {}),
+    );
+  } else {
+    await StripeSetup.ensureReady();
+  }
 
   // Must be called exactly once, before any other GoogleSignIn method, for
   // the app's whole lifetime — this is the one correct place for that.
@@ -37,14 +51,6 @@ Future<void> bootstrap() async {
   }
 
   configureDependencies();
-
-  // Fetch+cache the header wordmark's font weights before the first frame,
-  // not on first use — otherwise that text paints in the fallback system
-  // font and visibly snaps to Oswald (a width change, since Oswald is
-  // condensed) once the async download finishes.
-  GoogleFonts.oswald(fontWeight: FontWeight.w600);
-  GoogleFonts.oswald(fontWeight: FontWeight.w300);
-  await GoogleFonts.pendingFonts();
 
   // Without this, Android applies its own contrast scrim to the status bar,
   // which reads as a faint grey band against our all-white header — this

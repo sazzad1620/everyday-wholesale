@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
 import '../../../core/utils/responsive/breakpoints.dart';
+import '../../../core/utils/stripe_setup.dart';
 import '../../../shared/widgets/dialogs/dialog_shell.dart';
 import '../domain/entities/payment_confirmation_result.dart';
 import 'widgets/card_payment_sheet.dart';
@@ -15,7 +16,15 @@ import 'widgets/card_payment_sheet.dart';
 Future<PaymentConfirmationResult> confirmCardPayment({
   required BuildContext context,
   required String clientSecret,
-}) {
+}) async {
+  // Normally already done (startup on mobile, background warm-up on web) —
+  // this only waits if the customer reached payment before it finished.
+  try {
+    await StripeSetup.ensureReady();
+  } catch (_) {
+    return PaymentConfirmationFailed('payment.generic_error'.tr());
+  }
+  if (!context.mounted) return const PaymentConfirmationCanceled();
   return kIsWeb
       ? _confirmWithCardField(context, clientSecret)
       : _confirmWithPaymentSheet(clientSecret);

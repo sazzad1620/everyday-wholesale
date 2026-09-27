@@ -69,6 +69,13 @@ class _ProductFormViewState extends State<_ProductFormView> {
   late bool _inStock = widget.initial?.inStock ?? true;
   late bool _isMostPopular = widget.initial?.isMostPopular ?? false;
   late List<String> _images = List.of(widget.initial?.images ?? const []);
+  // Index-aligned with [_images]. Photos uploaded before thumbnails existed
+  // have none, so they fall back to the full-size URL until re-uploaded
+  // (or processed by tools/optimize_images.dart).
+  late List<String> _thumbnails = [
+    for (var i = 0; i < _images.length; i++)
+      i < (widget.initial?.thumbnails.length ?? 0) ? widget.initial!.thumbnails[i] : _images[i],
+  ];
   bool _isUploadingImage = false;
 
   List<CategoryEntity> _categories = [];
@@ -107,13 +114,19 @@ class _ProductFormViewState extends State<_ProductFormView> {
 
       result.match(
         (failure) => AppToast.show(context, failure.messageKey.tr(), type: ToastType.error),
-        (url) => setState(() => _images = [..._images, url]),
+        (uploaded) => setState(() {
+          _images = [..._images, uploaded.url];
+          _thumbnails = [..._thumbnails, uploaded.thumbnailUrl];
+        }),
       );
     }
     if (mounted) setState(() => _isUploadingImage = false);
   }
 
-  void _removeImage(int index) => setState(() => _images = [..._images]..removeAt(index));
+  void _removeImage(int index) => setState(() {
+    _images = [..._images]..removeAt(index);
+    _thumbnails = [..._thumbnails]..removeAt(index);
+  });
 
   Future<void> _loadCategories() async {
     final result = await getIt<GetCategoriesUseCase>()(const NoParams());
@@ -172,6 +185,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
       origin: _origin!,
       subcategoryId: _selectedSubcategoryId,
       images: _images,
+      thumbnails: _thumbnails,
       inStock: _inStock,
       isMostPopular: _isMostPopular,
       // Preserved as-is — this form has no rating UI, and since

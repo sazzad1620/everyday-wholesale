@@ -241,7 +241,7 @@ class _SearchResultTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: SizedBox(width: 44, height: 44, child: ProductImage(imageUrl: product.imageUrl, padding: 0)),
+              child: SizedBox(width: 44, height: 44, child: ProductImage(imageUrl: product.thumbnailUrl, padding: 0)),
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(

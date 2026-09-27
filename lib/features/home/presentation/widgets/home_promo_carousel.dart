@@ -4,6 +4,7 @@ import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/auto_slide_carousel.dart';
+import '../../../../shared/widgets/image_fade_in.dart';
 import '../../domain/entities/promo_banner_entity.dart';
 
 /// Every banner slot has this shape (12:5, e.g. the 4800×2000 artwork the
@@ -18,10 +19,29 @@ const double _radius = 20;
 /// time; wider screens show the current banner plus a faded peek of the
 /// next one, so it's obvious there's more to see. With no banners uploaded
 /// the carousel takes up no space at all.
-class HomePromoCarousel extends StatelessWidget {
+class HomePromoCarousel extends StatefulWidget {
   const HomePromoCarousel({super.key, required this.banners});
 
   final List<PromoBannerEntity> banners;
+
+  @override
+  State<HomePromoCarousel> createState() => _HomePromoCarouselState();
+}
+
+class _HomePromoCarouselState extends State<HomePromoCarousel> {
+  bool _precached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The first banner loads as it's drawn; the rest are fetched in the
+    // background right away, so auto-play never slides to a blank one.
+    if (_precached) return;
+    _precached = true;
+    for (final banner in widget.banners.skip(1)) {
+      precacheImage(NetworkImage(banner.imageUrl), context, onError: (_, _) {});
+    }
+  }
 
   /// Share of the width one banner takes: the rest is the next banner's peek.
   static double _viewportFraction(double width) {
@@ -32,6 +52,7 @@ class HomePromoCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final banners = widget.banners;
     if (banners.isEmpty) return const SizedBox.shrink();
 
     // Each slide carries half the gap on either side, so the outer padding
@@ -74,14 +95,7 @@ class _BannerSlide extends StatelessWidget {
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
-            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-              if (wasSynchronouslyLoaded) return child;
-              return AnimatedOpacity(
-                opacity: frame == null ? 0 : 1,
-                duration: const Duration(milliseconds: 300),
-                child: child,
-              );
-            },
+            frameBuilder: imageFadeIn,
             errorBuilder: (context, error, stackTrace) =>
                 const Center(child: Icon(Icons.image_outlined, size: 40, color: Colors.black26)),
           ),

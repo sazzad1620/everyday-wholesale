@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/di/injection_container.dart';
 import '../../../config/routes/route_paths.dart';
@@ -238,12 +237,12 @@ class _BrandMark extends StatelessWidget {
             children: [
               TextSpan(
                 text: 'header.brand_primary'.tr(),
-                style: GoogleFonts.oswald(fontWeight: FontWeight.w600),
+                style: const TextStyle(fontFamily: 'Oswald', fontWeight: FontWeight.w600),
               ),
               const TextSpan(text: ' '),
               TextSpan(
                 text: 'header.brand_secondary'.tr(),
-                style: GoogleFonts.oswald(fontWeight: FontWeight.w300),
+                style: const TextStyle(fontFamily: 'Oswald', fontWeight: FontWeight.w300),
               ),
             ],
           ),

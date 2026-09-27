@@ -52,6 +52,7 @@ dependencies:
   flutter_stripe: ^14.0.0
   cloud_functions: ^6.4.0
   flutter_stripe_web: ^8.2.0
+  image: ^4.10.1
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,16 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/
+
+  # Header wordmark font, bundled (not fetched via google_fonts at runtime)
+  # so the first frame never waits on a request to Google Fonts.
+  fonts:
+    - family: Oswald
+      fonts:
+        - asset: assets/fonts/Oswald-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Oswald-SemiBold.ttf
+          weight: 600
 
   # To add assets to your application, add an assets section, like this:
   # assets:

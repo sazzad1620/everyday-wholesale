@@ -33,10 +33,63 @@
   <title>Everyday Wholesale</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Required by flutter_stripe's web implementation (Stripe.js) -->
-  <script src="https://js.stripe.com/v3/"></script>
+  <!--
+    Stripe.js is intentionally NOT loaded here: it used to block the whole
+    page from starting. flutter_stripe_web injects it by itself, and the app
+    warms it up in the background after launch (see StripeSetup).
+  -->
+
+  <!-- Open connections to the hosts the app always needs, in parallel with
+       downloading the app itself (engine, Firebase SDK, database, images). -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
+  <link rel="dns-prefetch" href="https://identitytoolkit.googleapis.com">
+  <link rel="dns-prefetch" href="https://securetoken.googleapis.com">
+  <!-- Start the app-code download right away instead of after
+       flutter_bootstrap.js has loaded and asked for it. -->
+  <link rel="preload" href="main.dart.js" as="script">
+
+  <style>
+    html, body { margin: 0; height: 100%; background: #FFFFFF; }
+    /* Shown instantly by the browser, before Flutter has downloaded — laid
+       out exactly like the app's own splash page (logo 180px wide, centred
+       on white) so the hand-over is seamless. Removed on Flutter's first
+       frame. */
+    #app-loader {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: #FFFFFF;
+      transition: opacity 250ms ease-out;
+    }
+    #app-loader.done { opacity: 0; pointer-events: none; }
+    #app-loader img { width: 180px; height: auto; }
+    #app-loader .spinner {
+      position: absolute; top: calc(50% + 110px); left: 50%;
+      width: 26px; height: 26px; margin-left: -13px;
+      border: 3px solid rgba(46, 125, 50, 0.18);
+      border-top-color: #2E7D32; border-radius: 50%;
+      animation: app-loader-spin 800ms linear infinite;
+    }
+    @keyframes app-loader-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      #app-loader .spinner { animation-duration: 2400ms; }
+    }
+  </style>
 </head>
 <body>
+  <div id="app-loader" role="progressbar" aria-label="Loading Everyday Wholesale">
+    <img src="icons/loader-logo.webp" alt="Everyday Wholesale" width="180" height="168">
+    <div class="spinner"></div>
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var loader = document.getElementById('app-loader');
+      if (!loader) return;
+      loader.classList.add('done');
+      setTimeout(function () { loader.remove(); }, 300);
+    });
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

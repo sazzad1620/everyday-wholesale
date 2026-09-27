@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/product_entity.dart';
+import '../../domain/entities/uploaded_image.dart';
 import '../../domain/repositories/admin_product_repository.dart';
 import '../datasources/admin_product_remote_datasource.dart';
 import '../models/product_model.dart';
@@ -55,7 +56,7 @@ class AdminProductRepositoryImpl implements AdminProductRepository {
   }
 
   @override
-  Future<Either<Failure, String>> uploadProductImage(Uint8List bytes, String fileExtension) async {
+  Future<Either<Failure, UploadedImage>> uploadProductImage(Uint8List bytes, String fileExtension) async {
     try {
       return Right(await _datasource.uploadProductImage(bytes, fileExtension));
     } catch (_) {
@@ -75,6 +76,7 @@ class AdminProductRepositoryImpl implements AdminProductRepository {
     origin: product.origin,
     subcategoryId: product.subcategoryId,
     images: product.images,
+    thumbnails: product.thumbnails,
     inStock: product.inStock,
     isMostPopular: product.isMostPopular,
     ratingSum: product.ratingSum,

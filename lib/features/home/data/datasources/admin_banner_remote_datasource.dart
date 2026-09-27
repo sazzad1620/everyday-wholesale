@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/constants/storage_upload_settings.dart';
+import '../../../../core/utils/image_optimizer.dart';
 import '../models/promo_banner_model.dart';
 
 abstract class AdminBannerRemoteDatasource {
@@ -26,9 +28,18 @@ class AdminBannerRemoteDatasourceImpl implements AdminBannerRemoteDatasource {
 
   @override
   Future<void> createBanner(Uint8List bytes, String fileExtension, int order) async {
-    final path = '$_bannerImagesFolder/${DateTime.now().microsecondsSinceEpoch}.$fileExtension';
+    final encoded = await ImageOptimizer.toJpegs(bytes, maxDimensions: const [StorageUploadSettings.bannerSize]);
+    // Undecodable here (e.g. HEIC) — upload the original as-is.
+    final (uploadBytes, extension, contentType) = encoded == null
+        ? (bytes, fileExtension, _contentTypeFor(fileExtension))
+        : (encoded.first, ImageOptimizer.fileExtension, ImageOptimizer.contentType);
+
+    final path = '$_bannerImagesFolder/${DateTime.now().microsecondsSinceEpoch}.$extension';
     final ref = _storage.ref(path);
-    await ref.putData(bytes, SettableMetadata(contentType: _contentTypeFor(fileExtension)));
+    await ref.putData(
+      uploadBytes,
+      SettableMetadata(contentType: contentType, cacheControl: StorageUploadSettings.cacheControl),
+    );
     final url = await ref.getDownloadURL();
     await _firestore
         .collection(_bannersCollection)

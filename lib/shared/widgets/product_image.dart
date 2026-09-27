@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'image_fade_in.dart';
 
 /// A product's photo, inset like [CategoryImage] — or, until an admin
 /// uploads one, one plain generic placeholder so it reads as "no image set
@@ -40,6 +41,7 @@ class ProductImage extends StatelessWidget {
                       // Falls back to the same "no image" placeholder on a
                       // load failure (e.g. no network) instead of Flutter's
                       // default broken-image icon with raw exception text.
+                      frameBuilder: imageFadeIn,
                       errorBuilder: (context, error, stackTrace) =>
                           const Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.black26)),
                     )

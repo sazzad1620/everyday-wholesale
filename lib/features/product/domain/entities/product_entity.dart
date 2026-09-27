@@ -16,6 +16,7 @@ class ProductEntity extends Equatable {
     required this.origin,
     this.subcategoryId,
     this.images = const [],
+    this.thumbnails = const [],
     this.inStock = true,
     this.isMostPopular = false,
     this.ratingSum = 0,
@@ -57,6 +58,15 @@ class ProductEntity extends Equatable {
   /// ever show one image (product cards, search results, order snapshots).
   String? get imageUrl => images.isEmpty ? null : images.first;
 
+  /// Smaller copies of [images], index-for-index, for anywhere a photo is
+  /// shown small (cards, cart, search, order history). Shorter than
+  /// [images] (or empty) for photos uploaded before thumbnails existed.
+  final List<String> thumbnails;
+
+  /// The primary photo's thumbnail, falling back to the full-size photo
+  /// when it has none — use this instead of [imageUrl] in small contexts.
+  String? get thumbnailUrl => thumbnails.isNotEmpty ? thumbnails.first : imageUrl;
+
   final bool inStock;
 
   /// Admin-flagged — lists the product under the storefront's virtual
@@ -92,6 +102,7 @@ class ProductEntity extends Equatable {
     origin,
     subcategoryId,
     images,
+    thumbnails,
     inStock,
     isMostPopular,
     ratingSum,

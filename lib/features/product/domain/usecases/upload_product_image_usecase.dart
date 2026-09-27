@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../entities/uploaded_image.dart';
 import '../repositories/admin_product_repository.dart';
 
 class UploadProductImageParams extends Equatable {
@@ -19,12 +20,12 @@ class UploadProductImageParams extends Equatable {
 }
 
 @injectable
-class UploadProductImageUseCase extends UseCase<String, UploadProductImageParams> {
+class UploadProductImageUseCase extends UseCase<UploadedImage, UploadProductImageParams> {
   UploadProductImageUseCase(this._repository);
 
   final AdminProductRepository _repository;
 
   @override
-  Future<Either<Failure, String>> call(UploadProductImageParams params) =>
+  Future<Either<Failure, UploadedImage>> call(UploadProductImageParams params) =>
       _repository.uploadProductImage(params.bytes, params.fileExtension);
 }

@@ -4,6 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/constants/storage_upload_settings.dart';
+import '../../../../core/utils/image_optimizer.dart';
+import '../../domain/entities/uploaded_image.dart';
 import '../models/product_model.dart';
 
 abstract class AdminProductRemoteDatasource {
@@ -15,7 +18,7 @@ abstract class AdminProductRemoteDatasource {
 
   Future<void> deleteProduct(String productId);
 
-  Future<String> uploadProductImage(Uint8List bytes, String fileExtension);
+  Future<UploadedImage> uploadProductImage(Uint8List bytes, String fileExtension);
 }
 
 @LazySingleton(as: AdminProductRemoteDatasource)
@@ -50,12 +53,35 @@ class AdminProductRemoteDatasourceImpl implements AdminProductRemoteDatasource {
       _firestore.collection(_productsCollection).doc(productId).delete();
 
   @override
-  Future<String> uploadProductImage(Uint8List bytes, String fileExtension) async {
+  Future<UploadedImage> uploadProductImage(Uint8List bytes, String fileExtension) async {
     // Filename only needs to be unique, not meaningful — nothing reads it
-    // back except via the download URL saved on the product doc.
-    final path = '$_productImagesFolder/${DateTime.now().microsecondsSinceEpoch}.$fileExtension';
+    // back except via the download URLs saved on the product/category doc.
+    final baseName = '$_productImagesFolder/${DateTime.now().microsecondsSinceEpoch}';
+    final encoded = await ImageOptimizer.toJpegs(
+      bytes,
+      maxDimensions: const [StorageUploadSettings.productFullSize, StorageUploadSettings.thumbnailSize],
+    );
+
+    // Undecodable here (e.g. HEIC) — keep the original rather than fail the
+    // upload; it just misses the size savings, and doubles as its thumbnail.
+    if (encoded == null) {
+      final url = await _put('$baseName.$fileExtension', bytes, _contentTypeFor(fileExtension));
+      return UploadedImage(url: url, thumbnailUrl: url);
+    }
+
+    final urls = await Future.wait([
+      _put('$baseName.${ImageOptimizer.fileExtension}', encoded[0], ImageOptimizer.contentType),
+      _put('${baseName}_thumb.${ImageOptimizer.fileExtension}', encoded[1], ImageOptimizer.contentType),
+    ]);
+    return UploadedImage(url: urls[0], thumbnailUrl: urls[1]);
+  }
+
+  Future<String> _put(String path, Uint8List bytes, String contentType) async {
     final ref = _storage.ref(path);
-    await ref.putData(bytes, SettableMetadata(contentType: _contentTypeFor(fileExtension)));
+    await ref.putData(
+      bytes,
+      SettableMetadata(contentType: contentType, cacheControl: StorageUploadSettings.cacheControl),
+    );
     return ref.getDownloadURL();
   }
 

@@ -44,7 +44,8 @@ class OrderRepositoryImpl implements OrderRepository {
                 price: item.product.price,
                 unit: item.product.unit,
                 quantity: item.quantity,
-                imageUrl: item.product.imageUrl,
+                // Order history only ever shows it as a small thumbnail.
+                imageUrl: item.product.thumbnailUrl,
               ),
             )
             .toList(),

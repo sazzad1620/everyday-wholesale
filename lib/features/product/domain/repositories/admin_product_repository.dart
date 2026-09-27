@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../entities/product_entity.dart';
+import '../entities/uploaded_image.dart';
 
 /// Write-side (+ unscoped list-read) counterpart to [ProductRepository],
 /// which only ever reads scoped by category — the admin list needs every
@@ -21,5 +22,5 @@ abstract class AdminProductRepository {
   /// download URL — the caller is responsible for saving that URL onto the
   /// product afterwards (via [createProduct]/[updateProduct]), same
   /// two-step flow `BACKEND_SETUP.md` Part B4 describes.
-  Future<Either<Failure, String>> uploadProductImage(Uint8List bytes, String fileExtension);
+  Future<Either<Failure, UploadedImage>> uploadProductImage(Uint8List bytes, String fileExtension);
 }

@@ -63,7 +63,7 @@ class CartItemCard extends StatelessWidget {
                 child: SizedBox(
                   width: 64,
                   height: 64,
-                  child: ProductImage(imageUrl: product.imageUrl),
+                  child: ProductImage(imageUrl: product.thumbnailUrl),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),

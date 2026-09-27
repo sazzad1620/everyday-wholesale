@@ -122,7 +122,9 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
 
     result.match(
       (failure) => AppToast.show(context, failure.messageKey.tr(), type: ToastType.error),
-      onUploaded,
+      // Category/subcategory photos only ever appear as grid tiles, so the
+      // tile-sized copy is the one worth storing.
+      (uploaded) => onUploaded(uploaded.thumbnailUrl),
     );
   }
 
