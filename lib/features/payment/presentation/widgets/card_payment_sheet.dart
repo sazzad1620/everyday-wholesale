@@ -67,6 +67,14 @@ class _CardPaymentSheetState extends State<CardPaymentSheet> {
             e.error.message ??
             'payment.generic_error'.tr();
       });
+    } on StripeError catch (e) {
+      // Stripe.js card errors (declined, wrong CVC, incorrect number…) reach
+      // Dart on web as `StripeError`, not `StripeException` — without this
+      // branch they all fell through to the generic message below.
+      setState(() {
+        _isProcessing = false;
+        _errorMessage = e.message.isNotEmpty ? e.message : 'payment.generic_error'.tr();
+      });
     } catch (_) {
       setState(() {
         _isProcessing = false;

@@ -3,6 +3,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/usecase/usecase.dart';
 import '../../../product/domain/usecases/get_most_popular_products_usecase.dart';
+import '../../../product/domain/usecases/get_products_by_category_usecase.dart';
+import '../../home_layout.dart';
+import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/most_popular_category.dart';
 import '../../domain/usecases/get_categories_usecase.dart';
 import '../../domain/usecases/get_initial_home_data_usecase.dart';
@@ -17,6 +20,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     this._getPromoBannersUseCase,
     this._getMostPopularProductsUseCase,
     this._getInitialHomeDataUseCase,
+    this._getProductsByCategoryUseCase,
   ) : super(const HomeInitial()) {
     on<HomeStarted>(_onHomeStarted);
   }
@@ -25,6 +29,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetPromoBannersUseCase _getPromoBannersUseCase;
   final GetMostPopularProductsUseCase _getMostPopularProductsUseCase;
   final GetInitialHomeDataUseCase _getInitialHomeDataUseCase;
+  final GetProductsByCategoryUseCase _getProductsByCategoryUseCase;
 
   Future<void> _onHomeStarted(HomeStarted event, Emitter<HomeState> emit) async {
     // Paint data we already have straight away instead of a spinner, then
@@ -59,18 +64,66 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final banners = bannersResult.getOrElse((_) => const []);
     final mostPopular = popularResult.getOrElse((_) => const []);
 
+    List<CategoryEntity>? loadedCategories;
     categoriesResult.match(
       // Keep showing the server's data rather than replacing it with an error.
       (failure) {
         if (initial == null) emit(HomeError(failure.messageKey));
       },
-      (categories) => emit(
-        HomeLoaded(
-          categories: withMostPopular(categories, hasMostPopular: mostPopular.isNotEmpty),
-          promoBanners: banners,
-          mostPopularProducts: mostPopular,
-        ),
-      ),
+      (categories) {
+        loadedCategories = categories;
+        emit(
+          HomeLoaded(
+            categories: withMostPopular(categories, hasMostPopular: mostPopular.isNotEmpty),
+            promoBanners: banners,
+            mostPopularProducts: mostPopular,
+          ),
+        );
+      },
     );
+
+    // The product rows come last, so the banner, categories and Most Everyday
+    // are already on screen while they load.
+    final categories = loadedCategories;
+    if (kHomeShowsCategoryRows && categories != null) {
+      final rows = await _loadCategoryRows(categories);
+      if (!emit.isDone) {
+        emit(
+          HomeLoaded(
+            categories: withMostPopular(categories, hasMostPopular: mostPopular.isNotEmpty),
+            promoBanners: banners,
+            mostPopularProducts: mostPopular,
+            categoryRows: rows,
+          ),
+        );
+      }
+    }
+  }
+
+  /// First [kHomeRowProductLimit] products of every category, loaded in
+  /// parallel. Categories with no products — or whose lookup failed — are
+  /// left out, so a hiccup in one never blocks the others.
+  Future<List<HomeCategoryRow>> _loadCategoryRows(List<CategoryEntity> categories) async {
+    final results = await Future.wait([
+      for (final category in categories)
+        _getProductsByCategoryUseCase(
+          GetProductsByCategoryParams(categoryId: category.id, limit: kHomeRowProductLimit),
+        ),
+    ]);
+    return [
+      for (var i = 0; i < categories.length; i++)
+        ...results[i].match(
+          (_) => const <HomeCategoryRow>[],
+          (products) => products.isEmpty
+              ? const <HomeCategoryRow>[]
+              : [
+                  HomeCategoryRow(
+                    category: categories[i],
+                    products: products,
+                    hasMore: products.length >= kHomeRowProductLimit,
+                  ),
+                ],
+        ),
+    ];
   }
 }

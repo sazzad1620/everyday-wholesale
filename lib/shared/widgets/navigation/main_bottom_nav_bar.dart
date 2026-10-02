@@ -32,7 +32,7 @@ class MainBottomNavBar extends StatelessWidget {
   const MainBottomNavBar({
     super.key,
     required this.navigationShell,
-    required this.onCategoryTap,
+    this.onCategoryTap,
   });
 
   /// Null on full-screen pages pushed on the root navigator (e.g. the
@@ -40,7 +40,10 @@ class MainBottomNavBar extends StatelessWidget {
   /// branches, so nothing renders selected and taps fall back to
   /// `context.go` instead of [StatefulNavigationShell.goBranch].
   final StatefulNavigationShell? navigationShell;
-  final VoidCallback onCategoryTap;
+
+  /// Set only to keep the old behaviour (a side drawer, see
+  /// `kCategoryTabOpensPage`); null makes the Category tab open its page.
+  final VoidCallback? onCategoryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -128,19 +131,19 @@ class MainBottomNavBar extends StatelessWidget {
                           icon: Icons.category_outlined,
                           selectedIcon: Icons.category_rounded,
                           label: 'nav.category'.tr(),
-                          selected: false,
+                          selected: currentBranchIndex == 1,
                           compact: compact,
                           short: short,
-                          onTap: onCategoryTap,
+                          onTap: onCategoryTap ?? () => goBranch(1, RoutePaths.categories),
                         ),
                         _NavItem(
                           icon: Icons.favorite_border_rounded,
                           selectedIcon: Icons.favorite_rounded,
                           label: 'nav.wishlist'.tr(),
-                          selected: currentBranchIndex == 1,
+                          selected: currentBranchIndex == 2,
                           compact: compact,
                           short: short,
-                          onTap: () => goBranch(1, RoutePaths.wishlist),
+                          onTap: () => goBranch(2, RoutePaths.wishlist),
                         ),
                         BlocBuilder<CartBloc, CartState>(
                           bloc: getIt<CartBloc>(),
@@ -149,10 +152,10 @@ class MainBottomNavBar extends StatelessWidget {
                             icon: Icons.shopping_cart_outlined,
                             selectedIcon: Icons.shopping_cart_rounded,
                             label: 'nav.cart'.tr(),
-                            selected: currentBranchIndex == 2,
+                            selected: currentBranchIndex == 3,
                             compact: compact,
                             short: short,
-                            onTap: () => goBranch(2, RoutePaths.cart),
+                            onTap: () => goBranch(3, RoutePaths.cart),
                             badgeCount: cartState.itemCount,
                           ),
                         ),

@@ -34,7 +34,7 @@ The live site took 2–5 s of blank white screen before anything appeared, and i
 - ⬜ **One-time optimization of images uploaded before this change** — tool ready, needs to be run once (see §3).
 
 ### Deploy
-- ✅ `firebase.json` hosting `predeploy` now runs `flutter build web --release --wasm`, so one command builds and deploys. `.wasm`/`.mjs` added to the `no-cache` (always revalidate) header rule so a redeploy reaches returning visitors immediately.
+- ✅ `firebase.json` hosting `predeploy` now runs `flutter build web --release --wasm --dart-define-from-file config/stripe_live.json` (preceded by `tool/web/check_stripe_key.js`, which aborts unless a real `pk_live_…` is configured), so one command builds and deploys. Keep `=` out of predeploy commands — Firebase silently skips them on Windows. `.wasm`/`.mjs` added to the `no-cache` (always revalidate) header rule so a redeploy reaches returning visitors immediately.
 
 ## 2b. Round 2 — measured on the live site, then fixed (done ✅)
 
@@ -324,3 +324,67 @@ Returning visitors may see the old version until a refresh (Ctrl+Shift+R) or the
 **To ship**:
 - `firebase deploy --only hosting`;
 - rebuild the Android and iOS apps.
+
+## 11. Home page: category product rows (2026-10-02 — not yet deployed)
+
+Client request: show every category's products on the home page, like "Most Everyday", as horizontal rows.
+
+**New home page** (`lib/features/home/`):
+1. Banner carousel (unchanged).
+2. **Category strip**, phones only: one row of round pictures with names, sideways scroll. Each picture is the one uploaded for the category in the admin (never a guessed icon); the Most Everyday badge is shown whole; a category with no picture shows the usual grey placeholder. Desktop skips it because the sidebar already lists the categories.
+3. **Most Everyday row**, first (12 products, then a "View all" card if there are more).
+4. **One row per category**, in category order: the whole category (no subcategory split), first 10 products, then a "View all" card when there may be more. **Categories with no products get no row.** A category whose lookup fails is skipped without blocking the others.
+
+**Row behaviour**
+- **Phone** (Android / iOS / phone web): cards sized so about 2½ fit (2.3 on screens under 400 px wide, never narrower than 124 px). The cut-off card is the "swipe" hint.
+- **≥ 600 px wide:** 190 px cards plus ◀ ▶ buttons. They show only where there is more to scroll to, and the row can be dragged with a mouse.
+- Card height follows the device's text size (`ProductCard.contentHeight`), so large accessibility text does not overflow.
+- Tapping a product opens it with the breadcrumb leading back to that category, like the category page does.
+
+**How it loads:** the banner, strip and Most Everyday show first. Then the rows load, all categories in parallel with `limit(10)` each, and appear together. Cost: at most 10 product reads per category on each home load (about 10 × the number of categories). Not lazy per row. If the catalog grows a lot, switch to loading rows as they scroll into view.
+
+**Not done:** the server-rendered web page (Cloud Function) still embeds only the old home data (banners, categories, Most Everyday). Category rows paint after the app starts, like the rest.
+
+**Going back to the old grid:** in `lib/features/home/home_layout.dart` set `kHomeShowsCategoryRows = false` and rebuild (+ redeploy). That restores the previous home page exactly (banner, "Explore By Categories" grid, Most Everyday grid), and the rows' products are not even loaded in that mode. No other code changes.
+
+**Verified:** `flutter analyze` clean; 67 tests pass, including:
+- `home_category_rows_test.dart`: only categories with products get rows, in order, capped at 10, a failed lookup is skipped, Most Everyday has no duplicate row;
+- `home_product_row_test.dart`: phone shows ~2½ cards and no arrows; wide screens show the arrows only where there is more and scrolling flips them; a short row shows none;
+- `layout_overflow_test.dart`: strip and row added (EN/JA × 320/375/1280 × text 1.0/1.3).
+
+Release web build checked at 375 and 320 px (strip, Most Everyday, category rows, peeking card). The wide layout and the ◀ ▶ buttons are covered by the tests only (the preview pane can't render a wide screen).
+
+**To ship:** `firebase deploy --only hosting`; rebuild the Android and iOS apps.
+
+## 12. "Category" tab opens a Categories page; subcategories become picture chips (2026-10-02 — not yet deployed)
+
+The bottom nav's Category item used to slide a category list in from the right, which is unusual on a phone. It now opens a full **Categories page** (`/categories`), and a category's subcategories are a row of picture chips on its own page.
+
+**Categories page** (`lib/features/home/presentation/pages/categories_page.dart`): every category as a picture tile (the same tiles the home page used to show as a grid: the admin's uploaded picture, Most Everyday first). Every tile opens its category page. Tabs are now Home, Category, Wishlist, Cart (the shell has four branches; wishlist and cart moved from indexes 1 and 2 to 2 and 3). `/categories` is also covered by the admin redirect and the hosting no-cache rule in `firebase.json`.
+
+**Category page** (`product_list_page.dart`): when the category has subcategories, a row of round picture chips sits above the products: **All** plus one per subcategory.
+- **Pictures:** each chip uses the picture uploaded for that subcategory in the admin (never a guessed icon). Without one it shows the usual grey placeholder.
+- **Filtering:** tapping a chip filters the products in place, with no new page. The chosen chip gets a green ring and a bold green name, the breadcrumb follows (Category > Subcategory), and the section title shows the subcategory name (or "All <Category>").
+- **Loading:** the previous products stay (faded) while the next ones load, so the page doesn't jump.
+- **Breadcrumb:** tapping the category name resets to All.
+- **Links:** `/home/category/<id>/browse/<sub>` links still work and open with that chip selected.
+- **Phone:** the row scrolls sideways, and the chosen chip is scrolled into view (e.g. a link to the 7th subcategory).
+- **Wide screens:** the chips wrap onto as many lines as needed, so nothing hides off-screen.
+- **Not synced:** the browser address bar does not change when you pick a chip (it keeps the URL the page opened on), so a refresh returns to the opening chip.
+- **Reuse:** the chip is the same widget the Home strip uses (`CategoryCircleItem`).
+- **Picture fit:** uploaded pictures are zoomed 20% inside the circle (the circle cuts the overflow). They usually carry their own white margin, which read as a gap around the subject.
+- **Name width:** a row whose chips all fit on screen gives each chip 84 px, so a bold two-word name like "Masala Mixes" stays on one line whether or not it is selected. A row that scrolls (many chips, or the Home strip) is sized so a whole number of items plus half of the next fit, because the cut-off item is what shows it scrolls (items then become 75–100 px wide; in a long row a name that just fits bold may wrap to two lines).
+
+**Desktop / wide web:** the bottom bar and the Category tab don't exist there; the left sidebar still lists the categories as before.
+
+**Going back to the side drawer:** set `kCategoryTabOpensPage = false` in `lib/features/home/home_layout.dart` and rebuild. The nav then opens the right-hand drawer as before.
+
+**Verified:**
+- `flutter analyze` clean; 68 tests pass.
+- `subcategory_chip_strip_test.dart`: All first, selection highlight, tapping reports the id (null for All), a far-away chip is scrolled into view on phones, and all chips fit on screen on wide ones.
+- The chip row is also in `layout_overflow_test.dart` (EN/JA × 320/375/1280 × text 1.0/1.3).
+- Release web build checked in the preview at 375 px: Category tab, a category's chip row, filtering by a chip, the breadcrumb, and back to All.
+
+**Preview quirk:** twice, in the preview tool, the app jumped to `/categories` by itself right after a viewport change or a load. I couldn't reproduce it in three clean loads, and nothing in the app navigates there on its own. It was most likely the preview tool re-sending a pointer position, so it is worth a quick look on a real phone.
+
+**To ship:** `firebase deploy --only hosting`; rebuild the Android and iOS apps.

@@ -35,7 +35,8 @@
   "hosting": {
     "public": "build/web",
     "predeploy": [
-      "flutter build web --release --wasm",
+      "node tool/web/check_stripe_key.js",
+      "flutter build web --release --wasm --dart-define-from-file config/stripe_live.json",
       "node tool/web/finalize_build.js"
     ],
     "ignore": [
@@ -97,7 +98,7 @@
         ]
       },
       {
-        "source": "/{account,admin,cart,wishlist,checkout,order-confirmation}{,/**}",
+        "source": "/{account,admin,cart,categories,wishlist,checkout,order-confirmation,support}{,/**}",
         "headers": [
           {
             "key": "Cache-Control",

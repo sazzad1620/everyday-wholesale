@@ -17,7 +17,8 @@ import '../../../../shared/widgets/product_grid.dart';
 import '../../../../shared/widgets/responsive_content_container.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../../../home/domain/entities/subcategory_entity.dart';
-import '../../../home/presentation/widgets/subcategory_grid.dart';
+import '../../../home/presentation/widgets/subcategory_chip_strip.dart';
+import '../../domain/entities/product_entity.dart';
 import '../bloc/product_list_bloc.dart';
 import '../bloc/product_list_event.dart';
 import '../bloc/product_list_state.dart';
@@ -31,16 +32,20 @@ typedef CategoryProductsExtra = ({
 
 /// What `extra` carries on the `browse/:subcategoryId` route — both names
 /// are needed there since the path only has ids. `subcategories` is the
-/// filtered-out page's siblings, carried along purely so a "back to
-/// category" breadcrumb tap can restore the merged subcategory+product view
-/// without re-fetching the category.
+/// filtered-out page's siblings, carried along so the chip row above the
+/// products can show them without re-fetching the category.
 typedef ProductListExtra = ({
   LocalizedText categoryName,
   LocalizedText subcategoryName,
   List<SubcategoryEntity> subcategories,
 });
 
-class ProductListPage extends StatelessWidget {
+/// A category's products. When the category has subcategories, a row of
+/// picture chips ("All" + one per subcategory) sits above the products;
+/// tapping a chip filters them in place — no new page — and the breadcrumb
+/// follows. [subcategoryId] (from the `browse/:subcategoryId` route) only
+/// decides which chip starts selected.
+class ProductListPage extends StatefulWidget {
   const ProductListPage({
     super.key,
     required this.categoryId,
@@ -55,13 +60,48 @@ class ProductListPage extends StatelessWidget {
   final String? subcategoryId;
   final LocalizedText? subcategoryName;
 
-  /// The category's subcategories — shown as a card grid above the products
-  /// when `subcategoryId` is null (the top-level category view), so browsing
-  /// a category and picking a subcategory happen on the same page instead of
-  /// a separate landing page. Still threaded through even when filtered to
-  /// one subcategory, purely so navigating back to the category restores
-  /// that merged view (see [ProductListExtra]).
+  /// The category's subcategories — the chips above the products. When the
+  /// route carries none (deep link, refresh, language switch) the resolver
+  /// fills them in from the category cache.
   final List<SubcategoryEntity> subcategories;
+
+  @override
+  State<ProductListPage> createState() => _ProductListPageState();
+}
+
+class _ProductListPageState extends State<ProductListPage> {
+  late final ProductListBloc _bloc;
+
+  /// The selected chip; null is "All".
+  String? _subcategoryId;
+
+  /// What the grid showed last, kept on screen (dimmed) while the next
+  /// subcategory loads so the page doesn't jump.
+  List<ProductEntity>? _lastProducts;
+
+  @override
+  void initState() {
+    super.initState();
+    _subcategoryId = widget.subcategoryId;
+    _bloc = getIt<ProductListBloc>()
+      ..add(
+        ProductListStarted(widget.categoryId, subcategoryId: _subcategoryId),
+      );
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
+  }
+
+  void _select(String? subcategoryId) {
+    if (subcategoryId == _subcategoryId) return;
+    setState(() => _subcategoryId = subcategoryId);
+    _bloc.add(
+      ProductListStarted(widget.categoryId, subcategoryId: subcategoryId),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,205 +110,197 @@ class ProductListPage extends StatelessWidget {
     // there's no `extra` (deep link, refresh, or the switcher's remount) the
     // resolver fills the names and subcategories from the category cache.
     return CategoryContextResolver(
-      categoryId: categoryId,
-      subcategoryId: subcategoryId,
-      categoryName: categoryName,
-      subcategoryName: subcategoryName,
-      subcategories: subcategories,
+      categoryId: widget.categoryId,
+      subcategoryId: widget.subcategoryId,
+      categoryName: widget.categoryName,
+      subcategoryName: widget.subcategoryName,
+      subcategories: widget.subcategories,
       builder: (context, ctx) => _buildPage(context, ctx),
     );
+  }
+
+  /// The selected chip's name — looked up in the list, since the route's own
+  /// name only covers the chip the page opened on.
+  LocalizedText? _selectedName(CategoryContext ctx) {
+    final id = _subcategoryId;
+    if (id == null) return null;
+    for (final sub in ctx.subcategories) {
+      if (sub.id == id) return sub.name;
+    }
+    return id == widget.subcategoryId ? ctx.subcategoryName : null;
   }
 
   Widget _buildPage(BuildContext context, CategoryContext ctx) {
     final categoryText = ctx.categoryName;
     final categoryLabel = context.localized(categoryText);
-    final subcategoryLabel = ctx.subcategoryName == null ? subcategoryId : context.localized(ctx.subcategoryName!);
     final subcategories = ctx.subcategories;
+    final selectedName = _selectedName(ctx);
 
-    final breadcrumbItems = subcategoryId == null
+    final breadcrumbItems = _subcategoryId == null
         ? [BreadcrumbItem(label: categoryLabel, onTap: () {}, isCurrent: true)]
         : [
+            BreadcrumbItem(label: categoryLabel, onTap: () => _select(null)),
             BreadcrumbItem(
-              label: categoryLabel,
-              onTap: () => context.pushReplacement(
-                RoutePaths.categoryProducts(categoryId),
-                extra: (
-                  categoryName: categoryText,
-                  subcategories: subcategories,
-                ),
-              ),
-            ),
-            BreadcrumbItem(
-              label: subcategoryLabel!,
+              label: selectedName == null
+                  ? _subcategoryId!
+                  : context.localized(selectedName),
               onTap: () {},
               isCurrent: true,
             ),
           ];
 
-    return BlocProvider(
-      create: (_) =>
-          getIt<ProductListBloc>()
-            ..add(ProductListStarted(categoryId, subcategoryId: subcategoryId)),
-      child: ColoredBox(
-        color: AppColors.background,
-        child: SafeArea(
-          // Bottom handled by the scroll view's padding instead, so content can
-          // run behind the floating bottom nav (StandaloneShellScaffold.extendBody).
-          bottom: false,
-          child: Column(
-            children: [
-              AppHeader(
-                onMenuTap: () => Scaffold.of(context).openDrawer(),
-                onAccountTap: () => openAccountMenu(context),
-              ),
-              Expanded(
-                child: DesktopBody(
-                  // Breadcrumb lives inside the content column, not spanning
-                  // the full page above the sidebar — so the sidebar starts
-                  // right below the header on every page, same as Home's.
-                  child: Column(
-                    children: [
-                      BreadcrumbBar(items: breadcrumbItems),
-                      Expanded(
-                        child: BlocBuilder<ProductListBloc, ProductListState>(
-                          builder: (context, state) => _ProductListBody(
-                            state: state,
-                            categoryId: categoryId,
-                            categoryName: categoryText,
-                            subcategoryId: subcategoryId,
-                            subcategoryName: ctx.subcategoryName,
-                            subcategories: subcategories,
+    return ColoredBox(
+      color: AppColors.background,
+      child: SafeArea(
+        // Bottom handled by the scroll view's padding instead, so content can
+        // run behind the floating bottom nav (StandaloneShellScaffold.extendBody).
+        bottom: false,
+        child: Column(
+          children: [
+            AppHeader(
+              onMenuTap: () => Scaffold.of(context).openDrawer(),
+              onAccountTap: () => openAccountMenu(context),
+            ),
+            Expanded(
+              child: DesktopBody(
+                // Breadcrumb lives inside the content column, not spanning
+                // the full page above the sidebar — so the sidebar starts
+                // right below the header on every page, same as Home's.
+                child: Column(
+                  children: [
+                    BreadcrumbBar(items: breadcrumbItems),
+                    Expanded(
+                      child: ResponsiveContentContainer(
+                        child: ListView(
+                          // Extra bottom space = the floating bottom nav
+                          // (+ system bar), so the last row scrolls clear of
+                          // it while content still passes behind it.
+                          padding: EdgeInsets.only(
+                            top: AppSpacing.md,
+                            bottom:
+                                AppSpacing.lg +
+                                MediaQuery.paddingOf(context).bottom,
                           ),
+                          children: [
+                            if (subcategories.isNotEmpty) ...[
+                              SubcategoryChipStrip(
+                                subcategories: subcategories,
+                                selectedId: _subcategoryId,
+                                onSelected: _select,
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                ),
+                                child: Text(
+                                  selectedName == null
+                                      ? 'product.all_category_products'.tr(
+                                          namedArgs: {
+                                            'categoryName': categoryLabel,
+                                          },
+                                        )
+                                      : context.localized(selectedName),
+                                  style: AppTextStyles.title,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                            ],
+                            BlocBuilder<ProductListBloc, ProductListState>(
+                              bloc: _bloc,
+                              builder: (context, state) => _products(
+                                context,
+                                state,
+                                categoryText,
+                                selectedName,
+                                subcategories,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class _ProductListBody extends StatelessWidget {
-  const _ProductListBody({
-    required this.state,
-    required this.categoryId,
-    required this.categoryName,
-    required this.subcategoryId,
-    required this.subcategoryName,
-    required this.subcategories,
-  });
-
-  final ProductListState state;
-  final String categoryId;
-  final LocalizedText categoryName;
-  final String? subcategoryId;
-  final LocalizedText? subcategoryName;
-  final List<SubcategoryEntity> subcategories;
-
-  @override
-  Widget build(BuildContext context) {
-    if (state is ProductListLoading || state is ProductListInitial) {
-      return const Center(child: AppLoader());
+  Widget _products(
+    BuildContext context,
+    ProductListState state,
+    LocalizedText categoryName,
+    LocalizedText? subcategoryName,
+    List<SubcategoryEntity> subcategories,
+  ) {
+    if (state is ProductListError) {
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.error,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              state.message.tr(),
+              style: AppTextStyles.body,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
     }
 
-    if (state is ProductListError) {
-      final message = (state as ProductListError).message.tr();
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: AppColors.error,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                message,
-                style: AppTextStyles.body,
-                textAlign: TextAlign.center,
-              ),
-            ],
+    final loaded = state is ProductListLoaded;
+    if (loaded) _lastProducts = state.products;
+    final products = loaded ? state.products : _lastProducts;
+
+    if (products == null) {
+      return const SizedBox(height: 240, child: Center(child: AppLoader()));
+    }
+
+    if (products.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Center(
+          child: Text(
+            'product.empty'.tr(),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
         ),
       );
     }
 
-    final products = (state as ProductListLoaded).products;
-    // Only the unfiltered, top-level category view shows the subcategory
-    // grid — a subcategory-filtered view carries the same list along (see
-    // [ProductListExtra]) purely for breadcrumb "back" navigation, not display.
-    final showSubcategories = subcategoryId == null && subcategories.isNotEmpty;
-
-    return ResponsiveContentContainer(
-      child: ListView(
-        // Extra bottom space = the floating bottom nav (+ system bar), so the
-        // last row scrolls clear of it while content still passes behind it.
-        padding: EdgeInsets.only(
-          top: AppSpacing.md,
-          bottom: AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
-        ),
-        children: [
-          if (showSubcategories) ...[
-            SubcategoryGrid(
+    // While the next subcategory loads, the previous products stay (faded and
+    // untouchable) instead of the page collapsing to a spinner.
+    return IgnorePointer(
+      ignoring: !loaded,
+      child: AnimatedOpacity(
+        opacity: loaded ? 1 : 0.45,
+        duration: const Duration(milliseconds: 160),
+        child: ProductGrid(
+          products: products,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          onTap: (product) => context.push(
+            RoutePaths.productDetail(widget.categoryId, product.id),
+            extra: (
+              categoryName: categoryName,
+              subcategoryId: _subcategoryId,
+              subcategoryName: subcategoryName,
               subcategories: subcategories,
-              onSubcategoryTap: (sub) => context.push(
-                RoutePaths.subcategoryProducts(categoryId, sub.id),
-                extra: (
-                  categoryName: categoryName,
-                  subcategoryName: sub.name,
-                  subcategories: subcategories,
-                ),
-              ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Text(
-                'product.all_category_products'.tr(
-                  namedArgs: {'categoryName': context.localized(categoryName)},
-                ),
-                style: AppTextStyles.title,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
-          if (products.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Center(
-                child: Text(
-                  'product.empty'.tr(),
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-            )
-          else
-            ProductGrid(
-              products: products,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              onTap: (product) => context.push(
-                RoutePaths.productDetail(categoryId, product.id),
-                extra: (
-                  categoryName: categoryName,
-                  subcategoryId: subcategoryId,
-                  subcategoryName: subcategoryName,
-                  subcategories: subcategories,
-                ),
-              ),
-            ),
-        ],
+          ),
+        ),
       ),
     );
   }

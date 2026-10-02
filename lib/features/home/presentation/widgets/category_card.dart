@@ -29,12 +29,7 @@ SliverGridDelegate categoryTileGridDelegate(double availableWidth, TextScaler sc
 }
 
 class CategoryCard extends StatelessWidget {
-  const CategoryCard({
-    super.key,
-    required this.category,
-    required this.index,
-    required this.onTap,
-  });
+  const CategoryCard({super.key, required this.category, required this.index, required this.onTap});
 
   final CategoryEntity category;
   final int index;
@@ -51,13 +46,7 @@ class CategoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: radius,
         border: Border.all(color: borderColor, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       // Clipping lives on its own layer, sized to the full box — clipping via
       // the bordered Container's own clipBehavior instead would deflate the

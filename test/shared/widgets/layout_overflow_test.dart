@@ -24,7 +24,11 @@ import 'package:everyday_wholesale/features/checkout/presentation/widgets/order_
 import 'package:everyday_wholesale/features/checkout/presentation/widgets/payment_method_card.dart';
 import 'package:everyday_wholesale/features/checkout/presentation/widgets/payment_method_sheet.dart';
 import 'package:everyday_wholesale/features/home/domain/entities/category_entity.dart';
+import 'package:everyday_wholesale/features/home/domain/entities/subcategory_entity.dart';
 import 'package:everyday_wholesale/features/home/presentation/widgets/category_grid.dart';
+import 'package:everyday_wholesale/features/home/presentation/widgets/home_category_strip.dart';
+import 'package:everyday_wholesale/features/home/presentation/widgets/home_product_row.dart';
+import 'package:everyday_wholesale/features/home/presentation/widgets/subcategory_chip_strip.dart';
 import 'package:everyday_wholesale/features/order/domain/entities/order_item_entity.dart';
 import 'package:everyday_wholesale/features/order/domain/entities/order_status.dart';
 import 'package:everyday_wholesale/features/order/domain/entities/payment_status.dart';
@@ -216,6 +220,31 @@ void main() {
           ),
         ],
       ),
+    ),
+    'home rows': () => Column(
+      children: [
+        HomeCategoryStrip(
+          categories: [for (var i = 0; i < 8; i++) CategoryEntity(id: 'c$i', name: _longName, iconKey: 'c')],
+          onCategoryTap: (_) {},
+        ),
+        HomeProductRow(
+          title: _longName.en,
+          products: [for (var i = 0; i < 6; i++) _product('p$i')],
+          endWithViewAllCard: true,
+          onProductTap: (_) {},
+          onViewAll: () {},
+        ),
+      ],
+    ),
+    'subcategory chips': () => Column(
+      children: [
+        for (final selected in [null, 's1'])
+          SubcategoryChipStrip(
+            selectedId: selected,
+            onSelected: (_) {},
+            subcategories: [for (var i = 0; i < 9; i++) SubcategoryEntity(id: 's$i', name: _longName)],
+          ),
+      ],
     ),
     'breadcrumb': () => BreadcrumbBar(
       items: [

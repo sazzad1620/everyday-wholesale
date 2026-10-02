@@ -12,8 +12,10 @@ abstract final class RoutePaths {
   static const String adminOrderDetail = '/admin/orders/detail';
   static const String accountAddress = '/account/address';
   static const String editProfile = '/account/edit-profile';
+  static const String categories = '/categories';
   static const String wishlist = '/wishlist';
   static const String cart = '/cart';
+  static const String support = '/support';
   static const String checkout = '/checkout';
   static const String orderConfirmation = '/order-confirmation';
 

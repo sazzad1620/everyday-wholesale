@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/responsive/breakpoints.dart';
 import '../../theme/app_colors.dart';
+import '../../../features/home/home_layout.dart';
 import 'categories_cache.dart';
 import 'category_drawer.dart';
 import 'main_bottom_nav_bar.dart';
@@ -43,12 +44,15 @@ class _StandaloneShellScaffoldState extends State<StandaloneShellScaffold> {
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const MainMenuDrawer(),
-      endDrawer: FutureBuilder(
-        future: cachedCategories(),
-        builder: (context, snapshot) {
-          return CategoryDrawer(categories: snapshot.data ?? const []);
-        },
-      ),
+      // Only for the old "Category opens a side drawer" behaviour.
+      endDrawer: kCategoryTabOpensPage
+          ? null
+          : FutureBuilder(
+              future: cachedCategories(),
+              builder: (context, snapshot) {
+                return CategoryDrawer(categories: snapshot.data ?? const []);
+              },
+            ),
       body: widget.body,
       // Pages run behind the floating bottom nav (visible around its rounded
       // corners and faintly through the fade below it). The Scaffold then
@@ -59,7 +63,7 @@ class _StandaloneShellScaffoldState extends State<StandaloneShellScaffold> {
           ? null
           : MainBottomNavBar(
               navigationShell: widget.navigationShell,
-              onCategoryTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+              onCategoryTap: kCategoryTabOpensPage ? null : () => _scaffoldKey.currentState?.openEndDrawer(),
             ),
     );
   }

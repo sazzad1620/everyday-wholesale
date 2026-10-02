@@ -19,8 +19,28 @@ class HomeLoading extends HomeState {
   const HomeLoading();
 }
 
+/// One category's product row on the home page.
+class HomeCategoryRow extends Equatable {
+  const HomeCategoryRow({required this.category, required this.products, required this.hasMore});
+
+  final CategoryEntity category;
+  final List<ProductEntity> products;
+
+  /// True when the category may hold more than [products] shows, so the row
+  /// ends with a "View all" card.
+  final bool hasMore;
+
+  @override
+  List<Object?> get props => [category, products, hasMore];
+}
+
 class HomeLoaded extends HomeState {
-  const HomeLoaded({required this.categories, required this.promoBanners, required this.mostPopularProducts});
+  const HomeLoaded({
+    required this.categories,
+    required this.promoBanners,
+    required this.mostPopularProducts,
+    this.categoryRows = const [],
+  });
 
   /// Already led by the virtual Most Popular category when
   /// [mostPopularProducts] is non-empty.
@@ -28,8 +48,12 @@ class HomeLoaded extends HomeState {
   final List<PromoBannerEntity> promoBanners;
   final List<ProductEntity> mostPopularProducts;
 
+  /// One row per category that has products, in category order. Filled in a
+  /// moment after the rest of the page (only with `kHomeShowsCategoryRows`).
+  final List<HomeCategoryRow> categoryRows;
+
   @override
-  List<Object?> get props => [categories, promoBanners, mostPopularProducts];
+  List<Object?> get props => [categories, promoBanners, mostPopularProducts, categoryRows];
 }
 
 class HomeError extends HomeState {

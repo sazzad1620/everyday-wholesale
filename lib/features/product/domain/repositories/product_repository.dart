@@ -6,7 +6,14 @@ import '../entities/product_entity.dart';
 abstract class ProductRepository {
   /// [categoryId] may be `mostPopularCategoryId`, which lists every product
   /// flagged Most Popular instead of matching a real category.
-  Future<Either<Failure, List<ProductEntity>>> getProductsByCategory(String categoryId, {String? subcategoryId});
+  ///
+  /// [limit] caps how many products come back (e.g. a home-page row); null
+  /// returns them all.
+  Future<Either<Failure, List<ProductEntity>>> getProductsByCategory(
+    String categoryId, {
+    String? subcategoryId,
+    int? limit,
+  });
 
   Future<Either<Failure, List<ProductEntity>>> getMostPopularProducts();
 

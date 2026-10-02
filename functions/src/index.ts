@@ -119,19 +119,37 @@ export const stripeWebhook = onRequest(
 
       if (orderId) {
         const succeeded = event.type === "payment_intent.succeeded";
-        await db
-          .collection("orders")
-          .doc(orderId)
-          .update(
-            succeeded ?
-              {paymentStatus: "paid"} :
-              // A failed charge means this order will never be fulfilled as
-              // placed — auto-cancel it rather than leaving a phantom
-              // pending order nobody will ever pay for. Fulfillment `status`
-              // is otherwise untouched by a successful payment; that stays
-              // `pending` until an admin actually starts processing it.
-              {paymentStatus: "failed", status: "cancelled"}
-          );
+        const orderRef = db.collection("orders").doc(orderId);
+        await db.runTransaction(async (tx) => {
+          const order = (await tx.get(orderRef)).data();
+
+          if (succeeded) {
+            // Fulfillment `status` is otherwise untouched by a successful
+            // payment; that stays `pending` until an admin actually starts
+            // processing it. The one exception: an order a *previous failed
+            // attempt* auto-cancelled (see below) that the customer then paid
+            // successfully in the same sheet — revive it, or it would sit
+            // paid-but-cancelled and never get fulfilled. Only when the
+            // cancellation came from the failed payment (`paymentStatus` is
+            // still `failed`), never an order an admin cancelled by hand.
+            const revive =
+              order?.status === "cancelled" && order?.paymentStatus === "failed";
+            tx.update(
+              orderRef,
+              revive ?
+                {paymentStatus: "paid", status: "pending"} :
+                {paymentStatus: "paid"}
+            );
+          } else if (order?.paymentStatus !== "paid") {
+            // A failed charge means this order will never be fulfilled as
+            // placed — auto-cancel it rather than leaving a phantom pending
+            // order nobody will ever pay for. Skipped if the order is
+            // already paid: Stripe doesn't guarantee delivery order, so a
+            // late `payment_failed` from an earlier attempt must never
+            // overwrite a payment that has since succeeded.
+            tx.update(orderRef, {paymentStatus: "failed", status: "cancelled"});
+          }
+        });
       } else {
         logger.warn(
           `Stripe event ${event.id} (${event.type}) had no orderId in metadata.`

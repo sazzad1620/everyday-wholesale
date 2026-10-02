@@ -16,6 +16,7 @@ import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/checkout/presentation/pages/order_confirmation_page.dart';
 import '../../features/home/domain/entities/category_entity.dart';
+import '../../features/home/presentation/pages/categories_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/order/domain/entities/order_entity.dart';
 import '../../features/product/domain/entities/product_entity.dart';
@@ -23,6 +24,7 @@ import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
 import '../../features/review/presentation/pages/my_reviews_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/support/presentation/pages/support_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
 import '../../shared/widgets/navigation/main_shell.dart';
 import '../di/injection_container.dart';
@@ -56,6 +58,7 @@ final GoRouter appRouter = GoRouter(
     final isCustomerShellRoute =
         location == RoutePaths.home ||
         location.startsWith('${RoutePaths.home}/') ||
+        location == RoutePaths.categories ||
         location == RoutePaths.wishlist ||
         location == RoutePaths.cart;
     if (isAdmin && isCustomerShellRoute) return RoutePaths.admin;
@@ -119,6 +122,9 @@ final GoRouter appRouter = GoRouter(
               ],
             ),
           ],
+        ),
+        StatefulShellBranch(
+          routes: [GoRoute(path: RoutePaths.categories, builder: (context, state) => const CategoriesPage())],
         ),
         StatefulShellBranch(
           routes: [GoRoute(path: RoutePaths.wishlist, builder: (context, state) => const WishlistPage())],
@@ -191,6 +197,11 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.editProfile,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const EditProfilePage(),
+    ),
+    GoRoute(
+      path: RoutePaths.support,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const SupportPage(),
     ),
     GoRoute(
       path: RoutePaths.checkout,

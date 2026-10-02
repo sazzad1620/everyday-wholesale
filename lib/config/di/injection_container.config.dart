@@ -580,14 +580,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i58.SearchProductsUseCase>(
       () => _i58.SearchProductsUseCase(gh<_i411.ProductRepository>()),
     );
-    gh.factory<_i1013.HomeBloc>(
-      () => _i1013.HomeBloc(
-        gh<_i353.GetCategoriesUseCase>(),
-        gh<_i674.GetPromoBannersUseCase>(),
-        gh<_i20.GetMostPopularProductsUseCase>(),
-        gh<_i912.GetInitialHomeDataUseCase>(),
-      ),
-    );
     gh.factory<_i87.SplashBloc>(
       () => _i87.SplashBloc(gh<_i105.CheckAppReadyUseCase>()),
     );
@@ -612,6 +604,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i495.AddPromoBannerUseCase>(),
         gh<_i1059.DeletePromoBannerUseCase>(),
         gh<_i28.ReorderPromoBannersUseCase>(),
+      ),
+    );
+    gh.factory<_i1013.HomeBloc>(
+      () => _i1013.HomeBloc(
+        gh<_i353.GetCategoriesUseCase>(),
+        gh<_i674.GetPromoBannersUseCase>(),
+        gh<_i20.GetMostPopularProductsUseCase>(),
+        gh<_i912.GetInitialHomeDataUseCase>(),
+        gh<_i706.GetProductsByCategoryUseCase>(),
       ),
     );
     gh.factory<_i180.CategoryFormBloc>(

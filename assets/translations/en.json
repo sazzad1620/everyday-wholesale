@@ -24,6 +24,7 @@
   "product": {
     "empty": "No products in this category yet.",
     "all_category_products": "All {categoryName}",
+    "filter_all": "All",
     "add_to_cart": "Add To Cart",
     "added_to_cart": "Added to cart.",
     "in_stock": "In Stock",
@@ -175,6 +176,20 @@
     "pay_now": "Pay Now",
     "cancel": "Cancel",
     "generic_error": "Something went wrong while processing your payment. Please try again."
+  },
+  "support": {
+    "title": "Customer Support",
+    "intro": "Questions about an order, a payment or delivery? We're happy to help.",
+    "email_title": "Email us",
+    "email_hint": "Tap the address to copy it, then send us a message from your email app.",
+    "email_copied": "Email address copied.",
+    "business_name": "Everyday Wholesale",
+    "response_title": "Response time",
+    "response_body": "We reply to every message as soon as we can, usually within 1–2 business days.",
+    "orders_title": "Orders & payments",
+    "orders_body": "Please include your order number (shown in Account > Order History) and the email you ordered with, so we can find your order quickly.",
+    "refunds_title": "Refunds & returns",
+    "refunds_body": "If something is wrong with your order, email us with your order number and a short description. We'll review it and get back to you. Approved refunds go back to the original card."
   },
   "account": {
     "title": "My Account",

@@ -5,7 +5,7 @@ import '../../../../core/utils/text_normalizer.dart';
 import '../models/product_model.dart';
 
 abstract class ProductRemoteDatasource {
-  Future<List<ProductModel>> getProductsByCategory(String categoryId, {String? subcategoryId});
+  Future<List<ProductModel>> getProductsByCategory(String categoryId, {String? subcategoryId, int? limit});
 
   Future<List<ProductModel>> getMostPopularProducts();
 
@@ -23,13 +23,14 @@ class ProductRemoteDatasourceImpl implements ProductRemoteDatasource {
   static const _productsCollection = 'products';
 
   @override
-  Future<List<ProductModel>> getProductsByCategory(String categoryId, {String? subcategoryId}) async {
+  Future<List<ProductModel>> getProductsByCategory(String categoryId, {String? subcategoryId, int? limit}) async {
     Query<Map<String, dynamic>> query = _firestore
         .collection(_productsCollection)
         .where('categoryId', isEqualTo: categoryId);
     if (subcategoryId != null) {
       query = query.where('subcategoryId', isEqualTo: subcategoryId);
     }
+    if (limit != null) query = query.limit(limit);
     final snapshot = await query.get();
     return snapshot.docs.map((doc) => ProductModel.fromMap(doc.data(), id: doc.id)).toList();
   }

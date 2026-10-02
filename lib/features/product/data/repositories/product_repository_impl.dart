@@ -17,10 +17,11 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Either<Failure, List<ProductEntity>>> getProductsByCategory(
     String categoryId, {
     String? subcategoryId,
+    int? limit,
   }) async {
     if (categoryId == mostPopularCategoryId) return getMostPopularProducts();
     try {
-      return Right(await _datasource.getProductsByCategory(categoryId, subcategoryId: subcategoryId));
+      return Right(await _datasource.getProductsByCategory(categoryId, subcategoryId: subcategoryId, limit: limit));
     } catch (_) {
       return const Left(UnexpectedFailure());
     }
