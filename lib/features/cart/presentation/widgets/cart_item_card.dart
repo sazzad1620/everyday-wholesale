@@ -26,9 +26,7 @@ class CartItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,11 +58,7 @@ class CartItemCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 64,
-                  height: 64,
-                  child: ProductImage(imageUrl: product.thumbnailUrl),
-                ),
+                child: SizedBox(width: 64, height: 64, child: ProductImage(imageUrl: product.thumbnailUrl)),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -93,8 +87,21 @@ class CartItemCard extends StatelessWidget {
                 onIncrement: () => onQuantityChanged(item.quantity + 1),
                 onDecrement: () => onQuantityChanged(item.quantity - 1),
               ),
-              const Spacer(),
-              Text(formatYen(item.lineTotal), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(width: AppSpacing.sm),
+              // Right-aligned; a very large total on a narrow phone with big
+              // text shrinks slightly to fit instead of overflowing.
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      formatYen(item.lineTotal),
+                      style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ],

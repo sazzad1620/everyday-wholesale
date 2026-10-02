@@ -9,7 +9,6 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
-import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../checkout/presentation/pages/order_confirmation_page.dart';
@@ -147,35 +146,19 @@ class _OrderCard extends StatelessWidget {
                       value: formatYen(order.total),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'order_history.order_status'.tr(),
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        OrderStatusPill(status: order.status),
-                      ],
+                    OrderLabeledRow(
+                      label: 'order_history.order_status'.tr(),
+                      trailing: OrderStatusPill(status: order.status),
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'order_history.payment_status'.tr(),
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        order.stripePaymentIntentId != null
-                            ? PaymentStatusPill(
-                                status: order.paymentStatus,
-                                createdAt: order.createdAt,
-                              )
-                            : const CodPaymentPill(),
-                      ],
+                    OrderLabeledRow(
+                      label: 'order_history.payment_status'.tr(),
+                      trailing: order.stripePaymentIntentId != null
+                          ? PaymentStatusPill(
+                              status: order.paymentStatus,
+                              createdAt: order.createdAt,
+                            )
+                          : const CodPaymentPill(),
                     ),
                     if (order.stripePaymentIntentId != null &&
                         order.paymentStatus == PaymentStatus.failed) ...[

@@ -207,36 +207,49 @@ class _OtpCodeBoxesState extends State<_OtpCodeBoxes> {
 
   @override
   Widget build(BuildContext context) {
+    // Boxes share the width (up to 44 each) instead of a fixed 6 × 44 —
+    // that was wider than the dialog on 320–359 pt phones.
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(_OtpCodeBoxes._length, (index) {
-        return SizedBox(
-          width: 44,
-          height: 52,
-          child: TextField(
-            controller: _digitControllers[index],
-            focusNode: _focusNodes[index],
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.number,
-            maxLength: 1,
-            style: AppTextStyles.headline.copyWith(fontSize: 20),
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              counterText: '',
-              filled: true,
-              fillColor: AppColors.inputFill,
-              contentPadding: EdgeInsets.zero,
-              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)), borderSide: BorderSide.none),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(left: index == 0 ? 0 : 6),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 44),
+                child: SizedBox(
+                  height: 52,
+                  child: TextField(
+                    controller: _digitControllers[index],
+                    focusNode: _focusNodes[index],
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    maxLength: 1,
+                    style: AppTextStyles.headline.copyWith(fontSize: 20),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: const InputDecoration(
+                      counterText: '',
+                      filled: true,
+                      fillColor: AppColors.inputFill,
+                      contentPadding: EdgeInsets.zero,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                      ),
+                    ),
+                    onChanged: (value) => _onDigitChanged(index, value),
+                  ),
+                ),
               ),
             ),
-            onChanged: (value) => _onDigitChanged(index, value),
           ),
         );
       }),

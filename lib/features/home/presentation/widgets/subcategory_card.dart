@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/localized_text.dart';
-import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/category_palette.dart';
 import '../../../../shared/widgets/category_image.dart';
 import '../../domain/entities/subcategory_entity.dart';
+import 'category_card.dart';
 
 /// Same visual language as [CategoryCard] — a subcategory is just a narrower
 /// slice of a category, so it gets the same tile/border/label treatment.
@@ -50,7 +50,7 @@ class SubcategoryCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                     child: Text(
                       context.localized(subcategory.name),
-                      style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                      style: categoryTileLabelStyle,
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

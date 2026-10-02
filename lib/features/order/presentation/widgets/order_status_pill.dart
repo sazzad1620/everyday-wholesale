@@ -34,7 +34,12 @@ class OrderStatusPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_labelFor(status).toUpperCase(), style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.bold)),
+          Flexible(
+            child: Text(
+              _labelFor(status).toUpperCase(),
+              style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.bold),
+            ),
+          ),
           if (onChanged != null) ...[
             const SizedBox(width: 2),
             Icon(Icons.keyboard_arrow_down_rounded, color: color, size: 16),

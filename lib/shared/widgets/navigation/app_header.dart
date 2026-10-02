@@ -443,11 +443,13 @@ class _AccountPopupButton extends StatelessWidget {
             color: isDestructive ? AppColors.error : AppColors.textSecondary,
           ),
           const SizedBox(width: AppSpacing.sm),
-          Text(
-            label,
-            style: AppTextStyles.body.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              label,
+              style: AppTextStyles.body.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

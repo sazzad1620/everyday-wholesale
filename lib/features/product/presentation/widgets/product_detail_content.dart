@@ -155,17 +155,21 @@ class _ProductInfoBlock extends StatelessWidget {
           children: [
             StarRating(rating: product.rating, size: 18),
             const SizedBox(width: AppSpacing.xs),
-            Text(
-              product.reviewCount == 0
-                  ? 'product.no_reviews_yet_title'.tr()
-                  : 'product.review_count'.tr(
-                      namedArgs: {'count': '${product.reviewCount}'},
-                    ),
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
+            Expanded(
+              child: Text(
+                product.reviewCount == 0
+                    ? 'product.no_reviews_yet_title'.tr()
+                    : 'product.review_count'.tr(
+                        namedArgs: {'count': '${product.reviewCount}'},
+                      ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: AppSpacing.sm),
             _StockPill(inStock: product.inStock),
           ],
         ),

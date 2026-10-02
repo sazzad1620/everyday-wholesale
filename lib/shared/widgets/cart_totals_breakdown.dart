@@ -77,10 +77,15 @@ class _SummaryRow extends StatelessWidget {
         valueStyle = AppTextStyles.title.copyWith(fontSize: 18, color: AppColors.primary, fontWeight: FontWeight.bold);
     }
 
+    // The label takes the free width and wraps (long Japanese labels, large
+    // text sizes) instead of pushing the amount off the edge; the amount
+    // itself is short and always stays on one line.
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
-        Text(label, style: labelStyle),
+        Expanded(child: Text(label, style: labelStyle)),
+        const SizedBox(width: AppSpacing.sm),
         Text(value, style: valueStyle),
       ],
     );

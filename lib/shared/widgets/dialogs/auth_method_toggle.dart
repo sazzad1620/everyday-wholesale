@@ -74,11 +74,15 @@ class _MethodSegment extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: selected ? AppColors.primary : AppColors.textSecondary),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: AppTextStyles.body.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: selected ? AppColors.primary : AppColors.textSecondary,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: selected ? AppColors.primary : AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],

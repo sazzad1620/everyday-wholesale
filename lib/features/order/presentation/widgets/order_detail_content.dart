@@ -67,28 +67,10 @@ class OrderDetailContent extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xs),
                     OrderInfoRow(label: 'order_history.payment_method'.tr(), value: order.paymentMethod),
                     const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'order_history.order_status'.tr(),
-                          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-                        ),
-                        statusWidget,
-                      ],
-                    ),
+                    OrderLabeledRow(label: 'order_history.order_status'.tr(), trailing: statusWidget),
                     if (paymentStatusPill != null) ...[
                       const SizedBox(height: AppSpacing.xs),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'order_history.payment_status'.tr(),
-                            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-                          ),
-                          paymentStatusPill!,
-                        ],
-                      ),
+                      OrderLabeledRow(label: 'order_history.payment_status'.tr(), trailing: paymentStatusPill!),
                     ],
                     if (showPaymentIntentId && order.stripePaymentIntentId != null) ...[
                       const SizedBox(height: AppSpacing.xs),

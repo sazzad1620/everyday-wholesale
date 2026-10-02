@@ -252,3 +252,75 @@ Expected effect: roughly 1.2 s plus the two SDK setups off every cold start, an 
 - **Result (same 6 Mbps / 120 ms profile, three cold runs):** loader 0.30–0.44 s, Flutter first frame **4.73–4.87 s**, repeat visit first frame **0.72 s** — same as before this round; `main.dart.wasm` 1,191 KB brotli (was 1,186 KB).
 - **Investigated, left as is:** the `google_sign_in_web` plugin downloads Google's `gsi/client` script (~100 KB) when plugins register, even though the website signs in through Firebase's popup. Registration happens for every installed plugin, so avoiding it would mean patching around the plugin; the cost is ~0.1 s of bandwidth in parallel, not on the first-frame path.
 
+
+## 9. "Most Popular" renamed to "Most Everyday" (client request — deployed ✅ 2026-10-02)
+
+Display-only rename; **no behaviour changed**.
+
+**Changed (everything a customer or admin sees):**
+- Category card name and the home page section title: **Most Everyday** / **エブリデイ定番** (`most_popular_category.dart`, `home.most_popular` in `en.json` / `ja.json`).
+- Admin product form: checkbox "Mark as Most Everyday" / 「エブリデイ定番に設定」 and its hint; admin product list badge "Everyday" / 「定番」.
+- Server-rendered page (`functions/src/seo/render.ts`): category name and the home section heading.
+- Seed data category name (`lib/tools/seed_data.dart`).
+- Category card image: new `assets/images/category_most_everyday.webp` (640×640, transparent) replaces `category_most_popular.webp`; `AssetPaths.mostPopularCategoryImage` points to it. A new file name also means no browser serves the old cached badge.
+
+**Kept as is (so nothing breaks):** the category id / URL `/home/category/most_popular`, the Firestore product flag `isMostPopular`, the translation keys, and class/variable names. Products already marked keep showing, and old links and the sitemap still work.
+
+**Badge image — how it was made:** the original badge with only the ribbon text changed.
+- The "POPULAR" letters (and their shadow) were erased and the ribbon behind them rebuilt from its own surrounding pixels, so the ribbon keeps its original shading, edges and pointed ends.
+- "EVERYDAY" is drawn in Bahnschrift Bold Condensed (closest match to the original letter shapes), following the ribbon's arch.
+- The letter colours were sampled from the original: dark green top, lime highlight line, darker lower half. They keep the dark outline, a thin 3D edge and a soft shadow.
+- The word is centred in the ribbon: about 35 px of ribbon before the E and after the Y, and even space above and below.
+- If the client ever supplies the original design file, re-exporting from it would be pixel-identical.
+
+**Verified:** `flutter analyze` clean; 63 app tests and 6 functions tests pass; checked visually in the app (phone width).
+
+**Deployed:** `firebase deploy --only hosting,functions`. On the live site:
+- the server-rendered `/home` shows "Most Everyday";
+- `en.json` has the new strings;
+- the new badge loads.
+
+Returning visitors may see the old version until a refresh (Ctrl+Shift+R) or their next visit.
+
+**Still to do:** rebuild and release the Android and iOS apps so they get the new name and badge.
+
+## 10. New body font, overflow fixes and small UI polish (2026-10-02 — not yet deployed)
+
+**Font: Plus Jakarta Sans** for all English text on Android, iOS and web (replaces each platform's default: Roboto / San Francisco).
+- Chosen over Poppins after a side-by-side preview: about **4% wider** than Roboto (Poppins 8%), so it doesn't bring new overflow.
+- Bundled under `fonts:` in `pubspec.yaml` (Regular/Medium/SemiBold/Bold), never fetched from Google Fonts at runtime. Latin-only subset (ASCII, Latin-1, Latin Extended-A, punctuation, currency, arrows, math): 129 → 80 KB per weight, **~34 KB compressed**. Web first load: about +136 KB compressed for the 4 weights (not measured on the live site yet).
+- Licence: SIL OFL, kept next to the files (`assets/fonts/OFL-PlusJakartaSans.txt`).
+- Unchanged: the header wordmark "EVERYDAY WHOLESALE" stays Oswald, and Japanese mode stays Noto Sans JP. Switch point: `AppLocales.bodyFontFor` / `AppLocales.latinFontFamily`.
+
+**Text sizes** (Jakarta reads a little larger than Roboto):
+- section titles 18 → 17 (bold);
+- page headlines 24 → 22;
+- product name on cards 14 → 13.5;
+- body text stays 14.
+
+**Overflow fixes** (narrow phones, Japanese labels, large accessibility text):
+- **Category and subcategory cards**: names were cut off at 320 px (the fixed card ratio left about 14 px for the name). Card height is now image + a label sized for two lines at the device's text size (`categoryTileGridDelegate`).
+- **Product cards / product grid**: the name box and row height are computed from the text style and text scale (`ProductCard.contentHeight`) instead of fixed 36 / 120 px.
+- **Label + value rows**: cart totals, order info, and order/payment status. The label now takes the free width and wraps; the value or pill keeps up to 60% of the row (`OrderLabeledRow`). Before, a long label pushed the value off-screen.
+- **OTP code boxes**: they shared a fixed 6 × 44 px row, wider than the dialog on 320–359 px phones. They now share the available width. Dialogs also have 16 px (was 24) of screen margin.
+- Smaller fixes:
+  - review prompt and stars wrap to two lines;
+  - review count shortens with "…";
+  - button and toggle labels, drawer and menu titles, and status pills can no longer overflow;
+  - product info values ("Dry / Packaged") get two lines, with equal-height boxes;
+  - the highlight boxes are equal height;
+  - a huge cart line total scales down slightly instead of overflowing.
+
+**Add-to-cart animation (product card)**: the quantity pill now grows out of the cart button from its right edge, with a slight overshoot and a fade (220 ms). At 0 it shrinks back (160 ms), and the number rolls when it changes. Before, the button was swapped for the counter instantly.
+
+**Verified**:
+- `flutter analyze` clean; all 65 tests pass, including two new ones:
+  - `test/shared/widgets/layout_overflow_test.dart`: 9 screen groups × EN/JA × 320/375/1280 px × text size 1.0/1.3, with the real fonts loaded. It fails on any overflow; it caught the cart-total case.
+  - `test/shared/widgets/product_card_animation_test.dart`: checks that the button and pill animate both ways. It caught an assertion error (the overshooting curve ran past the fade's time window) before it shipped.
+- Release web build checked at 320 px (home, categories, product cards, product page, menu, sign-in dialog), in Japanese, and in landscape (568×320).
+- Desktop layout is covered by the 1280 px tests; desktop screenshots weren't possible on this machine because headless Edge won't start.
+- Signed-in pages (cart, checkout, orders, account, admin) were reviewed in code and covered by the widget tests, not clicked through.
+
+**To ship**:
+- `firebase deploy --only hosting`;
+- rebuild the Android and iOS apps.

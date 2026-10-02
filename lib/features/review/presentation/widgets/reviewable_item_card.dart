@@ -68,12 +68,20 @@ class ReviewableItemCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               const Divider(height: 1, color: AppColors.inputFill),
               const SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('my_reviews.rate_prompt'.tr(), style: AppTextStyles.body),
-                  StarRatingInput(onChanged: onRate, enabled: !isSubmitting),
-                ],
+              // Stars drop below the prompt when both don't fit on one line
+              // (narrow phones, Japanese, large text) instead of overflowing.
+              SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    Text('my_reviews.rate_prompt'.tr(), style: AppTextStyles.body),
+                    StarRatingInput(onChanged: onRate, enabled: !isSubmitting),
+                  ],
+                ),
               ),
             ],
           ),

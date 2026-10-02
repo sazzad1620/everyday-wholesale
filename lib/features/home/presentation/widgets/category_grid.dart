@@ -13,32 +13,27 @@ class CategoryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      // Lets a hovered card (HoverLift) rise without its top edge being cut.
-      clipBehavior: Clip.none,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: categories.length,
-      // Max-extent (not a fixed count) so column count grows with available
-      // width on its own — 2 columns at phone width, more as the sidebar
-      // and wider viewport free up room, no breakpoint branching needed.
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
-        mainAxisSpacing: AppSpacing.sm,
-        crossAxisSpacing: AppSpacing.sm,
-        childAspectRatio: 0.82,
+    // Horizontal padding is inside the GridView, so the tiles get the width
+    // minus 2 × md.
+    return LayoutBuilder(
+      builder: (context, constraints) => GridView.builder(
+        // Lets a hovered card (HoverLift) rise without its top edge being cut.
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: categories.length,
+        gridDelegate: categoryTileGridDelegate(
+          constraints.maxWidth - 2 * AppSpacing.md,
+          MediaQuery.textScalerOf(context),
+        ),
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          return HoverLift(
+            child: CategoryCard(category: category, index: index, onTap: () => onCategoryTap(category)),
+          );
+        },
       ),
-      itemBuilder: (context, index) {
-        final category = categories[index];
-        return HoverLift(
-          child: CategoryCard(
-            category: category,
-            index: index,
-            onTap: () => onCategoryTap(category),
-          ),
-        );
-      },
     );
   }
 }

@@ -30,16 +30,19 @@ abstract final class AppLocales {
     _ => 'EN',
   };
 
-  /// The body font for [locale], or `null` to keep the platform default.
+  /// Bundled English body font (see `pubspec.yaml`), the same on Android,
+  /// iOS and web instead of each platform's own default.
+  static const String latinFontFamily = 'PlusJakartaSans';
+
+  /// The body font for [locale].
   ///
-  /// English stays on the platform default (Roboto / SF / Flutter web's
-  /// Roboto) exactly as before. Japanese switches the whole text theme to
-  /// Noto Sans JP (see [JapaneseFont], which must be loaded for it) so
+  /// English uses [latinFontFamily]. Japanese switches the whole text theme
+  /// to Noto Sans JP (see [JapaneseFont], which must be loaded for it) so
   /// kana/kanji render in one consistent face on every platform — without
-  /// this, web mixes the engine's CJK fallback with Roboto, and desktop
-  /// browsers can show mismatched weights.
+  /// this, web mixes the engine's CJK fallback with the Latin font, and
+  /// desktop browsers can show mismatched weights.
   static TextStyle? bodyFontFor(Locale locale) => switch (locale.languageCode) {
     'ja' => const TextStyle(fontFamily: JapaneseFont.family),
-    _ => null,
+    _ => const TextStyle(fontFamily: latinFontFamily),
   };
 }

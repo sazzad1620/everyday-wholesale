@@ -26,27 +26,30 @@ class ProductHighlightBoxes extends StatelessWidget {
           axis: Axis.horizontal,
         ),
         const SizedBox(height: AppSpacing.sm),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _HighlightCard(
-                icon: Icons.workspace_premium_outlined,
-                title: 'product.premium_quality_title'.tr(),
-                message: 'product.premium_quality_message'.tr(),
-                axis: Axis.vertical,
+        // Same height side by side, whichever message wraps to more lines.
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _HighlightCard(
+                  icon: Icons.workspace_premium_outlined,
+                  title: 'product.premium_quality_title'.tr(),
+                  message: 'product.premium_quality_message'.tr(),
+                  axis: Axis.vertical,
+                ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: _HighlightCard(
-                icon: Icons.verified_outlined,
-                title: 'product.halal_certified_title'.tr(),
-                message: 'product.halal_certified_message'.tr(),
-                axis: Axis.vertical,
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _HighlightCard(
+                  icon: Icons.verified_outlined,
+                  title: 'product.halal_certified_title'.tr(),
+                  message: 'product.halal_certified_message'.tr(),
+                  axis: Axis.vertical,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -74,7 +77,11 @@ class _HighlightCard extends StatelessWidget {
     final textColumn = Column(
       crossAxisAlignment: axis == Axis.horizontal ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
-        Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          textAlign: axis == Axis.horizontal ? TextAlign.start : TextAlign.center,
+          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 2),
         Text(
           message,
@@ -89,9 +96,7 @@ class _HighlightCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: axis == Axis.horizontal
           ? Row(

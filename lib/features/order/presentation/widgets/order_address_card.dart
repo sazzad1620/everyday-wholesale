@@ -40,7 +40,7 @@ class OrderAddressCard extends StatelessWidget {
             children: [
               const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
               const SizedBox(width: AppSpacing.xs),
-              Text('checkout.delivery_address_title'.tr(), style: AppTextStyles.title),
+              Flexible(child: Text('checkout.delivery_address_title'.tr(), style: AppTextStyles.title)),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),

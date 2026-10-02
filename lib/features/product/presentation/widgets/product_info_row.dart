@@ -21,16 +21,32 @@ class ProductInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: _InfoBox(icon: Icons.scale_outlined, label: 'product.weight_label'.tr(), value: weight)),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: _InfoBox(icon: Icons.eco_outlined, label: 'product.condition_label'.tr(), value: condition.labelKey.tr()),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(child: _InfoBox(icon: Icons.public_outlined, label: 'product.origin_label'.tr(), value: Countries.label(origin))),
-      ],
+    // Equal-height boxes even when one value wraps to two lines.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _InfoBox(icon: Icons.scale_outlined, label: 'product.weight_label'.tr(), value: weight),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: _InfoBox(
+              icon: Icons.eco_outlined,
+              label: 'product.condition_label'.tr(),
+              value: condition.labelKey.tr(),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: _InfoBox(
+              icon: Icons.public_outlined,
+              label: 'product.origin_label'.tr(),
+              value: Countries.label(origin),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -49,20 +65,27 @@ class _InfoBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 20, color: AppColors.primary),
           const SizedBox(height: 4),
-          Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+          Text(
+            label,
+            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 2),
+          // Up to two lines (e.g. "Dry / Packaged" on a narrow phone) rather
+          // than cutting the value off after one.
           Text(
             value,
-            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-            maxLines: 1,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body.copyWith(fontSize: 13.5, fontWeight: FontWeight.w600, height: 1.25),
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],

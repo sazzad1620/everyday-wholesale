@@ -8,8 +8,8 @@ import 'product_card.dart';
 /// The product-card grid shared by [ProductListPage] and [WishlistPage].
 ///
 /// Sizes each row by an *exact* pixel height — computed cell width (the
-/// square image) plus [_contentHeight], the fixed height of everything
-/// [ProductCard] renders below the image — rather than a proportional
+/// square image) plus [ProductCard.contentHeight], the height of everything
+/// [ProductCard] renders below the image (it grows with the device text size) — rather than a proportional
 /// `childAspectRatio`. A ratio scales the space left for that fixed-height
 /// content with the card's width, so it only fits at whatever width it was
 /// tuned for: too little room (an overflow) at any narrower width a wide
@@ -45,11 +45,6 @@ class ProductGrid extends StatelessWidget {
   /// role as `SliverGridDelegateWithMaxCrossAxisExtent.maxCrossAxisExtent`.
   static const double _maxCardWidth = 220;
 
-  /// Padding(24 top + 8 bottom) + 2-line title(36) + spacing(2) + price
-  /// line(~20) + spacing(4) + rating/wishlist row(22) in [ProductCard],
-  /// plus a few px of margin for font-metric variance across platforms.
-  static const double _contentHeight = 120;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -70,7 +65,7 @@ class ProductGrid extends StatelessWidget {
               crossAxisCount: crossAxisCount,
               mainAxisSpacing: AppSpacing.sm,
               crossAxisSpacing: AppSpacing.sm,
-              mainAxisExtent: cardWidth + _contentHeight,
+              mainAxisExtent: cardWidth + ProductCard.contentHeight(MediaQuery.textScalerOf(context)),
             ),
             itemBuilder: (context, index) {
               final product = products[index];

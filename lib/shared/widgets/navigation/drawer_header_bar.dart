@@ -33,7 +33,7 @@ class DrawerHeaderBar extends StatelessWidget {
           children: [
             Image.asset(AssetPaths.logo, height: 36),
             const SizedBox(width: AppSpacing.sm),
-            Text(title, style: AppTextStyles.title),
+            Flexible(child: Text(title, style: AppTextStyles.title)),
           ],
         ),
       ),

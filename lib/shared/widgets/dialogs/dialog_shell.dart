@@ -20,7 +20,9 @@ Future<T?> showBlurredDialog<T>({required BuildContext context, required WidgetB
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            // md (not lg) around the card leaves narrow phones enough width
+            // for the dialog content.
+            padding: const EdgeInsets.all(AppSpacing.md),
             // showGeneralDialog's pageBuilder skips the Material ancestor
             // showDialog would normally provide — required by TextField and
             // other Material widgets used in dialog content.

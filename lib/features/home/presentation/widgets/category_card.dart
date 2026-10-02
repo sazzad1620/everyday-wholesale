@@ -1,10 +1,32 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/localized_text.dart';
-import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/category_palette.dart';
 import '../../../../shared/widgets/category_image.dart';
 import '../../domain/entities/category_entity.dart';
+
+/// Label under a category/subcategory tile's square image.
+const TextStyle categoryTileLabelStyle = TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, height: 1.25);
+const EdgeInsets _labelPadding = EdgeInsets.symmetric(vertical: 8, horizontal: 6);
+
+/// Grid layout for category/subcategory tiles: square image plus a label
+/// band tall enough for two lines at the device's text size. Sized exactly
+/// (like `ProductGrid`) instead of a fixed aspect ratio, which left the
+/// label too little room and cut the names off on narrow phones.
+SliverGridDelegate categoryTileGridDelegate(double availableWidth, TextScaler scaler) {
+  const maxTileWidth = 200.0;
+  final columns = (availableWidth / maxTileWidth).ceil().clamp(1, 999);
+  final tileWidth = (availableWidth - (columns - 1) * AppSpacing.sm) / columns;
+  final labelHeight =
+      _labelPadding.vertical + 2 * scaler.scale(categoryTileLabelStyle.fontSize!) * categoryTileLabelStyle.height! + 2;
+  return SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: columns,
+    mainAxisSpacing: AppSpacing.sm,
+    crossAxisSpacing: AppSpacing.sm,
+    mainAxisExtent: tileWidth + labelHeight,
+  );
+}
 
 class CategoryCard extends StatelessWidget {
   const CategoryCard({
@@ -53,19 +75,17 @@ class CategoryCard extends StatelessWidget {
                   aspectRatio: 1,
                   child: CategoryImage(imageUrl: category.imageUrl, backgroundColor: tileColor),
                 ),
-                // Expanded, not a natural-height box — the grid cell's height
-                // is fixed by its aspect ratio and won't exactly match the
-                // image + label's natural height, so the label has to stretch
-                // to the remainder or a gap shows below it.
+                // Fills the rest of the cell (sized for two lines by
+                // [categoryTileGridDelegate]); one-line names sit centred.
                 Expanded(
                   child: Container(
                     width: double.infinity,
                     color: labelColor,
                     alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                    padding: _labelPadding,
                     child: Text(
                       context.localized(category.name),
-                      style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                      style: categoryTileLabelStyle,
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

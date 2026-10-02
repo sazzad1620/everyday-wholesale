@@ -88,9 +88,22 @@ flutter:
     # NOT under `fonts:` (declared fonts are fetched before the first frame).
     - assets/fonts/jp/
 
-  # Header wordmark font, bundled (not fetched from Google Fonts at runtime)
-  # so the first frame never waits on a request to Google Fonts.
+  # Bundled (not fetched from Google Fonts at runtime) so the first frame
+  # never waits on a request to Google Fonts.
   fonts:
+    # App body font (English). Latin-only subset of Plus Jakarta Sans (SIL OFL,
+    # see assets/fonts/OFL-PlusJakartaSans.txt): ~34 KB per weight compressed.
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+          weight: 700
+    # Header wordmark ("EVERYDAY WHOLESALE").
     - family: Oswald
       fonts:
         - asset: assets/fonts/Oswald-Light.ttf

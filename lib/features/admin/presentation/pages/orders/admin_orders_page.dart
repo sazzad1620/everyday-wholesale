@@ -240,28 +240,16 @@ class _AdminOrderCard extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xs),
                     OrderInfoRow(label: 'order_history.total'.tr(), value: formatYen(order.total)),
                     const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'order_history.order_status'.tr(),
-                          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-                        ),
-                        OrderStatusPill(status: order.status, onChanged: onStatusChanged),
-                      ],
+                    OrderLabeledRow(
+                      label: 'order_history.order_status'.tr(),
+                      trailing: OrderStatusPill(status: order.status, onChanged: onStatusChanged),
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'order_history.payment_status'.tr(),
-                          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-                        ),
-                        order.stripePaymentIntentId != null
-                            ? PaymentStatusPill(status: order.paymentStatus, createdAt: order.createdAt)
-                            : const CodPaymentPill(),
-                      ],
+                    OrderLabeledRow(
+                      label: 'order_history.payment_status'.tr(),
+                      trailing: order.stripePaymentIntentId != null
+                          ? PaymentStatusPill(status: order.paymentStatus, createdAt: order.createdAt)
+                          : const CodPaymentPill(),
                     ),
                   ],
                 ),
