@@ -30,6 +30,7 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/storage_upload_settings.dart';
 import '../core/utils/image_optimizer.dart';
+import '../core/utils/product_image_cleaner.dart';
 import '../firebase_options.dart';
 
 Future<void> main() async {
@@ -52,6 +53,9 @@ class _OptimizePageState extends State<_OptimizePage> {
   final List<String> _log = ['Sign in with an admin account, then run. Start with a dry run. Safe to re-run.'];
   bool _isRunning = false;
   bool _dryRun = true;
+  // Product photos only: whiten plain backgrounds + trim margins (see
+  // `ProductImageCleaner`) so the white product tile is evenly padded.
+  bool _cleanProductBackgrounds = false;
   int _bytesBefore = 0;
   int _bytesAfter = 0;
 
@@ -124,7 +128,13 @@ class _OptimizePageState extends State<_OptimizePage> {
       for (var i = 0; i < images.length; i++) {
         final url = images[i];
         final hasThumb = i < thumbnails.length && thumbnails[i] != url;
-        if (!_isStorageUrl(url) || (hasThumb && await _isAlreadyOptimized(url))) {
+        final skip = !_isStorageUrl(url) ||
+            (_cleanProductBackgrounds
+                // Clean mode re-processes everything not yet marked cleaned,
+                // including photos that are already size-optimized.
+                ? await _isBackgroundCleaned(url)
+                : (hasThumb && await _isAlreadyOptimized(url)));
+        if (skip) {
           newImages.add(url);
           newThumbnails.add(i < thumbnails.length ? thumbnails[i] : url);
           continue;
@@ -135,6 +145,7 @@ class _OptimizePageState extends State<_OptimizePage> {
           sizes: const [StorageUploadSettings.productFullSize, StorageUploadSettings.thumbnailSize],
           suffixes: const ['', '_thumb'],
           label: '$name #${i + 1}',
+          cleanBackground: _cleanProductBackgrounds,
         );
         if (result == null) {
           newImages.add(url);
@@ -242,6 +253,7 @@ class _OptimizePageState extends State<_OptimizePage> {
     required List<String> suffixes,
     required String label,
     String? exactPath,
+    bool cleanBackground = false,
   }) async {
     try {
       final original = await _storage.refFromURL(url).getData(30 * 1024 * 1024);
@@ -249,7 +261,13 @@ class _OptimizePageState extends State<_OptimizePage> {
         _append('  $label: could not download — skipped');
         return null;
       }
-      final encoded = await ImageOptimizer.toJpegs(original, maxDimensions: sizes);
+      Uint8List source = original;
+      if (cleanBackground) {
+        final cleaned = await ProductImageCleaner.clean(original);
+        if (cleaned != null) source = cleaned;
+        _append('  $label: ${cleaned != null ? 'background whitened / margin trimmed' : 'left as is (full-bleed or already clean)'}');
+      }
+      final encoded = await ImageOptimizer.toJpegs(source, maxDimensions: sizes);
       if (encoded == null) {
         _append('  $label: format not supported here — skipped');
         return null;
@@ -263,7 +281,13 @@ class _OptimizePageState extends State<_OptimizePage> {
           '$folder/${DateTime.now().microsecondsSinceEpoch}';
       return Future.wait([
         for (var i = 0; i < encoded.length; i++)
-          _upload('$base${suffixes[i]}.${ImageOptimizer.fileExtension}', encoded[i]),
+          _upload(
+            '$base${suffixes[i]}.${ImageOptimizer.fileExtension}',
+            encoded[i],
+            // Marks the file as already through the cleaner so a re-run
+            // (or a half-finished earlier run) skips it.
+            customMetadata: cleanBackground ? const {_cleanedKey: '1'} : null,
+          ),
       ]);
     } catch (e) {
       _append('  $label: FAILED ($e) — left unchanged');
@@ -271,13 +295,28 @@ class _OptimizePageState extends State<_OptimizePage> {
     }
   }
 
-  Future<String> _upload(String path, Uint8List bytes) async {
+  Future<String> _upload(String path, Uint8List bytes, {Map<String, String>? customMetadata}) async {
     final ref = _storage.ref(path);
     await ref.putData(
       bytes,
-      SettableMetadata(contentType: ImageOptimizer.contentType, cacheControl: StorageUploadSettings.cacheControl),
+      SettableMetadata(
+        contentType: ImageOptimizer.contentType,
+        cacheControl: StorageUploadSettings.cacheControl,
+        customMetadata: customMetadata,
+      ),
     );
     return ref.getDownloadURL();
+  }
+
+  static const String _cleanedKey = 'bgClean';
+
+  Future<bool> _isBackgroundCleaned(String url) async {
+    try {
+      final metadata = await _storage.refFromURL(url).getMetadata();
+      return metadata.customMetadata?[_cleanedKey] == '1';
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<bool> _isAlreadyOptimized(String url) async {
@@ -334,6 +373,13 @@ class _OptimizePageState extends State<_OptimizePage> {
                   value: _dryRun,
                   onChanged: _isRunning ? null : (v) => setState(() => _dryRun = v ?? true),
                   title: const Text('Dry run (only report sizes, change nothing)'),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _cleanProductBackgrounds,
+                  onChanged: _isRunning ? null : (v) => setState(() => _cleanProductBackgrounds = v ?? false),
+                  title: const Text('Product photos: whiten plain backgrounds + trim margins'),
+                  subtitle: const Text('Products only. Full-bleed photos are left as they are.'),
                 ),
                 Row(
                   children: [

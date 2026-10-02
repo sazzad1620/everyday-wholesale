@@ -95,9 +95,10 @@ class _AdminReviewTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: SizedBox(width: 48, height: 48, child: ProductImage(imageUrl: review.productImageUrl)),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: ProductImage(imageUrl: review.productImageUrl, radius: 10, bordered: true),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

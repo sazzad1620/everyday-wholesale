@@ -12,25 +12,23 @@ class ProductImageGallery extends StatelessWidget {
 
   final List<String> images;
 
-  static final BorderRadius _radius = BorderRadius.circular(16);
+  static const double _radius = 16;
 
   @override
   Widget build(BuildContext context) {
     if (images.length <= 1) {
-      return ClipRRect(
-        borderRadius: _radius,
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: ProductImage(imageUrl: images.isEmpty ? null : images.first),
-        ),
+      return AspectRatio(
+        aspectRatio: 1,
+        child: ProductImage(imageUrl: images.isEmpty ? null : images.first, radius: _radius, bordered: true),
       );
     }
 
     return AutoSlideCarousel(
       itemCount: images.length,
       aspectRatio: 1,
-      viewportRadius: _radius,
-      itemBuilder: (context, index, isActive) => ProductImage(imageUrl: images[index]),
+      viewportRadius: BorderRadius.circular(_radius),
+      itemBuilder: (context, index, isActive) =>
+          ProductImage(imageUrl: images[index], radius: _radius, bordered: true),
     );
   }
 }

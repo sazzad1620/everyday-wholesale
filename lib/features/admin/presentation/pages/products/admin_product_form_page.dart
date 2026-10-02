@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../../config/di/injection_container.dart';
 import '../../../../../core/constants/countries.dart';
 import '../../../../../core/localization/localized_text.dart';
+import '../../../../../core/utils/product_image_cleaner.dart';
 import '../../../../../core/usecase/usecase.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_input_style.dart';
@@ -103,8 +104,15 @@ class _ProductFormViewState extends State<_ProductFormView> {
     // appear in the same order the admin picked them, rather than whichever
     // upload happens to finish first.
     for (final file in picked.take(remainingSlots)) {
-      final bytes = await file.readAsBytes();
-      final extension = file.name.contains('.') ? file.name.split('.').last : 'jpg';
+      final original = await file.readAsBytes();
+      // Plain-background packshots get their background whitened and margin
+      // trimmed so every product fills its tile the same way; anything else
+      // (full-bleed photos, undecodable formats) is uploaded as picked.
+      final cleaned = await ProductImageCleaner.clean(original);
+      final bytes = cleaned ?? original;
+      final extension = cleaned != null
+          ? 'png'
+          : (file.name.contains('.') ? file.name.split('.').last : 'jpg');
       if (!mounted) return;
 
       final result = await getIt<UploadProductImageUseCase>()(

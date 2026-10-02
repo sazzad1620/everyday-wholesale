@@ -29,9 +29,10 @@ class ReviewHistoryTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: SizedBox(width: 56, height: 56, child: ProductImage(imageUrl: review.productImageUrl)),
+          SizedBox(
+            width: 56,
+            height: 56,
+            child: ProductImage(imageUrl: review.productImageUrl, radius: 10, bordered: true),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

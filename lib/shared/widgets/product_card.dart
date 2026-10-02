@@ -98,6 +98,12 @@ class ProductCard extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: onTap,
+                  // The photo tile is opaque white and hides ink, so a
+                  // hover/press highlight would only ever tint the text
+                  // half of the card. Hover feedback is `HoverLift`'s lift
+                  // (see `ProductGrid`); taps need no overlay of their own.
+                  overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                  splashColor: Colors.transparent,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

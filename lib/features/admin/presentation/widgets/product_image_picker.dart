@@ -82,7 +82,7 @@ class _ImageSlot extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned.fill(
-            child: ClipRRect(borderRadius: BorderRadius.circular(16), child: ProductImage(imageUrl: url)),
+            child: ProductImage(imageUrl: url, radius: 16, bordered: true),
           ),
           if (isMain)
             Positioned(

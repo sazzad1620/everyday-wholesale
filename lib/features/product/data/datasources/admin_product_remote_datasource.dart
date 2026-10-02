@@ -80,7 +80,14 @@ class AdminProductRemoteDatasourceImpl implements AdminProductRemoteDatasource {
     final ref = _storage.ref(path);
     await ref.putData(
       bytes,
-      SettableMetadata(contentType: contentType, cacheControl: StorageUploadSettings.cacheControl),
+      SettableMetadata(
+        contentType: contentType,
+        cacheControl: StorageUploadSettings.cacheControl,
+        // The product form runs every photo through `ProductImageCleaner`
+        // before uploading; this lets tools/optimize_images.dart's
+        // background-cleanup mode skip it instead of re-encoding it again.
+        customMetadata: const {'bgClean': '1'},
+      ),
     );
     return ref.getDownloadURL();
   }

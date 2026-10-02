@@ -56,9 +56,10 @@ class CartItemCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(width: 64, height: 64, child: ProductImage(imageUrl: product.thumbnailUrl)),
+              SizedBox(
+                width: 64,
+                height: 64,
+                child: ProductImage(imageUrl: product.thumbnailUrl, radius: 10, bordered: true),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

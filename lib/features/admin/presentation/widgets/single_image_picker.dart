@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/widgets/product_image.dart';
+import '../../../../shared/widgets/category_image.dart';
 
 /// Preview + camera-badge affordance for a single-photo field — categories
 /// and subcategories still only ever get one photo each (unlike products,
@@ -39,7 +39,9 @@ class SingleImagePicker extends StatelessWidget {
                     color: AppColors.inputFill,
                     child: Center(child: CircularProgressIndicator()),
                   )
-                : ProductImage(imageUrl: imageUrl),
+                // Categories keep their own tinted-tile look (see
+                // `CategoryImage`) — the preview mirrors how they're shown.
+                : CategoryImage(imageUrl: imageUrl, backgroundColor: AppColors.primary.withValues(alpha: 0.06)),
           ),
           Positioned(
             right: -4,

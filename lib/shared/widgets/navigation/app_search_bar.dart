@@ -239,9 +239,10 @@ class _SearchResultTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(width: 44, height: 44, child: ProductImage(imageUrl: product.thumbnailUrl, padding: 0)),
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: ProductImage(imageUrl: product.thumbnailUrl, radius: 10, bordered: true),
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
