@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widgets/tap_target.dart';
 import 'payment_method_sheet.dart';
 
 /// Tapping the card opens [showPaymentMethodSheet]. Shows the chosen
@@ -16,7 +17,7 @@ class PaymentMethodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TapTarget(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),

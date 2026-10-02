@@ -15,6 +15,7 @@ import '../../theme/app_text_styles.dart';
 import '../../utils/toast.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
+import '../tap_target.dart';
 import 'auth_method_toggle.dart';
 import 'dialog_shell.dart';
 import 'phone_auth_steps.dart';
@@ -182,7 +183,7 @@ class _SignInDialogState extends State<SignInDialog> {
                   const SizedBox(height: AppSpacing.xs),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: GestureDetector(
+                    child: TapTarget(
                       onTap: _forgotPassword,
                       child: Text(
                         'auth.forgot_password'.tr(),
@@ -241,7 +242,7 @@ class _SignInDialogState extends State<SignInDialog> {
                     children: [
                       Text('auth.no_account'.tr(), style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                       const SizedBox(width: 4),
-                      GestureDetector(
+                      TapTarget(
                         onTap: widget.onSwitchToSignUp,
                         child: Text(
                           'auth.sign_up_action'.tr(),

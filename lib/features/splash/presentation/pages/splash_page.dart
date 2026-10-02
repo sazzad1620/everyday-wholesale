@@ -45,8 +45,8 @@ class SplashPage extends StatelessWidget {
             // the splash for ~2s on a cold load. `appRouter`'s redirect
             // (re-run on every AccountBloc change) still moves an admin to
             // the dashboard the moment their restored session resolves.
-            // Mobile keeps the wait — there it overlaps the minimum splash
-            // time anyway, so it costs nothing and avoids a visible hop.
+            // Mobile keeps the wait — the session is restored from the
+            // device (fast), and it avoids an admin briefly seeing the store.
             if (!kIsWeb) await _waitForAccountResolution();
             if (!context.mounted) return;
             final isAdmin = getIt<AccountBloc>().state.user?.isAdmin ?? false;

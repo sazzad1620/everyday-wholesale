@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '../config/di/injection_container.dart';
 import '../core/localization/app_locales.dart';
+import '../core/utils/google_sign_in_setup.dart';
 import '../core/utils/stripe_setup.dart';
 import '../firebase_options.dart';
 import 'app.dart';
@@ -41,41 +41,43 @@ Future<void> bootstrap() async {
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
   ]);
 
-  // Native Stripe setup is local and fast, so mobile keeps doing it up
-  // front. On web it downloads Stripe.js, which only checkout needs — warm
-  // it up in the background once the app is showing instead of delaying
-  // the first frame (payment still awaits it via `StripeSetup.ensureReady`).
+  // Stripe and Google Sign-In are only needed at checkout / on "Continue
+  // with Google", so neither holds up the first frame any more: they start
+  // in the background and the payment / sign-in code awaits
+  // `StripeSetup.ensureReady()` / `GoogleSignInSetup.ensureReady()` first.
+  // On web Stripe waits a few seconds so Stripe.js (a network download)
+  // doesn't compete with the app's own startup requests; web signs in via
+  // Firebase's popup, so Google Sign-In isn't initialized there at all.
   if (kIsWeb) {
     unawaited(
       Future<void>.delayed(const Duration(seconds: 4), StripeSetup.ensureReady).catchError((_) {}),
     );
   } else {
-    await StripeSetup.ensureReady();
-  }
-
-  // Must be called exactly once, before any other GoogleSignIn method, for
-  // the app's whole lifetime — this is the one correct place for that.
-  // Skipped on web: web signs in via FirebaseAuth.signInWithPopup instead
-  // (the google_sign_in package's web implementation requires its own
-  // rendered button widget and doesn't support the imperative flow used on
-  // Android/iOS), so initializing it there is unnecessary.
-  if (!kIsWeb) {
-    await GoogleSignIn.instance.initialize();
+    unawaited(StripeSetup.ensureReady().catchError((_) {}));
+    unawaited(GoogleSignInSetup.ensureReady().catchError((_) {}));
   }
 
   configureDependencies();
 
-  // Without this, Android applies its own contrast scrim to the status bar,
-  // which reads as a faint grey band against our all-white header — this
-  // makes both system bars transparent and matches their icons to the app's
-  // light theme instead.
+  // Edge-to-edge on every Android version, not just 15+ (where targetSdk 36
+  // forces it and ignores `systemNavigationBarColor`), so gesture navigation
+  // and the 2/3-button bar look the same on all phones: both system bars are
+  // transparent, drawn over the app's own white background, and every page,
+  // sheet and dialog keeps its content clear of them with SafeArea.
+  // `...ContrastEnforced: false` stops Android from painting its own grey
+  // translucent band behind the 3-button bar (and the status bar). No-op on
+  // iOS, where the app already draws under the status bar/home indicator.
+  if (!kIsWeb) SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
       statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.white,
+      systemStatusBarContrastEnforced: false,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
       systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
     ),
   );
 

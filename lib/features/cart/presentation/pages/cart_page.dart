@@ -29,6 +29,9 @@ class CartPage extends StatelessWidget {
     return ColoredBox(
       color: AppColors.background,
       child: SafeArea(
+        // Bottom handled by the scroll view's padding instead, so content can
+        // run behind the floating bottom nav (StandaloneShellScaffold.extendBody).
+        bottom: false,
         child: Column(
           children: [
             AppHeader(
@@ -138,7 +141,8 @@ class _CartBody extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      // Extra bottom space clears the floating bottom nav (+ system bar).
+      padding: const EdgeInsets.all(AppSpacing.md) + EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
       children: [
         ...itemsAndVoucher,
         const SizedBox(height: AppSpacing.sm),

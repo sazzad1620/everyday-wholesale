@@ -69,19 +69,29 @@ Measured with headless Edge on a throttled connection (6 Mbps down, 120 ms laten
 
 **Still inherent:** first-visit download of the Flutter engine + app (~2.2 MB brotli, ~3 s at 6 Mbps), and Firestore's web connection setup (a couple of round trips before the first data).
 
-## 3. Your action items
+## 3. Status & remaining action items (updated 2026-09-28)
 
-1. **Deploy.** Since round 3 the site needs the two new Cloud Functions (`ssr`, `sitemap`) together with Hosting — deploy them together (Hosting builds the app first; takes a few minutes):
-   ```bash
-   firebase deploy --only functions:ssr,functions:sitemap,hosting
-   ```
-   After that, app-only changes still go out with `firebase deploy --only hosting`; redeploy the functions only when `functions/src/seo/` changes.
-2. **Optimize existing images once** — run the tool locally, sign in as an admin, **dry run first**, then run for real:
-   ```bash
-   flutter run -t lib/tools/optimize_images.dart -d edge
-   ```
-   It's idempotent (already-optimized images are skipped), so it's safe to re-run. Old product/category files are intentionally kept in Storage because past orders reference them; old banner files are deleted.
-3. **Google Search Console** (after the deploy): add the property `https://everydaywholesale.jp`, verify it (a DNS TXT record at Xserver, like the Hosting one), submit `https://everydaywholesale.jp/sitemap.xml`, and use *URL Inspection* on a product page to request indexing. Test a product URL in Google's [Rich Results Test](https://search.google.com/test/rich-results) — it should detect *Product* and *Breadcrumb*.
+**Deployed and verified live** (curl against https://everydaywholesale.jp after the deploy):
+- ✅ Server-rendered pages: `/`, category and product pages return 200 with the real `<title>` (e.g. *Keri Samba Rice ケリサンバライス — ¥3,550 | Everyday Wholesale*) and `Product` + `BreadcrumbList` JSON-LD; unknown category → 404; `/cart` → app shell; `sitemap.xml` lists 46 URLs; `robots.txt` served. This also confirms the production Firestore loader (`functions/src/seo/catalog.ts`), which couldn't be tested locally.
+- ✅ Home page embeds `#initial-data`; visitors see the logo loading screen (no plain-HTML flash).
+- ✅ Caching: `main.dart.wasm?v=…` and the Japanese font are immutable for a year; the phone viewport tag is present.
+- ✅ **The image optimization tool has been run:** banners are served with `public, max-age=31536000, immutable` (~200–230 KB each) and 17 products have `thumbnails`.
+
+**Found live, fixed in code — needs one more Hosting deploy:**
+- ⚠️ The CDN was **not caching** the server-rendered pages: `X-Cache: MISS` on every request, with `Cache-Control: no-cache`. The `firebase.json` header rule `**/!(*.*)` also matched `/` and `/home/**`, and — although Firebase's docs describe header rules as applying to static content — it overrode the `s-maxage=300` the `ssr` function sets. Result: every page view ran the function and read Firestore (~350 ms and extra cost). The rule now lists only the app-only routes, `/{account,admin,cart,wishlist,checkout,order-confirmation}{,/**}`, so `/` and `/home/**` keep the function's own header. Deploy:
+  ```bash
+  firebase deploy --only hosting
+  ```
+  Verify: run `curl -sI https://everydaywholesale.jp/home/category/rice_grains` twice — expect `cache-control: public, max-age=0, s-maxage=300`, and `x-cache: HIT` on the second.
+
+**Still to do (you):**
+1. **Google Search Console** — add the property `everydaywholesale.jp` (Domain type), verify it with the TXT record it gives you at Xserver, submit `sitemap.xml`, then *URL Inspection → Request indexing* on a product page. Check a product URL in the [Rich Results Test](https://search.google.com/test/rich-results) (expects *Product* + *Breadcrumb*).
+2. **Google Business Profile** for the store (address, hours, photos, reviews) — the biggest lever for local search, independent of the website.
+
+**How to deploy from now on:**
+- App changes only: `firebase deploy --only hosting` (builds the Wasm app and renames `index.html` → `app.html` automatically).
+- If `functions/src/seo/` changed too (PowerShell): `$env:FUNCTIONS_DISCOVERY_TIMEOUT=60; firebase deploy --only functions:ssr,functions:sitemap,hosting`. The timeout variable is needed on this PC: the first cold load of the functions code took ~9.8 s, against the CLI's default 10 s limit.
+- The image tool (`flutter run -t lib/tools/optimize_images.dart -d edge`) only needs re-running if images are ever added outside the admin panel — new uploads are optimized automatically.
 
 ## 4. Decided against (for now)
 
@@ -103,7 +113,8 @@ How this section was built: official Flutter/Google guidance and community write
 
 ### 6.1 Tasks (ordered)
 
-#### ⬜ R3-1 — Run the image optimization tool for real *(user action — biggest remaining image win)*
+#### ✅ R3-1 — Run the image optimization tool for real *(user action — biggest remaining image win)*
+> **Done** (verified live 2026-09-28): banner files now carry `Cache-Control: public, max-age=31536000, immutable` (~200–230 KB), and 17 products have `thumbnails`.
 - **Evidence:** live network log (2026-09-28) still shows the original files: banners 250–320 KB each, a product photo 625 KB, and Storage still sends `Cache-Control: private, max-age=0`.
 - **Cross-check:** tool output on the real 3.1 MB PNG → 270 KB + 81 KB thumbnail; banner → ~150 KB at 1600 px.
 - **Expected:** home-page image bytes roughly −60–80 %, and zero image downloads on repeat visits.
@@ -182,3 +193,62 @@ HTML/CSS splash in `index.html` · Wasm (skwasm) build with automatic JS fallbac
 - Firebase — [Hosting rewrites to Cloud Functions](https://firebase.google.com/docs/hosting/functions), [Resize Images extension](https://extensions.dev/extensions/firebase/storage-resize-images)
 - Issues — [flutterfire#11466 (popup sign-in fails when cross-origin isolated)](https://github.com/firebase/flutterfire/issues/11466), [firebase-js-sdk#8541](https://github.com/firebase/firebase-js-sdk/issues/8541), [flutter#16870 (CJK glyph variants)](https://github.com/flutter/flutter/issues/16870)
 - Community — [Real JS vs Wasm numbers from 3 migrated apps](https://flutterstudio.dev/blog/flutter-wasm-web-performance.html), [Flutter web SEO: crawlable content, JSON-LD, share cards](https://dev.to/devshakib/flutter-web-seo-crawlable-content-json-ld-and-share-cards-for-a-canvas-app-4a83), [Jaspr](https://jaspr.site/)
+
+---
+
+## 7. Smoothness & feel fixes (after round 3, deployed)
+
+Found while using the live site; all verified in headless Edge with a production build (desktop and phone emulation) and covered by the test suite (43 app tests + 6 SSR tests).
+
+| Issue | Cause | Fix | Platforms |
+|---|---|---|---|
+| **Phone: small logo, then it jumps to full size** before the page | `index.html` had no `viewport` meta, so phones laid the loading screen out on a ~980 px virtual page; Flutter only adds its own tag once it starts | Same tag Flutter's engine sets (`width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no`, marked `flt-viewport`) is now in `web/index.html` from the start — logo measured at 180 px / 48 % of a 375 px screen from the first moment | Web |
+| **Plain HTML preview flashed first** (green block, heading, links) | The R3-4 server HTML was visible until Flutter's first frame | Loading screen stays on top; the server HTML stays underneath for search engines (`body{overflow:hidden}` instead of hiding the loader) | Web |
+| **"Add to cart" (+) on product cards did nothing when signed out** | Cards dispatched the add directly; it failed silently in the data layer (the detail page had its own check) | One shared `addToCart()` helper (`lib/features/cart/presentation/add_to_cart.dart`) for every button: signed out → toast + sign-in dialog. Waits briefly if the saved session is still being restored (web no longer waits for that at startup) | All |
+| **Cart taps (add / + / −) responded late** | Each tap waited for a Firestore read + write + a reload of the whole cart **and every product in it, one by one**, before the screen changed | **Optimistic updates** in `CartBloc`: the screen changes on tap; saves run in the background in tap order, rapid taps on one product coalesce into one write (7 taps → 2 writes in the test); a new item uses Firestore `increment` so it merges with a cart still loading after sign-in; a failed save restores the real cart and shows *"Couldn't update your cart…"* (EN/JA) on any page. Cart loading now fetches products in parallel. Tests: `test/features/cart/cart_bloc_test.dart` | All |
+| **Zoom animation on every page change** | No `pageTransitionsTheme` → Flutter's phone-style zoom transition, also on web | Web: no transition (instant, like a website — new page fully shown 60 ms after a sidebar click). Android/iOS apps: keep each platform's native transition | All (web changed) |
+| **Mouse clicks showed the touch "ripple"** | Material's default ink ripple | Web: `NoSplash` in the theme; hover highlight + press shade stay; hand cursor added to plain text links and payment cards (`TapTarget`); product/category/subcategory cards lift 4 px on hover (`HoverLift`) because their opaque image/label backgrounds hide the ink hover. Phone apps keep the ripple | All (web changed) |
+
+---
+
+## 8. Bottom nav redesign, system bars, and app-startup pass (Android / iOS / web)
+
+### 8.1 Floating bottom nav (`main_bottom_nav_bar.dart`)
+- Fully rounded floating pill (radius 28) with side margins, soft two-layer shadow and a hairline border; selected tab keeps its tinted rounded highlight; badge on Cart.
+- **Content runs behind the bar (revised, foodpanda style):** `StandaloneShellScaffold` sets `extendBody`, so pages scroll behind the nav and show around the pill's rounded corners and in the side margins (no square background behind it).
+- **Downward-only fade:** nothing is painted above the pill. From about the pill's middle down to the screen edge, a gradient goes from transparent to 85% page background, so content under the lower half and the system-bar area stays faintly visible (not solid white). A real backdrop blur was deliberately not used — it is re-rendered every scroll frame (expensive, especially on web) and the gradient gives the same look.
+- **Last item still reachable:** with `extendBody` the Scaffold reports the bar's height as the page's bottom padding. The shell pages (home, product list, product detail, wishlist, cart, account) use `SafeArea(bottom: false)` and add `MediaQuery.paddingOf(context).bottom` to their scroll view's padding. `ProductGrid.gridPadding` does the same inside the grid.
+- **Small phones:** below 360 pt wide, margins and label size shrink; labels are single-line with ellipsis.
+- **Short screens / landscape phone browsers (height < 480):** slimmer pill (less padding, 6 pt bottom gap). The pill is centred and capped at 480 pt wide, so it stays a pill rather than a full-width strip. Left/right insets (landscape 3-button bar, notch) are respected via `SafeArea`.
+- **System bars:** the pill sits inside `SafeArea` with a minimum gap, so it clears Android's gesture bar, the 2/3-button bar and the iPhone home indicator, and keeps a gap in phone browsers (no inset).
+- **Tests:** `test/shared/widgets/main_bottom_nav_bar_test.dart` has 20 cases: sizes 320×700, 375×812, 412×915, 568×320 and 590×360, each with no inset, gesture bar (24), 3-button bar (48) and iOS home indicator (34). Each case checks:
+  - the pill stays above the system area;
+  - nothing is drawn above the pill;
+  - the page's bottom padding equals the bar height;
+  - the pill is centred and at most 480 pt wide;
+  - there is no overflow.
+- Verified visually on the production web build: phone emulation at 375 and 320 pt, landscape at 568×320, and desktop at 1280 (no bottom bar).
+
+### 8.2 System navigation (gesture bar and 2/3-button bar)
+- **Found:** the app targets SDK 36, so Android 15+ *forces* edge-to-edge and ignores `systemNavigationBarColor: white`; with 3-button navigation Android then adds its own grey translucent band. Older Androids behaved differently (opaque white bar) — inconsistent across phones.
+- **Fix (`bootstrap.dart`):** `SystemUiMode.edgeToEdge` on every Android version, transparent status and navigation bars, and `system(Status|Navigation)BarContrastEnforced: false` (no grey band). Every page, sheet and dialog already uses `SafeArea`; the only screens that didn't — the admin **product** and **category** forms — now add the system inset to their list's bottom padding, so the Save button always ends above the buttons. iOS was already correct (safe areas handle the home indicator).
+
+### 8.3 Faster app launch (Android / iOS)
+No Android emulator or device was available on this machine, so these are code-path fixes with a clear cause (verified by `flutter analyze`, a release APK build and the test suite), not stopwatch measurements — confirm on a phone.
+
+| Before (every launch) | Now |
+|---|---|
+| Awaited **Stripe** native setup before the first frame | Started in the background; payment awaits `StripeSetup.ensureReady()` |
+| Awaited **Google Sign-In** `initialize()` before the first frame | Started in the background (`GoogleSignInSetup`); sign-in awaits it, sign-out treats it as best-effort |
+| Splash held for a **fixed minimum 1.2 s** on top of the native launch screen (same logo) | No artificial minimum; still waits for the saved session (read from the device) so admins land straight on the admin panel |
+| Home waited for **Firestore over the network** | Paints Firestore's **on-device cache** first (last-seen categories/banners/popular, a local read), then refreshes; offline now shows the cached home instead of an error |
+| **Images re-downloaded every launch** (`Image.network` caches in memory only) | `cached_network_image` keeps product/category/banner photos on disk (`AppNetworkImage`); web keeps the browser cache (Storage serves them `immutable`) |
+
+Expected effect: roughly 1.2 s plus the two SDK setups off every cold start, an instantly filled home page for returning users, and far less mobile data on repeat launches. Release APK size went 68.6 → 75.3 MB, mostly the bundled Japanese font subset (which replaces a 5.3 MB-per-weight runtime download) and the image-cache package.
+
+### 8.4 Web, re-checked
+- None of the above adds anything to web startup: Stripe and Google Sign-In were already off the web critical path, the image-cache package is not used on web, and the fade is a plain gradient.
+- **Regression found by re-measuring, and fixed:** adding `cached_network_image` let pub upgrade `firebase_core_web` (3.11 → 3.12), which loads Firebase JS SDK **12.19.0** — but `web/index.html`'s `modulepreload` hints still named **12.18.0**. The browser downloaded ~270 KB of the old SDK for nothing, then fetched the real one late on the first-frame path: cold first frame 5.4–8.0 s instead of ~4.7 s. `tool/web/finalize_build.js` (part of the Hosting predeploy) now reads the installed `firebase_core_web` version from `pubspec.lock`, looks up its `supportedFirebaseJsSdkVersion` in the pub cache, and rewrites the hints on every deploy — so a future package upgrade can't make them stale again (tested by feeding it a page with the old version).
+- **Result (same 6 Mbps / 120 ms profile, three cold runs):** loader 0.30–0.44 s, Flutter first frame **4.73–4.87 s**, repeat visit first frame **0.72 s** — same as before this round; `main.dart.wasm` 1,191 KB brotli (was 1,186 KB).
+- **Investigated, left as is:** the `google_sign_in_web` plugin downloads Google's `gsi/client` script (~100 KB) when plugins register, even though the website signs in through Firebase's popup. Registration happens for every installed plugin, so avoiding it would mean patching around the plugin; the cost is ~0.1 s of bandwidth in parallel, not on the first-frame path.
+

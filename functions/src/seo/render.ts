@@ -131,7 +131,7 @@ const productPath = (categoryId: string, productId: string) =>
 
 const mostPopularCategory: Doc = {
   id: MOST_POPULAR_ID,
-  name: {en: "Most Popular", ja: "人気商品"},
+  name: {en: "Most Everyday", ja: "エブリデイ定番"},
 };
 
 function findCategory(data: PageData, id: string): Doc | undefined {
@@ -199,7 +199,7 @@ function homeMeta(data: PageData): Meta {
     "<h2>Categories <span lang=\"ja\">カテゴリー</span></h2>",
     `<ul class="ssr-cats">${visibleCategories.map((c) =>
       `<li><a href="${categoryPath(c.id)}">${escapeHtml(bilingual(text(c.name)))}</a></li>`).join("")}</ul>`,
-    popular.length ? "<h2>Most Popular <span lang=\"ja\">人気商品</span></h2>" + productGrid(popular) : "",
+    popular.length ? "<h2>Most Everyday <span lang=\"ja\">エブリデイ定番</span></h2>" + productGrid(popular) : "",
   ].join("");
 
   return {

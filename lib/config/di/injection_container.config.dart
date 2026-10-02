@@ -75,16 +75,14 @@ import 'package:everyday_wholesale/features/cart/data/repositories/cart_reposito
     as _i184;
 import 'package:everyday_wholesale/features/cart/domain/repositories/cart_repository.dart'
     as _i176;
-import 'package:everyday_wholesale/features/cart/domain/usecases/add_to_cart_usecase.dart'
-    as _i430;
 import 'package:everyday_wholesale/features/cart/domain/usecases/clear_cart_usecase.dart'
     as _i883;
 import 'package:everyday_wholesale/features/cart/domain/usecases/get_cart_usecase.dart'
     as _i30;
-import 'package:everyday_wholesale/features/cart/domain/usecases/remove_from_cart_usecase.dart'
-    as _i931;
-import 'package:everyday_wholesale/features/cart/domain/usecases/update_cart_quantity_usecase.dart'
-    as _i900;
+import 'package:everyday_wholesale/features/cart/domain/usecases/increment_cart_item_usecase.dart'
+    as _i236;
+import 'package:everyday_wholesale/features/cart/domain/usecases/set_cart_item_quantity_usecase.dart'
+    as _i437;
 import 'package:everyday_wholesale/features/cart/presentation/bloc/cart_bloc.dart'
     as _i632;
 import 'package:everyday_wholesale/features/checkout/presentation/bloc/checkout_bloc.dart'
@@ -271,9 +269,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i457.FirebaseStorage>(),
       ),
     );
-    gh.lazySingleton<_i145.HomeInitialDatasource>(
-      () => _i145.HomeInitialDatasourceImpl(),
-    );
     gh.lazySingleton<_i967.AdminProductRemoteDatasource>(
       () => _i967.AdminProductRemoteDatasourceImpl(
         gh<_i974.FirebaseFirestore>(),
@@ -367,6 +362,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i398.AppReadinessRepositoryImpl(
         gh<_i204.AppReadinessLocalDatasource>(),
       ),
+    );
+    gh.lazySingleton<_i145.HomeInitialDatasource>(
+      () => _i145.HomeInitialDatasourceImpl(gh<_i974.FirebaseFirestore>()),
     );
     gh.lazySingleton<_i62.OrderRemoteDatasource>(
       () => _i62.OrderRemoteDatasourceImpl(
@@ -622,20 +620,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i819.UpdateCategoryUseCase>(),
       ),
     );
-    gh.factory<_i430.AddToCartUseCase>(
-      () => _i430.AddToCartUseCase(gh<_i176.CartRepository>()),
-    );
     gh.factory<_i883.ClearCartUseCase>(
       () => _i883.ClearCartUseCase(gh<_i176.CartRepository>()),
     );
     gh.factory<_i30.GetCartUseCase>(
       () => _i30.GetCartUseCase(gh<_i176.CartRepository>()),
     );
-    gh.factory<_i931.RemoveFromCartUseCase>(
-      () => _i931.RemoveFromCartUseCase(gh<_i176.CartRepository>()),
+    gh.factory<_i236.IncrementCartItemUseCase>(
+      () => _i236.IncrementCartItemUseCase(gh<_i176.CartRepository>()),
     );
-    gh.factory<_i900.UpdateCartQuantityUseCase>(
-      () => _i900.UpdateCartQuantityUseCase(gh<_i176.CartRepository>()),
+    gh.factory<_i437.SetCartItemQuantityUseCase>(
+      () => _i437.SetCartItemQuantityUseCase(gh<_i176.CartRepository>()),
     );
     gh.factory<_i886.GetStorefrontCategoriesUseCase>(
       () => _i886.GetStorefrontCategoriesUseCase(
@@ -653,9 +648,8 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i632.CartBloc(
         gh<_i870.AuthRepository>(),
         gh<_i30.GetCartUseCase>(),
-        gh<_i430.AddToCartUseCase>(),
-        gh<_i900.UpdateCartQuantityUseCase>(),
-        gh<_i931.RemoveFromCartUseCase>(),
+        gh<_i437.SetCartItemQuantityUseCase>(),
+        gh<_i236.IncrementCartItemUseCase>(),
         gh<_i883.ClearCartUseCase>(),
       ),
     );

@@ -24,6 +24,9 @@ class WishlistPage extends StatelessWidget {
     return ColoredBox(
       color: AppColors.background,
       child: SafeArea(
+        // Bottom handled by the scroll view's padding instead, so content can
+        // run behind the floating bottom nav (StandaloneShellScaffold.extendBody).
+        bottom: false,
         child: Column(
           children: [
             AppHeader(
@@ -63,7 +66,10 @@ class _WishlistBody extends StatelessWidget {
     return ResponsiveContentContainer(
       child: ProductGrid(
         products: state.items,
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 0),
+        // Inside the scroll view: the last row clears the floating bottom nav
+        // (+ system bar) while content still scrolls behind it.
+        gridPadding: EdgeInsets.only(bottom: AppSpacing.md + MediaQuery.paddingOf(context).bottom),
         onTap: (product) => context.push(
           RoutePaths.productDetail(product.categoryId, product.id),
         ),

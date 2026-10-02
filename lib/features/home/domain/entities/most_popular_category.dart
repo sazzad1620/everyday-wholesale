@@ -2,16 +2,18 @@ import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/localization/localized_text.dart';
 import 'category_entity.dart';
 
-/// Reserved id of the storefront's virtual "Most Popular" category. It has
-/// no `categories` doc — its products are whichever ones the admin flagged
-/// `isMostPopular`, each still living in its own real category too. The id
+/// Reserved id of the storefront's virtual "Most Everyday" category (once
+/// called "Most Popular" — the id, flag and code names keep that name so
+/// existing URLs and product data stay valid). It has no `categories` doc —
+/// its products are whichever ones the admin flagged `isMostPopular`, each
+/// still living in its own real category too. The id
 /// is what goes in the URL (`/home/category/most_popular`), and the product
 /// repository maps it to that flag query instead of a `categoryId` match.
 const String mostPopularCategoryId = 'most_popular';
 
 const CategoryEntity mostPopularCategory = CategoryEntity(
   id: mostPopularCategoryId,
-  name: LocalizedText(en: 'Most Popular', ja: '人気商品'),
+  name: LocalizedText(en: 'Most Everyday', ja: 'エブリデイ定番'),
   iconKey: 'most_popular',
   imageUrl: AssetPaths.mostPopularCategoryImage,
 );

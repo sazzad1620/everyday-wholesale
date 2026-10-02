@@ -58,16 +58,16 @@
     The Firebase JS SDK is otherwise only requested once the app has
     downloaded and started — fetch it in parallel instead. The version must
     match `supportedFirebaseJsSdkVersion` in the firebase_core_web package
-    (currently 12.18.0); after upgrading the Firebase packages, update it
-    here too (a mismatch only wastes this prefetch, nothing breaks).
+    (currently 12.19.0). tool/web/finalize_build.js rewrites these to the
+    installed version on every deploy, so they cannot go stale.
     (No preload for main.dart.js/.wasm: which one is needed depends on the
     browser, and the versioned URLs are only known to the bootstrap script.)
   -->
-  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js" crossorigin>
-  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js" crossorigin>
-  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore-pipelines.js" crossorigin>
-  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js" crossorigin>
-  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-pipelines.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js" crossorigin>
 
   <style>
     html, body { margin: 0; height: 100%; background: #FFFFFF; }

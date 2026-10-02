@@ -8,7 +8,10 @@ import '../core/localization/app_locales.dart';
 import '../core/localization/japanese_font.dart';
 import '../features/auth/presentation/bloc/account_bloc.dart';
 import '../features/auth/presentation/bloc/account_state.dart';
+import '../features/cart/presentation/bloc/cart_bloc.dart';
+import '../features/cart/presentation/bloc/cart_state.dart';
 import '../shared/theme/app_theme.dart';
+import '../shared/utils/toast.dart';
 
 class EverydayWholesaleApp extends StatelessWidget {
   const EverydayWholesaleApp({super.key});
@@ -53,6 +56,19 @@ class EverydayWholesaleApp extends StatelessWidget {
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         routerConfig: appRouter,
+        // Cart changes show instantly and save in the background; if a save
+        // fails (e.g. offline) CartBloc restores the real cart — say so,
+        // whichever page the customer is on by then.
+        builder: (context, child) => BlocListener<CartBloc, CartState>(
+          bloc: getIt<CartBloc>(),
+          listenWhen: (previous, current) =>
+              current.syncErrorCount != previous.syncErrorCount && current.syncErrorKey != null,
+          listener: (context, state) {
+            final overlay = rootNavigatorKey.currentState?.overlay;
+            if (overlay != null) AppToast.showInOverlay(overlay, 'cart.sync_failed'.tr(), type: ToastType.error);
+          },
+          child: child!,
+        ),
       ),
     );
   }

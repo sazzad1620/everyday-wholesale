@@ -47,6 +47,9 @@ class _HomeView extends StatelessWidget {
     return ColoredBox(
       color: AppColors.background,
       child: SafeArea(
+        // Bottom handled by the scroll view's padding instead, so content can
+        // run behind the floating bottom nav (StandaloneShellScaffold.extendBody).
+        bottom: false,
         child: Column(
           children: [
             AppHeader(
@@ -108,9 +111,11 @@ class _HomeBody extends StatelessWidget {
 
     return ResponsiveContentContainer(
       child: ListView(
-        padding: const EdgeInsets.only(
+        // Extra bottom space = the floating bottom nav (+ system bar), so the
+        // last row scrolls clear of it while content still passes behind it.
+        padding: EdgeInsets.only(
           top: AppSpacing.md,
-          bottom: AppSpacing.lg,
+          bottom: AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
         ),
         children: [
           if (loaded.promoBanners.isNotEmpty) ...[

@@ -183,7 +183,10 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
           return Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              // Edge-to-edge: the form scrolls behind the system gesture /
+              // 3-button bar, but its last field and Save button end above it.
+              padding: const EdgeInsets.all(AppSpacing.md) +
+                  EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
               children: [
                 SingleImagePicker(
                   imageUrl: _imageUrl,

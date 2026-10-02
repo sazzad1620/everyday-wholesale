@@ -7,7 +7,7 @@
   "home": {
     "search_hint": "商品を検索...",
     "explore_categories": "カテゴリーから探す",
-    "most_popular": "人気商品",
+    "most_popular": "エブリデイ定番",
     "view_all": "すべて見る"
   },
   "drawer": {
@@ -126,6 +126,7 @@
   },
   "cart": {
     "title": "カート",
+    "sync_failed": "カートを更新できませんでした。通信環境を確認して、もう一度お試しください。",
     "empty_title": "カートは空です",
     "empty_message": "カートに追加した商品がここに表示されます。",
     "unit_label": "内容量：{unit}",
@@ -335,9 +336,9 @@
     "product_description_hint": "商品説明",
     "error_product_description_required": "商品説明を入力してください。",
     "product_in_stock_label": "在庫あり",
-    "product_most_popular_label": "人気商品に設定",
-    "product_most_popular_hint": "この商品を「人気商品」とホーム画面にも表示します。",
-    "most_popular_badge": "人気",
+    "product_most_popular_label": "エブリデイ定番に設定",
+    "product_most_popular_hint": "この商品を「エブリデイ定番」とホーム画面にも表示します。",
+    "most_popular_badge": "定番",
     "delete_product_title": "商品を削除しますか？",
     "delete_product_message": "「{name}」はカタログから完全に削除されます。",
     "products_empty_title": "商品はまだありません",

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/widgets/app_network_image.dart';
 import '../../../../shared/widgets/auto_slide_carousel.dart';
 import '../../../../shared/widgets/image_fade_in.dart';
 import '../../domain/entities/promo_banner_entity.dart';
@@ -40,11 +41,11 @@ class _HomePromoCarouselState extends State<HomePromoCarousel> {
     // for bandwidth with four hidden ones on a slow connection.
     if (_precached || widget.banners.isEmpty) return;
     _precached = true;
-    final first = NetworkImage(widget.banners.first.imageUrl);
+    final first = appNetworkImageProvider(widget.banners.first.imageUrl);
     precacheImage(first, context, onError: (_, _) {}).whenComplete(() {
       if (!mounted) return;
       for (final banner in widget.banners.skip(1)) {
-        precacheImage(NetworkImage(banner.imageUrl), context, onError: (_, _) {});
+        precacheImage(appNetworkImageProvider(banner.imageUrl), context, onError: (_, _) {});
       }
     });
   }
@@ -96,7 +97,7 @@ class _BannerSlide extends StatelessWidget {
         borderRadius: BorderRadius.circular(_radius),
         child: ColoredBox(
           color: AppColors.primary.withValues(alpha: 0.06),
-          child: Image.network(
+          child: AppNetworkImage(
             banner.imageUrl,
             fit: BoxFit.cover,
             width: double.infinity,

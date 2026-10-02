@@ -13,4 +13,8 @@ class GetInitialHomeDataUseCase {
   final HomeRepository _repository;
 
   InitialHomeData? call() => _repository.initialHomeData();
+
+  /// Android/iOS: the last-seen home data from the device's offline cache
+  /// (a local read, no network), or null. Callers still refresh after.
+  Future<InitialHomeData?> cached() => _repository.cachedHomeData();
 }

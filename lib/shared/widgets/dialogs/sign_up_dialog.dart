@@ -15,6 +15,7 @@ import '../../theme/app_text_styles.dart';
 import '../../utils/toast.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
+import '../tap_target.dart';
 import 'auth_method_toggle.dart';
 import 'dialog_shell.dart';
 import 'phone_auth_steps.dart';
@@ -241,7 +242,7 @@ class _SignUpDialogState extends State<SignUpDialog> {
                     children: [
                       Text('auth.have_account'.tr(), style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                       const SizedBox(width: 4),
-                      GestureDetector(
+                      TapTarget(
                         onTap: widget.onSwitchToSignIn,
                         child: Text(
                           'auth.sign_in_action'.tr(),

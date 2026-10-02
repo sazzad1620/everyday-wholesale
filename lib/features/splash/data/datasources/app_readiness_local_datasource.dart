@@ -1,22 +1,18 @@
-import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
 abstract class AppReadinessLocalDatasource {
   Future<bool> checkAppReady();
 }
 
+/// No artificial minimum splash time on any platform any more: the logo is
+/// already on screen before Flutter starts (the native launch screen on
+/// Android/iOS, `index.html`'s loading screen on web) and the splash page
+/// shows the same logo, so holding it for a fixed 1.2 s (the old mobile
+/// minimum) only made every launch slower. The splash still waits for the
+/// saved session on mobile (see `SplashPage`), so admins land directly on
+/// the admin panel without a flash of the storefront.
 @LazySingleton(as: AppReadinessLocalDatasource)
 class AppReadinessLocalDatasourceImpl implements AppReadinessLocalDatasource {
-  /// Minimum time the splash logo stays up on mobile, so it reads as a
-  /// deliberate brand moment rather than a flicker. Web skips it: by the
-  /// time Flutter draws its first frame the visitor has already been
-  /// watching the same logo on `index.html`'s loading screen, so holding it
-  /// longer is pure extra wait.
-  static const Duration _mobileMinimumSplash = Duration(milliseconds: 1200);
-
   @override
-  Future<bool> checkAppReady() async {
-    if (!kIsWeb) await Future<void>.delayed(_mobileMinimumSplash);
-    return true;
-  }
+  Future<bool> checkAppReady() async => true;
 }

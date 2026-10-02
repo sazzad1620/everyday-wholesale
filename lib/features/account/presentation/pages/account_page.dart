@@ -55,6 +55,9 @@ class _AccountView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      // Bottom handled by the scroll view's padding instead, so content can
+      // run behind the floating bottom nav (StandaloneShellScaffold.extendBody).
+      bottom: false,
       child: Column(
         children: [
           AppHeader(
@@ -99,7 +102,8 @@ class _AccountBody extends StatelessWidget {
       builder: (context, state) {
         final user = state.user;
         return ListView(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          // Extra bottom space clears the floating bottom nav (+ system bar).
+          padding: const EdgeInsets.all(AppSpacing.md) + EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
           children: [
             Row(
               children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'app_network_image.dart';
 import 'image_fade_in.dart';
 
 /// A product's photo, inset like [CategoryImage] — or, until an admin
@@ -33,7 +34,7 @@ class ProductImage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: url.startsWith('http')
-                  ? Image.network(
+                  ? AppNetworkImage(
                       url,
                       fit: BoxFit.cover,
                       width: double.infinity,

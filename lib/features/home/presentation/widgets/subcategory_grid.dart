@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/widgets/hover_lift.dart';
 import '../../domain/entities/subcategory_entity.dart';
 import 'subcategory_card.dart';
 
@@ -13,6 +14,8 @@ class SubcategoryGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      // Lets a hovered card (HoverLift) rise without its top edge being cut.
+      clipBehavior: Clip.none,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -27,7 +30,9 @@ class SubcategoryGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final subcategory = subcategories[index];
-        return SubcategoryCard(subcategory: subcategory, index: index, onTap: () => onSubcategoryTap(subcategory));
+        return HoverLift(
+          child: SubcategoryCard(subcategory: subcategory, index: index, onTap: () => onSubcategoryTap(subcategory)),
+        );
       },
     );
   }

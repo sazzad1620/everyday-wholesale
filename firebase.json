@@ -97,7 +97,7 @@
         ]
       },
       {
-        "source": "**/!(*.*)",
+        "source": "/{account,admin,cart,wishlist,checkout,order-confirmation}{,/**}",
         "headers": [
           {
             "key": "Cache-Control",

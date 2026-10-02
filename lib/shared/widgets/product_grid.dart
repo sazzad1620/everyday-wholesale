@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/product/domain/entities/product_entity.dart';
 import '../theme/app_spacing.dart';
+import 'hover_lift.dart';
 import 'product_card.dart';
 
 /// The product-card grid shared by [ProductListPage] and [WishlistPage].
@@ -21,6 +22,7 @@ class ProductGrid extends StatelessWidget {
     required this.products,
     required this.onTap,
     this.padding = EdgeInsets.zero,
+    this.gridPadding = EdgeInsets.zero,
     this.shrinkWrap = false,
     this.physics,
   });
@@ -28,6 +30,11 @@ class ProductGrid extends StatelessWidget {
   final List<ProductEntity> products;
   final ValueChanged<ProductEntity> onTap;
   final EdgeInsets padding;
+
+  /// Padding *inside* the scroll view (unlike [padding], which sits outside
+  /// it) — e.g. bottom space so the last row can scroll clear of the floating
+  /// bottom nav while the grid itself still runs behind it.
+  final EdgeInsets gridPadding;
 
   /// Pass `true` (with [physics] set to [NeverScrollableScrollPhysics]) when
   /// this grid is nested inside another scrollable, same as [GridView.builder].
@@ -53,6 +60,9 @@ class ProductGrid extends StatelessWidget {
           final cardWidth = (constraints.maxWidth - (crossAxisCount - 1) * AppSpacing.sm) / crossAxisCount;
 
           return GridView.builder(
+            // Lets a hovered card (HoverLift) rise without its top edge being cut.
+            clipBehavior: Clip.none,
+            padding: gridPadding,
             shrinkWrap: shrinkWrap,
             physics: physics,
             itemCount: products.length,
@@ -64,7 +74,7 @@ class ProductGrid extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               final product = products[index];
-              return ProductCard(product: product, onTap: () => onTap(product));
+              return HoverLift(child: ProductCard(product: product, onTap: () => onTap(product)));
             },
           );
         },

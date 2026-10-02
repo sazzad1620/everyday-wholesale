@@ -4,23 +4,28 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../product/data/datasources/product_remote_datasource.dart';
-import '../../../product/domain/entities/product_entity.dart';
 import '../../domain/entities/cart_item_entity.dart';
 
 /// Per-user cart at `users/{uid}/cart/{productId}` — doc only stores
 /// `quantity`; the actual product data is resolved fresh via
-/// [ProductRemoteDatasource] on every read, so cart contents never drift
-/// from the real product (price changes, goes out of stock, etc.).
+/// [ProductRemoteDatasource] when the cart is loaded, so cart contents never
+/// drift from the real product (price changes, goes out of stock, etc.).
+///
+/// Writes deliberately return nothing: `CartBloc` updates the screen
+/// optimistically and only needs to know whether a write succeeded — it no
+/// longer re-reads the whole cart (and every product in it) after each tap.
 abstract class CartRemoteDatasource {
   Future<List<CartItemEntity>> getCart();
 
-  Future<List<CartItemEntity>> addItem(ProductEntity product, int quantity);
+  /// Sets an item's quantity; `<= 0` removes it.
+  Future<void> setQuantity(String productId, int quantity);
 
-  Future<List<CartItemEntity>> updateQuantity(String productId, int quantity);
+  /// Adds [by] to whatever is stored, atomically — used for "Add to cart" on
+  /// an item not yet in the local cart, so it merges with the saved cart
+  /// even if that hasn't finished loading.
+  Future<void> incrementQuantity(String productId, int by);
 
-  Future<List<CartItemEntity>> removeItem(String productId);
-
-  Future<List<CartItemEntity>> clear();
+  Future<void> clear();
 }
 
 @LazySingleton(as: CartRemoteDatasource)
@@ -37,59 +42,41 @@ class CartRemoteDatasourceImpl implements CartRemoteDatasource {
     return _firestore.collection('users').doc(uid).collection('cart');
   }
 
-  Future<List<CartItemEntity>> _fetchItems() async {
+  @override
+  Future<List<CartItemEntity>> getCart() async {
     final snapshot = await _cartCollection.get();
-    final items = <CartItemEntity>[];
-    for (final doc in snapshot.docs) {
-      final quantity = (doc.data()['quantity'] as num?)?.toInt() ?? 0;
-      if (quantity <= 0) continue;
-      final product = await _productDatasource.getProductById(doc.id);
-      // Product may have been deleted by an admin since it was added —
-      // silently drop it rather than showing a broken cart row.
-      if (product != null) {
-        items.add(CartItemEntity(product: product, quantity: quantity));
-      }
-    }
-    return items;
+    final entries = [
+      for (final doc in snapshot.docs)
+        if (((doc.data()['quantity'] as num?)?.toInt() ?? 0) > 0) (doc.id, (doc.data()['quantity'] as num).toInt()),
+    ];
+    // All products in parallel (was one-by-one — a 10-item cart took 10
+    // sequential round trips to open).
+    final products = await Future.wait(entries.map((e) => _productDatasource.getProductById(e.$1)));
+    return [
+      for (var i = 0; i < entries.length; i++)
+        // Product may have been deleted by an admin since it was added —
+        // silently drop it rather than showing a broken cart row.
+        if (products[i] != null) CartItemEntity(product: products[i]!, quantity: entries[i].$2),
+    ];
   }
 
   @override
-  Future<List<CartItemEntity>> getCart() => _fetchItems();
-
-  @override
-  Future<List<CartItemEntity>> addItem(ProductEntity product, int quantity) async {
-    final docRef = _cartCollection.doc(product.id);
-    final snapshot = await docRef.get();
-    final currentQuantity = snapshot.exists ? ((snapshot.data()?['quantity'] as num?)?.toInt() ?? 0) : 0;
-    await docRef.set({'quantity': currentQuantity + quantity});
-    return _fetchItems();
+  Future<void> setQuantity(String productId, int quantity) {
+    final doc = _cartCollection.doc(productId);
+    return quantity <= 0 ? doc.delete() : doc.set({'quantity': quantity});
   }
 
   @override
-  Future<List<CartItemEntity>> updateQuantity(String productId, int quantity) async {
-    final docRef = _cartCollection.doc(productId);
-    if (quantity <= 0) {
-      await docRef.delete();
-    } else {
-      await docRef.set({'quantity': quantity});
-    }
-    return _fetchItems();
-  }
+  Future<void> incrementQuantity(String productId, int by) =>
+      _cartCollection.doc(productId).set({'quantity': FieldValue.increment(by)}, SetOptions(merge: true));
 
   @override
-  Future<List<CartItemEntity>> removeItem(String productId) async {
-    await _cartCollection.doc(productId).delete();
-    return _fetchItems();
-  }
-
-  @override
-  Future<List<CartItemEntity>> clear() async {
+  Future<void> clear() async {
     final snapshot = await _cartCollection.get();
     final batch = _firestore.batch();
     for (final doc in snapshot.docs) {
       batch.delete(doc.reference);
     }
     await batch.commit();
-    return const [];
   }
 }

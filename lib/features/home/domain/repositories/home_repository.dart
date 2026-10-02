@@ -12,4 +12,7 @@ abstract class HomeRepository {
 
   /// Home data embedded by the web server in the page it served, if any.
   InitialHomeData? initialHomeData();
+
+  /// Mobile: home data from the device's offline Firestore cache, if any.
+  Future<InitialHomeData?> cachedHomeData();
 }

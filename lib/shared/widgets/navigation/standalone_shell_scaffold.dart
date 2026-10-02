@@ -50,6 +50,11 @@ class _StandaloneShellScaffoldState extends State<StandaloneShellScaffold> {
         },
       ),
       body: widget.body,
+      // Pages run behind the floating bottom nav (visible around its rounded
+      // corners and faintly through the fade below it). The Scaffold then
+      // reports the bar's height as the body's bottom padding, which each
+      // page adds to its scroll view so the last item still scrolls clear.
+      extendBody: !isWide,
       bottomNavigationBar: isWide
           ? null
           : MainBottomNavBar(

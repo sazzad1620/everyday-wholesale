@@ -27,10 +27,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetInitialHomeDataUseCase _getInitialHomeDataUseCase;
 
   Future<void> _onHomeStarted(HomeStarted event, Emitter<HomeState> emit) async {
-    // On web the server-rendered page carries the home data — paint it
-    // straight away instead of a spinner, then refresh from Firestore below
-    // (Equatable state: no rebuild if nothing changed).
-    final initial = _getInitialHomeDataUseCase();
+    // Paint data we already have straight away instead of a spinner, then
+    // refresh from Firestore below (Equatable state: no rebuild if nothing
+    // changed): on web the server-rendered page carries the home data; on
+    // Android/iOS it's whatever Firestore cached on the device last time.
+    var initial = _getInitialHomeDataUseCase();
+    if (initial == null) {
+      emit(const HomeLoading());
+      initial = await _getInitialHomeDataUseCase.cached();
+    }
     if (initial != null) {
       emit(
         HomeLoaded(
@@ -39,8 +44,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           mostPopularProducts: initial.popular,
         ),
       );
-    } else {
-      emit(const HomeLoading());
     }
 
     final categoriesFuture = _getCategoriesUseCase(const NoParams());

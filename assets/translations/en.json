@@ -7,7 +7,7 @@
   "home": {
     "search_hint": "Search for products...",
     "explore_categories": "Explore By Categories",
-    "most_popular": "Most Popular",
+    "most_popular": "Most Everyday",
     "view_all": "View All"
   },
   "drawer": {
@@ -126,6 +126,7 @@
   },
   "cart": {
     "title": "Cart",
+    "sync_failed": "Couldn't update your cart. Please check your connection and try again.",
     "empty_title": "Your cart is empty",
     "empty_message": "Items you add to your cart will show up here.",
     "unit_label": "Unit: {unit}",
@@ -335,9 +336,9 @@
     "product_description_hint": "Description",
     "error_product_description_required": "Please enter a description.",
     "product_in_stock_label": "In Stock",
-    "product_most_popular_label": "Mark as Most Popular",
-    "product_most_popular_hint": "Also shows this product in Most Popular and on the home page.",
-    "most_popular_badge": "Popular",
+    "product_most_popular_label": "Mark as Most Everyday",
+    "product_most_popular_hint": "Also shows this product in Most Everyday and on the home page.",
+    "most_popular_badge": "Everyday",
     "delete_product_title": "Delete product?",
     "delete_product_message": "\"{name}\" will be permanently removed from the catalog.",
     "products_empty_title": "No products yet",

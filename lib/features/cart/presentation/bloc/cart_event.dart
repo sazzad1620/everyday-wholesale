@@ -42,6 +42,23 @@ class CartCleared extends CartEvent {
   const CartCleared();
 }
 
+/// Internal: a background save failed — reload the true cart from Firestore
+/// and tell the UI. Not dispatched by UI code.
+class CartSyncFailed extends CartEvent {
+  const CartSyncFailed(this.messageKey);
+
+  final String messageKey;
+
+  @override
+  List<Object?> get props => [messageKey];
+}
+
+/// Internal: reload from Firestore once pending saves have finished (used
+/// when the cart changed while it was still loading).
+class CartReloadRequested extends CartEvent {
+  const CartReloadRequested();
+}
+
 /// Fired internally by the auth-state subscription — not dispatched
 /// directly by UI code. Reloads the cart from Firestore on sign-in, empties
 /// it on sign-out (each account has its own cart).

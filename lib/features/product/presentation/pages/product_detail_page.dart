@@ -75,6 +75,9 @@ class ProductDetailPage extends StatelessWidget {
       child: ColoredBox(
         color: AppColors.background,
         child: SafeArea(
+          // Bottom handled by the scroll view's padding instead, so content can
+          // run behind the floating bottom nav (StandaloneShellScaffold.extendBody).
+          bottom: false,
           child: BlocBuilder<ProductDetailBloc, ProductDetailState>(
             builder: (context, state) {
               final breadcrumbItems = [
@@ -164,6 +167,10 @@ class _ProductDetailBody extends StatelessWidget {
 
     final loaded = state as ProductDetailLoaded;
 
-    return SingleChildScrollView(child: ProductDetailContent(product: loaded.product, reviews: loaded.reviews));
+    return SingleChildScrollView(
+      // Clears the floating bottom nav (+ system bar) at the end of the page.
+      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+      child: ProductDetailContent(product: loaded.product, reviews: loaded.reviews),
+    );
   }
 }

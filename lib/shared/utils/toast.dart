@@ -17,10 +17,15 @@ abstract final class AppToast {
   static OverlayEntry? _entry;
 
   /// Shows [message] for a few seconds, replacing any toast already showing.
-  static void show(BuildContext context, String message, {ToastType type = ToastType.info}) {
+  static void show(BuildContext context, String message, {ToastType type = ToastType.info}) =>
+      showInOverlay(Overlay.of(context, rootOverlay: true), message, type: type);
+
+  /// For callers with no widget context below the navigator — e.g. an
+  /// app-level listener reacting to a background failure (pass the root
+  /// navigator's `overlay`).
+  static void showInOverlay(OverlayState overlay, String message, {ToastType type = ToastType.info}) {
     _entry?.remove();
 
-    final overlay = Overlay.of(context, rootOverlay: true);
     late final OverlayEntry entry;
     entry = OverlayEntry(
       builder: (_) => _ToastOverlay(

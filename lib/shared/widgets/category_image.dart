@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'app_network_image.dart';
 import 'image_fade_in.dart';
 
 /// A category's photo, or — until an admin uploads one — one plain, generic
@@ -33,7 +34,7 @@ class CategoryImage extends StatelessWidget {
               // URLs; a bundled asset path is only ever a local demo
               // stand-in for one.
               child: url.startsWith('http')
-                  ? Image.network(
+                  ? AppNetworkImage(
                       url,
                       fit: BoxFit.cover,
                       width: double.infinity,

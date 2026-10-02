@@ -133,7 +133,7 @@ class _SeedPageState extends State<_SeedPage> {
 
 // Same 9 categories the old home_mock_datasource.dart hardcoded.
 final List<Map<String, dynamic>> _categories = [
-  {'id': 'most_popular', 'name': 'Most Popular', 'iconKey': 'most_popular', 'imageUrl': null, 'subcategories': []},
+  {'id': 'most_popular', 'name': 'Most Everyday', 'iconKey': 'most_popular', 'imageUrl': null, 'subcategories': []},
   {
     'id': 'meat_fish',
     'name': 'Meat & Fish',

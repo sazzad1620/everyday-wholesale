@@ -36,4 +36,7 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   InitialHomeData? initialHomeData() => _initialDatasource.read();
+
+  @override
+  Future<InitialHomeData?> cachedHomeData() => _initialDatasource.readCached();
 }

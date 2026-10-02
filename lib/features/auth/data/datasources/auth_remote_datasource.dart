@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/exceptions.dart';
+import '../../../../core/utils/google_sign_in_setup.dart';
 import '../models/address_model.dart';
 import '../models/user_model.dart';
 
@@ -180,6 +181,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         final userCredential = await _firebaseAuth.signInWithPopup(GoogleAuthProvider());
         user = userCredential.user;
       } else {
+        await GoogleSignInSetup.ensureReady();
         final account = await GoogleSignIn.instance.authenticate();
         final credential = GoogleAuthProvider.credential(idToken: account.authentication.idToken);
         final userCredential = await _firebaseAuth.signInWithCredential(credential);
@@ -217,7 +219,12 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     // Also clears the cached Google session, so the next sign-in shows the
     // account picker again instead of silently reusing this one.
     if (!kIsWeb) {
-      await GoogleSignIn.instance.signOut();
+      // Best effort: the Firebase sign-out above is what signs the user
+      // out; a Google-side hiccup here must not turn it into an error.
+      try {
+        await GoogleSignInSetup.ensureReady();
+        await GoogleSignIn.instance.signOut();
+      } catch (_) {}
     }
   }
 

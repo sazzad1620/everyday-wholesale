@@ -9,6 +9,7 @@ import '../../theme/app_input_style.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
 import '../buttons/primary_button.dart';
+import '../tap_target.dart';
 
 /// First half of the phone+OTP flow — collect the number (plus, for sign-up,
 /// whatever [leading] fields it's paired with) and request a code. Shared by
@@ -133,7 +134,7 @@ class _OtpVerificationStepState extends State<OtpVerificationStep> {
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
-            GestureDetector(
+            TapTarget(
               onTap: widget.onChangeNumber,
               child: Text(
                 'auth.change_number'.tr(),
@@ -141,7 +142,7 @@ class _OtpVerificationStepState extends State<OtpVerificationStep> {
               ),
             ),
             const Spacer(),
-            GestureDetector(
+            TapTarget(
               onTap: canResend
                   ? () {
                       widget.onResend();
