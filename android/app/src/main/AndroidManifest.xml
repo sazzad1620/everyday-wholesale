@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Android 13+ runtime permission for showing offer notifications. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="Everyday Wholesale"
         android:name="${applicationName}"
@@ -25,6 +27,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Offer push notifications: flat white icon. Without it Android falls
+             back to the full-colour launcher logo, which real devices draw as
+             an empty circle. No colour is set on purpose, so Android uses its
+             own default tint, like other apps. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_offer" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

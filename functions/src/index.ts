@@ -1,5 +1,6 @@
 import {initializeApp} from "firebase-admin/app";
-import {getFirestore} from "firebase-admin/firestore";
+import {FieldValue, getFirestore, Timestamp} from "firebase-admin/firestore";
+import {getMessaging, Message} from "firebase-admin/messaging";
 import {logger} from "firebase-functions";
 import {defineSecret} from "firebase-functions/params";
 import {setGlobalOptions} from "firebase-functions/v2";
@@ -229,6 +230,105 @@ export const reconcilePendingPayments = onSchedule(
     }
   }
 );
+
+interface LocalizedInput {
+  en: string;
+  ja: string;
+}
+
+/** Reads `{en, ja}` from untrusted callable data; `en` must be non-empty. */
+function parseLocalized(raw: unknown, field: string, maxLength: number): LocalizedInput {
+  const map = (raw ?? {}) as Record<string, unknown>;
+  const en = typeof map.en === "string" ? map.en.trim() : "";
+  const ja = typeof map.ja === "string" ? map.ja.trim() : "";
+  if (en.length === 0) {
+    throw new HttpsError("invalid-argument", `${field} (English) is required.`);
+  }
+  if (en.length > maxLength || ja.length > maxLength) {
+    throw new HttpsError("invalid-argument", `${field} is too long.`);
+  }
+  return {en, ja};
+}
+
+/**
+ * Admin-only: saves an offer to `offers/` and pushes it to every customer.
+ * Devices subscribe to `all_en` or `all_ja` by app language (signed in or
+ * not), so each language gets its own message; a blank Japanese text falls
+ * back to English, same as the Offers page does.
+ *
+ * The offer is saved first and the push is best-effort — a messaging
+ * outage must not lose the offer (it is still visible on the Offers page),
+ * so a push failure is reported in the result instead of thrown.
+ */
+export const sendOffer = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+  const user = await db.collection("users").doc(request.auth.uid).get();
+  if (user.data()?.role !== "admin") {
+    throw new HttpsError("permission-denied", "Admins only.");
+  }
+
+  const title = parseLocalized(request.data?.title, "title", 100);
+  const body = parseLocalized(request.data?.body, "body", 500);
+
+  const imageUrl = request.data?.imageUrl;
+  if (imageUrl != null && (typeof imageUrl !== "string" || !imageUrl.startsWith("https://"))) {
+    throw new HttpsError("invalid-argument", "imageUrl must be an https URL.");
+  }
+  const expiresAtMillis = request.data?.expiresAtMillis;
+  if (expiresAtMillis != null && typeof expiresAtMillis !== "number") {
+    throw new HttpsError("invalid-argument", "expiresAtMillis must be a number.");
+  }
+
+  const offerRef = db.collection("offers").doc();
+  await offerRef.set({
+    title,
+    body,
+    createdAt: FieldValue.serverTimestamp(),
+    ...(imageUrl ? {imageUrl} : {}),
+    ...(expiresAtMillis ? {expiresAt: Timestamp.fromMillis(expiresAtMillis)} : {}),
+  });
+
+  const messaging = getMessaging();
+  // Android gets a data-only message and the app draws the notification
+  // itself (logo on the right, full text on expand, the offer's photo — if
+  // any — as the expanded banner); that is the only way to get that layout,
+  // since Firebase's own notification payload can only add a big picture.
+  // iOS can't run app code for a closed app this way, so it gets a normal
+  // alert that the system draws. An Android app build from before this
+  // change ignores data-only messages, so it won't show offers.
+  const messageFor = (topic: string, text: {title: string; body: string}): Message => ({
+    topic,
+    data: {
+      type: "offer",
+      offerId: offerRef.id,
+      title: text.title,
+      body: text.body,
+      ...(imageUrl ? {imageUrl: String(imageUrl)} : {}),
+    },
+    android: {priority: "high", ttl: 24 * 60 * 60 * 1000},
+    apns: {
+      headers: {"apns-priority": "10"},
+      payload: {aps: {alert: {title: text.title, body: text.body}, sound: "default"}},
+    },
+  });
+
+  let pushed = true;
+  try {
+    await Promise.all([
+      messaging.send(messageFor("all_en", {title: title.en, body: body.en})),
+      messaging.send(
+        messageFor("all_ja", {title: title.ja || title.en, body: body.ja || body.en})
+      ),
+    ]);
+  } catch (error) {
+    pushed = false;
+    logger.error(`Offer ${offerRef.id} saved but the push failed`, error);
+  }
+
+  return {offerId: offerRef.id, pushed};
+});
 
 // Server-rendered storefront pages + sitemap for SEO and a fast first
 // paint — see src/seo/render.ts and docs/WEB_PERFORMANCE.md (R3-4).

@@ -6,6 +6,8 @@ abstract final class RoutePaths {
   static const String adminAccount = '/admin/account';
   static const String adminCategoryForm = '/admin/categories/form';
   static const String adminProductForm = '/admin/products/form';
+  static const String adminOfferForm = '/admin/offers/form';
+  static const String offers = '/offers';
   static const String orderHistory = '/account/order-history';
   static const String myReviews = '/account/my-reviews';
   static const String orderDetail = '/account/order-detail';

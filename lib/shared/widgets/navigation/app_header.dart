@@ -12,6 +12,7 @@ import '../../../features/auth/presentation/bloc/account_event.dart';
 import '../../../features/auth/presentation/bloc/account_state.dart';
 import '../../../features/cart/presentation/bloc/cart_bloc.dart';
 import '../../../features/cart/presentation/bloc/cart_state.dart';
+import '../../../features/offer/presentation/bloc/offer_badge_bloc.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
@@ -34,6 +35,7 @@ class AppHeader extends StatelessWidget {
     required this.onAccountTap,
     this.showSearchBar = true,
     this.showBackButton = false,
+    this.showOffersAction = true,
   });
 
   /// Opens [MainMenuDrawer] normally; on pages where [showBackButton] is
@@ -49,6 +51,10 @@ class AppHeader extends StatelessWidget {
   /// account and order-history pages that are drilled into rather than
   /// switched to, where "go back" makes more sense than opening the menu.
   final bool showBackButton;
+
+  /// The bell that opens the customer Offers page — off for the admin shell,
+  /// which manages offers rather than reading them.
+  final bool showOffersAction;
 
   @override
   Widget build(BuildContext context) {
@@ -119,6 +125,24 @@ class _NarrowHeaderColumn extends StatelessWidget {
               ),
               const _BrandMark(),
               const Spacer(),
+              if (header.showOffersAction) ...[
+                InkWell(
+                  onTap: () => context.push(RoutePaths.offers),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: BlocBuilder<OfferBadgeBloc, OfferBadgeState>(
+                      bloc: getIt<OfferBadgeBloc>(),
+                      builder: (context, state) => Badge(
+                        smallSize: 9,
+                        isLabelVisible: state.hasUnseen,
+                        child: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 22),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+              ],
               InkWell(
                 onTap: header.onAccountTap,
                 borderRadius: BorderRadius.circular(20),
@@ -190,6 +214,18 @@ class _WideHeaderRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           const LanguageToggle(),
           const SizedBox(width: AppSpacing.sm),
+          if (header.showOffersAction) ...[
+            BlocBuilder<OfferBadgeBloc, OfferBadgeState>(
+              bloc: getIt<OfferBadgeBloc>(),
+              builder: (context, state) => _HeaderNavAction(
+                icon: Icons.notifications_none_rounded,
+                label: 'nav.offers'.tr(),
+                showDot: state.hasUnseen,
+                onTap: () => context.push(RoutePaths.offers),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+          ],
           _HeaderNavAction(
             icon: Icons.favorite_border_rounded,
             label: 'nav.wishlist'.tr(),
@@ -275,12 +311,16 @@ class _HeaderNavAction extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.badgeCount,
+    this.showDot = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final int? badgeCount;
+
+  /// A plain "something new" dot, for entries with no number to show.
+  final bool showDot;
 
   @override
   Widget build(BuildContext context) {
@@ -296,6 +336,7 @@ class _HeaderNavAction extends StatelessWidget {
           icon: icon,
           label: label,
           badgeCount: badgeCount,
+          showDot: showDot,
         ),
       ),
     );
@@ -311,17 +352,21 @@ class _HeaderNavIconLabel extends StatelessWidget {
     required this.icon,
     required this.label,
     this.badgeCount,
+    this.showDot = false,
   });
 
   final IconData icon;
   final String label;
   final int? badgeCount;
+  final bool showDot;
 
   @override
   Widget build(BuildContext context) {
     Widget iconWidget = Icon(icon, color: AppColors.textPrimary, size: 22);
     if (badgeCount != null && badgeCount! > 0) {
       iconWidget = Badge(label: Text('$badgeCount'), child: iconWidget);
+    } else if (showDot) {
+      iconWidget = Badge(smallSize: 9, child: iconWidget);
     }
 
     return Column(

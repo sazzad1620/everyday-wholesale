@@ -132,6 +132,15 @@
             "value": "public, max-age=86400, stale-while-revalidate=604800"
           }
         ]
+      },
+      {
+        "source": "/assets/fonts/MaterialIcons-Regular.otf",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   }

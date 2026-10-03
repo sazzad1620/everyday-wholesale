@@ -1,0 +1,12 @@
+{
+  "Simulator Target Bundle": "com.example.everydayWholesale",
+  "aps": {
+    "alert": {
+      "title": "Free delivery today",
+      "body": "Order above 5,000 yen today and delivery is free across Tokyo."
+    },
+    "sound": "default"
+  },
+  "type": "offer",
+  "offerId": "simulator-test"
+}

@@ -7,7 +7,9 @@ import '../../features/account/presentation/pages/edit_profile_page.dart';
 import '../../features/account/presentation/pages/order_detail_page.dart';
 import '../../features/account/presentation/pages/order_history_page.dart';
 import '../../features/admin/presentation/pages/categories/admin_category_form_page.dart';
+import '../../features/admin/presentation/pages/offers/admin_offer_form_page.dart';
 import '../../features/admin/presentation/pages/orders/admin_order_detail_page.dart';
+import '../../features/offer/presentation/pages/offers_page.dart';
 import '../../features/admin/presentation/pages/products/admin_product_form_page.dart';
 import '../../features/admin/presentation/pages/shell/admin_account_page.dart';
 import '../../features/admin/presentation/pages/shell/admin_shell_page.dart';
@@ -158,6 +160,16 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.adminProductForm,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => AdminProductFormPage(initial: state.extra as ProductEntity?),
+    ),
+    GoRoute(
+      path: RoutePaths.adminOfferForm,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const AdminOfferFormPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.offers,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const OffersPage(),
     ),
     GoRoute(
       path: RoutePaths.orderHistory,

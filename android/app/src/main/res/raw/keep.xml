@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Release builds strip resources nothing references directly. The offer
+     notification looks these two up by name at runtime (flutter_local_notifications
+     and the FCM manifest meta-data), so without this the release build drops
+     the logo and notifications fail with "resource could not be found". -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification_large,@drawable/ic_stat_offer" />

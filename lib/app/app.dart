@@ -6,6 +6,7 @@ import '../config/di/injection_container.dart';
 import '../config/routes/app_router.dart';
 import '../core/localization/app_locales.dart';
 import '../core/localization/japanese_font.dart';
+import '../core/notifications/push_notification_service.dart';
 import '../features/auth/presentation/bloc/account_bloc.dart';
 import '../features/auth/presentation/bloc/account_state.dart';
 import '../features/cart/presentation/bloc/cart_bloc.dart';
@@ -25,6 +26,8 @@ class EverydayWholesaleApp extends StatelessWidget {
     // Fetched only once Japanese is actually in use (at launch for a saved
     // Japanese preference, or on switching) — idempotent, never throws.
     if (locale.languageCode == AppLocales.ja.languageCode) JapaneseFont.ensureLoaded();
+    // Push topic follows the app language (idempotent; no-op on web).
+    PushNotificationService.syncLanguage(locale.languageCode);
 
     return BlocListener<AccountBloc, AccountState>(
       bloc: getIt<AccountBloc>(),

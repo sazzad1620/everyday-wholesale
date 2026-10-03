@@ -11,6 +11,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import '../config/di/injection_container.dart';
 import '../core/localization/app_locales.dart';
+import '../core/notifications/push_notification_service.dart';
 import '../core/utils/google_sign_in_setup.dart';
 import '../core/utils/stripe_setup.dart';
 import '../firebase_options.dart';
@@ -55,6 +56,7 @@ Future<void> bootstrap() async {
   } else {
     unawaited(StripeSetup.ensureReady().catchError((_) {}));
     unawaited(GoogleSignInSetup.ensureReady().catchError((_) {}));
+    unawaited(PushNotificationService.init());
   }
 
   configureDependencies();

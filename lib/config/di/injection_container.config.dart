@@ -29,6 +29,8 @@ import 'package:everyday_wholesale/features/admin/presentation/bloc/categories/c
     as _i978;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/dashboard/dashboard_bloc.dart'
     as _i902;
+import 'package:everyday_wholesale/features/admin/presentation/bloc/offers/offer_form_bloc.dart'
+    as _i403;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/orders/admin_order_detail_bloc.dart'
     as _i1054;
 import 'package:everyday_wholesale/features/admin/presentation/bloc/orders/admin_order_list_bloc.dart'
@@ -131,6 +133,28 @@ import 'package:everyday_wholesale/features/home/domain/usecases/update_category
     as _i819;
 import 'package:everyday_wholesale/features/home/presentation/bloc/home_bloc.dart'
     as _i1013;
+import 'package:everyday_wholesale/features/offer/data/datasources/offer_local_datasource.dart'
+    as _i1073;
+import 'package:everyday_wholesale/features/offer/data/datasources/offer_remote_datasource.dart'
+    as _i928;
+import 'package:everyday_wholesale/features/offer/data/repositories/offer_repository_impl.dart'
+    as _i527;
+import 'package:everyday_wholesale/features/offer/domain/repositories/offer_repository.dart'
+    as _i250;
+import 'package:everyday_wholesale/features/offer/domain/usecases/create_offer_usecase.dart'
+    as _i585;
+import 'package:everyday_wholesale/features/offer/domain/usecases/delete_offer_usecase.dart'
+    as _i540;
+import 'package:everyday_wholesale/features/offer/domain/usecases/get_offers_usecase.dart'
+    as _i759;
+import 'package:everyday_wholesale/features/offer/domain/usecases/has_unseen_offers_usecase.dart'
+    as _i79;
+import 'package:everyday_wholesale/features/offer/domain/usecases/mark_offers_seen_usecase.dart'
+    as _i1057;
+import 'package:everyday_wholesale/features/offer/presentation/bloc/offer_badge_bloc.dart'
+    as _i798;
+import 'package:everyday_wholesale/features/offer/presentation/bloc/offer_list_bloc.dart'
+    as _i226;
 import 'package:everyday_wholesale/features/order/data/datasources/admin_order_remote_datasource.dart'
     as _i625;
 import 'package:everyday_wholesale/features/order/data/datasources/order_remote_datasource.dart'
@@ -260,6 +284,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i809.FirebaseFunctions>(
       () => firebaseModule.firebaseFunctions,
     );
+    gh.lazySingleton<_i1073.OfferLocalDatasource>(
+      () => _i1073.OfferLocalDatasourceImpl(),
+    );
     gh.lazySingleton<_i204.AppReadinessLocalDatasource>(
       () => _i204.AppReadinessLocalDatasourceImpl(),
     );
@@ -306,6 +333,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i581.ProductRemoteDatasource>(
       () => _i581.ProductRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.lazySingleton<_i928.OfferRemoteDatasource>(
+      () => _i928.OfferRemoteDatasourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i809.FirebaseFunctions>(),
+      ),
     );
     gh.lazySingleton<_i660.AdminDashboardRemoteDatasource>(
       () => _i660.AdminDashboardRemoteDatasourceImpl(
@@ -454,6 +487,27 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i411.ProductRepository>(
       () => _i137.ProductRepositoryImpl(gh<_i581.ProductRemoteDatasource>()),
     );
+    gh.lazySingleton<_i250.OfferRepository>(
+      () => _i527.OfferRepositoryImpl(
+        gh<_i928.OfferRemoteDatasource>(),
+        gh<_i1073.OfferLocalDatasource>(),
+      ),
+    );
+    gh.factory<_i585.CreateOfferUseCase>(
+      () => _i585.CreateOfferUseCase(gh<_i250.OfferRepository>()),
+    );
+    gh.factory<_i540.DeleteOfferUseCase>(
+      () => _i540.DeleteOfferUseCase(gh<_i250.OfferRepository>()),
+    );
+    gh.factory<_i759.GetOffersUseCase>(
+      () => _i759.GetOffersUseCase(gh<_i250.OfferRepository>()),
+    );
+    gh.factory<_i79.HasUnseenOffersUseCase>(
+      () => _i79.HasUnseenOffersUseCase(gh<_i250.OfferRepository>()),
+    );
+    gh.factory<_i1057.MarkOffersSeenUseCase>(
+      () => _i1057.MarkOffersSeenUseCase(gh<_i250.OfferRepository>()),
+    );
     gh.factory<_i1071.GetAllReviewsUseCase>(
       () => _i1071.GetAllReviewsUseCase(gh<_i427.ReviewRepository>()),
     );
@@ -589,6 +643,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i640.UpdateOrderStatusUseCase>(),
       ),
     );
+    gh.factory<_i226.OfferListBloc>(
+      () => _i226.OfferListBloc(
+        gh<_i759.GetOffersUseCase>(),
+        gh<_i540.DeleteOfferUseCase>(),
+      ),
+    );
     gh.factory<_i785.ProductDetailBloc>(
       () => _i785.ProductDetailBloc(
         gh<_i682.GetProductByIdUseCase>(),
@@ -597,6 +657,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1054.AdminOrderDetailBloc>(
       () => _i1054.AdminOrderDetailBloc(gh<_i640.UpdateOrderStatusUseCase>()),
+    );
+    gh.factory<_i403.OfferFormBloc>(
+      () => _i403.OfferFormBloc(gh<_i585.CreateOfferUseCase>()),
     );
     gh.factory<_i146.BannerListBloc>(
       () => _i146.BannerListBloc(
@@ -637,6 +700,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i886.GetStorefrontCategoriesUseCase(
         gh<_i339.HomeRepository>(),
         gh<_i411.ProductRepository>(),
+      ),
+    );
+    gh.lazySingleton<_i798.OfferBadgeBloc>(
+      () => _i798.OfferBadgeBloc(
+        gh<_i79.HasUnseenOffersUseCase>(),
+        gh<_i1057.MarkOffersSeenUseCase>(),
       ),
     );
     gh.factory<_i380.SearchBloc>(

@@ -53,6 +53,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Offers feed — public read. Created only by the admin-only `sendOffer`
+    // Cloud Function (Admin SDK, so these rules don't constrain it), which
+    // also pushes the notification; an admin can still delete from the app.
+    match /offers/{offerId} {
+      allow read: if true;
+      allow create, update: if false;
+      allow delete: if isAdmin();
+    }
+
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();

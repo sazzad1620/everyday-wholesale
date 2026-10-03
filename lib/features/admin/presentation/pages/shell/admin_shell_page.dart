@@ -8,6 +8,7 @@ import '../../../../account/presentation/pages/account_page.dart';
 import '../banners/admin_banners_page.dart';
 import '../categories/admin_categories_page.dart';
 import '../dashboard/admin_dashboard_page.dart';
+import '../offers/admin_offers_page.dart';
 import '../orders/admin_orders_page.dart';
 import '../products/admin_products_page.dart';
 import '../reviews/admin_reviews_page.dart';
@@ -40,6 +41,7 @@ class _AdminShellPageState extends State<AdminShellPage> {
     AdminOrdersPage(),
     AdminReviewsPage(),
     AdminBannersPage(),
+    AdminOffersPage(),
   ];
 
   List<AdminDestination> _destinations() => [
@@ -49,6 +51,7 @@ class _AdminShellPageState extends State<AdminShellPage> {
     AdminDestination(icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long_rounded, label: 'admin.nav_orders'.tr()),
     AdminDestination(icon: Icons.reviews_outlined, selectedIcon: Icons.reviews_rounded, label: 'admin.nav_user_reviews'.tr()),
     AdminDestination(icon: Icons.view_carousel_outlined, selectedIcon: Icons.view_carousel_rounded, label: 'admin.nav_banners'.tr()),
+    AdminDestination(icon: Icons.local_offer_outlined, selectedIcon: Icons.local_offer_rounded, label: 'admin.nav_offers'.tr()),
   ];
 
   void _select(int index) => setState(() => _selectedIndex = index);
@@ -66,6 +69,7 @@ class _AdminShellPageState extends State<AdminShellPage> {
           children: [
             AppHeader(
               showSearchBar: false,
+              showOffersAction: false,
               onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
               onAccountTap: () => openAccountMenu(context),
             ),

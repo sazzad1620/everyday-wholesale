@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
 import '../../../../core/constants/asset_paths.dart';
+import '../../../../core/notifications/push_notification_service.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../bloc/splash_bloc.dart';
@@ -51,6 +52,8 @@ class SplashPage extends StatelessWidget {
             if (!context.mounted) return;
             final isAdmin = getIt<AccountBloc>().state.user?.isAdmin ?? false;
             context.go(isAdmin ? RoutePaths.admin : RoutePaths.home);
+            // Launched by tapping an offer push — open the Offers page on top.
+            PushNotificationService.openPendingRoute();
           }
         },
         child: Scaffold(
