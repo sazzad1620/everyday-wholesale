@@ -52,21 +52,10 @@ class ProductImage extends StatelessWidget {
               null => const _Placeholder(),
               // Real admin uploads will be `https://` (Firebase Storage) URLs;
               // a bundled asset path is only ever a local demo stand-in.
+              final url when url.startsWith('http') => _TilePhoto(url: url, inset: inset),
               final url => Padding(
                 padding: EdgeInsets.all(inset),
-                child: url.startsWith('http')
-                    ? AppNetworkImage(
-                        url,
-                        fit: BoxFit.contain,
-                        width: double.infinity,
-                        height: double.infinity,
-                        // Falls back to the same "no image" placeholder on a
-                        // load failure (e.g. no network) instead of Flutter's
-                        // default broken-image icon with raw exception text.
-                        frameBuilder: imageFadeIn,
-                        errorBuilder: (context, error, stackTrace) => const _Placeholder(),
-                      )
-                    : Image.asset(url, fit: BoxFit.contain, width: double.infinity, height: double.infinity),
+                child: Image.asset(url, fit: BoxFit.contain, width: double.infinity, height: double.infinity),
               ),
             };
           },
@@ -82,4 +71,70 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       const ColoredBox(color: AppColors.surface, child: Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.black26)));
+}
+
+/// A downloaded product photo. While it loads, a soft shimmer covers the
+/// **whole tile** (not just the padded photo area) so the placeholder is the
+/// same shape as the tile the photo ends up on; the photo then fades in over
+/// it as the shimmer fades out.
+class _TilePhoto extends StatefulWidget {
+  const _TilePhoto({required this.url, required this.inset});
+
+  final String url;
+  final double inset;
+
+  @override
+  State<_TilePhoto> createState() => _TilePhotoState();
+}
+
+class _TilePhotoState extends State<_TilePhoto> {
+  bool _loaded = false;
+
+  void _markLoaded() {
+    if (_loaded) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _loaded = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _loaded ? 0 : 1,
+              duration: const Duration(milliseconds: 300),
+              child: _loaded ? const SizedBox.expand() : const ImageShimmer(fill: false),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(widget.inset),
+          child: AppNetworkImage(
+            widget.url,
+            fit: BoxFit.contain,
+            width: double.infinity,
+            height: double.infinity,
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (frame != null || wasSynchronouslyLoaded) _markLoaded();
+              if (wasSynchronouslyLoaded) return child;
+              return AnimatedOpacity(
+                opacity: frame == null ? 0 : 1,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                child: child,
+              );
+            },
+            // Falls back to the same "no image" placeholder on a load failure
+            // (e.g. no network) instead of Flutter's default broken-image icon
+            // with raw exception text.
+            errorBuilder: (context, error, stackTrace) => const _Placeholder(),
+          ),
+        ),
+      ],
+    );
+  }
 }

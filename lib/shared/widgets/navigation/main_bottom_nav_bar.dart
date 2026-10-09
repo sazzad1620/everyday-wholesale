@@ -5,9 +5,24 @@ import 'package:go_router/go_router.dart';
 
 import '../../../config/di/injection_container.dart';
 import '../../../config/routes/route_paths.dart';
+import '../../../config/routes/tab_reset.dart';
 import '../../../features/cart/presentation/bloc/cart_bloc.dart';
 import '../../../features/cart/presentation/bloc/cart_state.dart';
 import '../../theme/app_colors.dart';
+
+/// The top-level page of each bottom-nav tab, in tab order.
+const List<String> _tabRoots = [RoutePaths.home, RoutePaths.categories, RoutePaths.wishlist, RoutePaths.cart];
+
+/// Which tab shows as selected: the one whose own top-level page is open, or
+/// -1 when none is. A page opened *from* a tab — a category's product list, a
+/// product — belongs to that tab's navigation stack ([branchIndex]) but is not
+/// the tab itself, so nothing is highlighted there (the tab lights up again
+/// when the user comes back to its top-level page).
+int selectedTabIndex({required int? branchIndex, required String path}) {
+  if (branchIndex == null || branchIndex < 0 || branchIndex >= _tabRoots.length) return -1;
+  final clean = path.length > 1 && path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+  return clean == _tabRoots[branchIndex] ? branchIndex : -1;
+}
 
 /// Floating, fully rounded bottom bar (foodpanda style). The page runs
 /// behind it ([StandaloneShellScaffold] sets `extendBody`), so content stays
@@ -47,7 +62,24 @@ class MainBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentBranchIndex = navigationShell?.currentIndex ?? -1;
+    // Rebuilds on every navigation, so the highlight follows the open page.
+    // (No router above — e.g. a widget test — means no page to follow.)
+    final routerDelegate = GoRouter.maybeOf(context)?.routerDelegate;
+    if (routerDelegate == null) return _bar(context, '');
+    return ListenableBuilder(
+      listenable: routerDelegate,
+      // `last` is the page on top, including one pushed over a tab (whose own
+      // `uri` would still be the tab underneath).
+      builder: (context, _) {
+        final open = routerDelegate.currentConfiguration;
+        return _bar(context, open.isEmpty ? '' : open.last.matchedLocation);
+      },
+    );
+  }
+
+  Widget _bar(BuildContext context, String path) {
+    // The tab to light up: only the one whose own top-level page is open.
+    final selectedIndex = selectedTabIndex(branchIndex: navigationShell?.currentIndex, path: path);
     // Narrow phones (e.g. 320–359pt wide) get tighter margins so four
     // labels still fit comfortably.
     final size = MediaQuery.sizeOf(context);
@@ -59,7 +91,11 @@ class MainBottomNavBar extends StatelessWidget {
     void goBranch(int index, String path) {
       final shell = navigationShell;
       if (shell != null) {
-        shell.goBranch(index, initialLocation: index == currentBranchIndex);
+        // Always the tab's top-level page — never wherever that tab was last
+        // left (a product, a category list) and never with a page still pushed
+        // on top, whichever tab the user is on now.
+        // The page that was open in that tab is closed unseen (see [TabReset]).
+        TabReset.run(() => shell.goBranch(index, initialLocation: true));
       } else {
         context.go(path);
       }
@@ -122,7 +158,7 @@ class MainBottomNavBar extends StatelessWidget {
                           icon: Icons.home_outlined,
                           selectedIcon: Icons.home_rounded,
                           label: 'nav.home'.tr(),
-                          selected: currentBranchIndex == 0,
+                          selected: selectedIndex == 0,
                           compact: compact,
                           short: short,
                           onTap: () => goBranch(0, RoutePaths.home),
@@ -131,7 +167,7 @@ class MainBottomNavBar extends StatelessWidget {
                           icon: Icons.category_outlined,
                           selectedIcon: Icons.category_rounded,
                           label: 'nav.category'.tr(),
-                          selected: currentBranchIndex == 1,
+                          selected: selectedIndex == 1,
                           compact: compact,
                           short: short,
                           onTap: onCategoryTap ?? () => goBranch(1, RoutePaths.categories),
@@ -140,7 +176,7 @@ class MainBottomNavBar extends StatelessWidget {
                           icon: Icons.favorite_border_rounded,
                           selectedIcon: Icons.favorite_rounded,
                           label: 'nav.wishlist'.tr(),
-                          selected: currentBranchIndex == 2,
+                          selected: selectedIndex == 2,
                           compact: compact,
                           short: short,
                           onTap: () => goBranch(2, RoutePaths.wishlist),
@@ -152,7 +188,7 @@ class MainBottomNavBar extends StatelessWidget {
                             icon: Icons.shopping_cart_outlined,
                             selectedIcon: Icons.shopping_cart_rounded,
                             label: 'nav.cart'.tr(),
-                            selected: currentBranchIndex == 3,
+                            selected: selectedIndex == 3,
                             compact: compact,
                             short: short,
                             onTap: () => goBranch(3, RoutePaths.cart),

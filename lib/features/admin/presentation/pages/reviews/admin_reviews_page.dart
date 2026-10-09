@@ -63,7 +63,7 @@ class _AdminReviewListView extends StatelessWidget {
                 );
               }
               return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                 itemCount: state.reviews.length,
                 separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
                 itemBuilder: (context, index) => _AdminReviewTile(review: state.reviews[index]),

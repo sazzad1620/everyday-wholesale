@@ -1,10 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../config/di/injection_container.dart';
 import '../../../../../core/utils/responsive/responsive_builder.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../account/presentation/pages/account_page.dart';
+import '../../../../auth/presentation/bloc/account_bloc.dart';
+import '../../../../auth/presentation/bloc/account_state.dart';
 import '../banners/admin_banners_page.dart';
 import '../categories/admin_categories_page.dart';
 import '../dashboard/admin_dashboard_page.dart';
@@ -74,14 +78,25 @@ class _AdminShellPageState extends State<AdminShellPage> {
               onAccountTap: () => openAccountMenu(context),
             ),
             Expanded(
-              child: ResponsiveBuilder(
-                mobile: (context) => IndexedStack(index: _selectedIndex, children: _pages),
-                desktop: (context) => _DesktopAdminBody(
-                  selectedIndex: _selectedIndex,
-                  onSelect: _select,
-                  destinations: destinations,
-                  pages: _pages,
-                ),
+              // A returning admin lands here *before* their saved session has
+              // been restored (see AdminSessionHint). The shell paints at once,
+              // but the tabs only start loading once the session is known, so
+              // none of their first requests go out unauthenticated.
+              child: BlocBuilder<AccountBloc, AccountState>(
+                bloc: getIt<AccountBloc>(),
+                buildWhen: (previous, current) => previous.isInitializing != current.isInitializing,
+                builder: (context, account) {
+                  if (account.isInitializing) return const Center(child: CircularProgressIndicator());
+                  return ResponsiveBuilder(
+                    mobile: (context) => IndexedStack(index: _selectedIndex, children: _pages),
+                    desktop: (context) => _DesktopAdminBody(
+                      selectedIndex: _selectedIndex,
+                      onSelect: _select,
+                      destinations: destinations,
+                      pages: _pages,
+                    ),
+                  );
+                },
               ),
             ),
           ],

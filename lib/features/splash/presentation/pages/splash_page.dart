@@ -7,6 +7,7 @@ import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/notifications/push_notification_service.dart';
+import '../../../../core/utils/admin_session_hint.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../auth/presentation/bloc/account_bloc.dart';
 import '../bloc/splash_bloc.dart';
@@ -48,9 +49,13 @@ class SplashPage extends StatelessWidget {
             // the dashboard the moment their restored session resolves.
             // Mobile keeps the wait — the session is restored from the
             // device (fast), and it avoids an admin briefly seeing the store.
-            if (!kIsWeb) await _waitForAccountResolution();
+            // A remembered admin skips the wait on every platform: they go
+            // straight to the dashboard (the router corrects it if the
+            // restored account turns out not to be an admin).
+            if (!kIsWeb && !AdminSessionHint.isAdmin) await _waitForAccountResolution();
             if (!context.mounted) return;
-            final isAdmin = getIt<AccountBloc>().state.user?.isAdmin ?? false;
+            final accountState = getIt<AccountBloc>().state;
+            final isAdmin = accountState.isInitializing ? AdminSessionHint.isAdmin : (accountState.user?.isAdmin ?? false);
             context.go(isAdmin ? RoutePaths.admin : RoutePaths.home);
             // Launched by tapping an offer push — open the Offers page on top.
             PushNotificationService.openPendingRoute();

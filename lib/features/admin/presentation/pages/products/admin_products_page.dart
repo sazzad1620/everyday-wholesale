@@ -7,12 +7,14 @@ import '../../../../../core/localization/localized_text.dart';
 import '../../../../../config/di/injection_container.dart';
 import '../../../../../config/routes/route_paths.dart';
 import '../../../../../core/utils/currency_formatter.dart';
+import '../../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_spacing.dart';
 import '../../../../../shared/theme/app_text_styles.dart';
 import '../../../../../shared/utils/toast.dart';
 import '../../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../../shared/widgets/dialogs/confirm_dialog.dart';
+import '../../../../../shared/widgets/inputs/app_search_field.dart';
 import '../../../../product/domain/entities/product_entity.dart';
 import '../../bloc/products/admin_product_list_bloc.dart';
 import '../../bloc/products/admin_product_list_event.dart';
@@ -22,6 +24,10 @@ import '../../widgets/bilingual_text_field.dart';
 /// Full product CRUD (minus photo upload, still Phase 5's second pass) —
 /// mirrors [AdminCategoriesPage]'s structure closely: add/edit push
 /// [AdminProductFormPage] on the root navigator, delete confirms first.
+///
+/// The search box filters and re-orders this same list (word-wise, either
+/// language — see `searchRank`), so an admin can type a name and see at once
+/// whether that product has been uploaded yet.
 class AdminProductsPage extends StatelessWidget {
   const AdminProductsPage({super.key});
 
@@ -34,10 +40,23 @@ class AdminProductsPage extends StatelessWidget {
   }
 }
 
-class _ProductListView extends StatelessWidget {
+class _ProductListView extends StatefulWidget {
   const _ProductListView();
 
-  Future<void> _openForm(BuildContext context, {ProductEntity? product}) async {
+  @override
+  State<_ProductListView> createState() => _ProductListViewState();
+}
+
+class _ProductListViewState extends State<_ProductListView> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openForm({ProductEntity? product}) async {
     final bloc = context.read<AdminProductListBloc>();
     final saved = await context.push<bool>(RoutePaths.adminProductForm, extra: product);
     if (saved == true) {
@@ -45,7 +64,7 @@ class _ProductListView extends StatelessWidget {
     }
   }
 
-  Future<void> _confirmDelete(BuildContext context, ProductEntity product) async {
+  Future<void> _confirmDelete(ProductEntity product) async {
     final bloc = context.read<AdminProductListBloc>();
     final confirmed = await showConfirmDialog(
       context,
@@ -73,7 +92,7 @@ class _ProductListView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
               child: Row(
                 children: [
                   Expanded(child: Text('admin.nav_products'.tr(), style: AppTextStyles.headline)),
@@ -82,7 +101,7 @@ class _ProductListView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () => _openForm(context),
+                      onTap: () => _openForm(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                         child: Row(
@@ -102,14 +121,46 @@ class _ProductListView extends StatelessWidget {
                 ],
               ),
             ),
-            Expanded(child: _buildBody(context, state)),
+            // Nothing to search until the first load has produced a list.
+            if (!state.isLoading && state.products.isNotEmpty) _buildSearchField(state),
+            Expanded(child: _buildBody(state)),
           ],
         );
       },
     );
   }
 
-  Widget _buildBody(BuildContext context, AdminProductListState state) {
+  Widget _buildSearchField(AdminProductListState state) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Same field as the storefront header's search; kept to a sensible
+          // width on wide screens instead of stretching across the whole page.
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: AppSearchField(
+              controller: _searchController,
+              onChanged: (value) => context.read<AdminProductListBloc>().add(AdminProductSearchChanged(value)),
+            ),
+          ),
+          if (state.isSearching)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.xs),
+              child: Text(
+                'admin.products_search_count'.tr(
+                  namedArgs: {'count': '${state.visibleProducts.length}', 'total': '${state.products.length}'},
+                ),
+                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(AdminProductListState state) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -127,16 +178,27 @@ class _ProductListView extends StatelessWidget {
         message: 'admin.products_empty_message'.tr(),
       );
     }
+    if (state.visibleProducts.isEmpty) {
+      // Searching, and nothing matched: tell the admin plainly that the
+      // product isn't in the catalogue yet (the whole point of the search).
+      return ComingSoonView(
+        icon: Icons.search_off_rounded,
+        title: 'admin.products_no_match_title'.tr(),
+        message: 'admin.products_no_match_message'.tr(namedArgs: {'query': state.query.trim()}),
+      );
+    }
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
-      itemCount: state.products.length,
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
+      // Typing in the search box shouldn't leave the keyboard covering rows.
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      itemCount: state.visibleProducts.length,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
       itemBuilder: (context, index) {
-        final product = state.products[index];
+        final product = state.visibleProducts[index];
         return _ProductTile(
           product: product,
-          onTap: () => _openForm(context, product: product),
-          onDelete: () => _confirmDelete(context, product),
+          onTap: () => _openForm(product: product),
+          onDelete: () => _confirmDelete(product),
         );
       },
     );
@@ -173,69 +235,98 @@ class _ProductTile extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  child: const Icon(Icons.inventory_2_rounded, color: AppColors.primary),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(context.localized(product.name), style: AppTextStyles.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(
-                        '${formatYen(product.price)} · ${product.unit}',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            // On a phone the tags (JA missing / Everyday / Out of stock) sit
+            // under the name instead of beside it — beside it they ate so
+            // much of the row that the name was cut to a few letters. With
+            // room to spare (tablet/desktop) they stay on the right.
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final tagsBeside = constraints.maxWidth >= AppBreakpoints.mobile;
+                final tags = _tags(context, spaced: tagsBeside);
+                return Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      child: const Icon(Icons.inventory_2_rounded, color: AppColors.primary),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.localized(product.name),
+                            style: AppTextStyles.title,
+                            maxLines: tagsBeside ? 1 : 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '${formatYen(product.price)} · ${product.unit}',
+                            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                          ),
+                          if (!tagsBeside && tags.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: AppSpacing.xs),
+                              child: Wrap(spacing: AppSpacing.xs, runSpacing: AppSpacing.xs, children: tags),
+                            ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                MissingJaBadge(text: product.name),
-                if (product.isMostPopular)
-                  Container(
-                    margin: const EdgeInsets.only(right: AppSpacing.sm),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.star_rounded, size: 14, color: AppColors.primary),
-                        const SizedBox(width: 2),
-                        Text(
-                          'admin.most_popular_badge'.tr(),
-                          style: AppTextStyles.caption.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
-                        ),
-                      ],
+                    if (tagsBeside) ...tags,
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                      onPressed: onDelete,
                     ),
-                  ),
-                if (!product.inStock)
-                  Container(
-                    margin: const EdgeInsets.only(right: AppSpacing.sm),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'product.out_of_stock'.tr(),
-                      style: AppTextStyles.caption.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                  onPressed: onDelete,
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// The row's status tags. [spaced] adds the right-hand gap used when they
+  /// sit in a row; inside a `Wrap` the wrap supplies the spacing instead.
+  List<Widget> _tags(BuildContext context, {required bool spaced}) {
+    final gap = spaced ? const EdgeInsets.only(right: AppSpacing.sm) : EdgeInsets.zero;
+    return [
+      if (!product.name.hasJa) MissingJaBadge(text: product.name, margin: gap),
+      if (product.isMostPopular)
+        Container(
+          margin: gap,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.star_rounded, size: 14, color: AppColors.primary),
+              const SizedBox(width: 2),
+              Text(
+                'admin.most_popular_badge'.tr(),
+                style: AppTextStyles.caption.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      if (!product.inStock)
+        Container(
+          margin: gap,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.error.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            'product.out_of_stock'.tr(),
+            style: AppTextStyles.caption.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
+          ),
+        ),
+    ];
   }
 }

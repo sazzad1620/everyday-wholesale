@@ -9,7 +9,6 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
@@ -23,6 +22,7 @@ import '../bloc/product_list_bloc.dart';
 import '../bloc/product_list_event.dart';
 import '../bloc/product_list_state.dart';
 import '../widgets/category_context_resolver.dart';
+import '../../../../shared/widgets/loaders/skeletons.dart';
 
 /// What `extra` carries on the `category/:categoryId` route.
 typedef CategoryProductsExtra = ({
@@ -264,7 +264,7 @@ class _ProductListPageState extends State<ProductListPage> {
     final products = loaded ? state.products : _lastProducts;
 
     if (products == null) {
-      return const SizedBox(height: 240, child: Center(child: AppLoader()));
+      return const ProductGridSkeleton(padding: EdgeInsets.symmetric(horizontal: AppSpacing.md));
     }
 
     if (products.isEmpty) {

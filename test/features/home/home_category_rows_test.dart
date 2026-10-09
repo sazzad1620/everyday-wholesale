@@ -68,6 +68,10 @@ class _FakeProductRepository implements ProductRepository {
   }) async {
     limitsAsked.add(limit);
     if (failing.contains(categoryId)) return const Left(UnexpectedFailure());
+    if (categoryId == 'most_popular') {
+      final popular = [for (final list in byCategory.values) ...list.where((p) => p.isMostPopular)];
+      return Right(limit == null ? popular : popular.take(limit).toList());
+    }
     final all = byCategory[categoryId] ?? const [];
     return Right(limit == null ? all : all.take(limit).toList());
   }
@@ -125,6 +129,24 @@ void main() {
     // Most Everyday is the virtual category — it has no row of its own here.
     expect(state.categoryRows.any((r) => r.category.id == 'most_popular'), isFalse);
     expect(state.categories.first.id, 'most_popular');
+    expect(state.mostPopularProducts.map((p) => p.id), ['b0']);
+    await bloc.close();
+  });
+
+  test('an old real category document with the reserved "most popular" id does not make a second Most Everyday row', () async {
+    // Old seed data / a hand-made category can leave a real document with the
+    // reserved id in Firestore. The storefront already hides it from the
+    // category lists; its row must not appear either (it was showing the
+    // Most Everyday row twice).
+    final products = _FakeProductRepository({
+      'beans': [_product('b0', 'beans', popular: true), _product('b1', 'beans')],
+    });
+    final bloc = _bloc(_FakeHomeRepository([_category('most_popular'), _category('beans')]), products);
+
+    final state = await _finalState(bloc);
+
+    expect(state.categoryRows.map((r) => r.category.id), ['beans']);
+    expect(state.categories.where((c) => c.id == 'most_popular'), hasLength(1));
     expect(state.mostPopularProducts.map((p) => p.id), ['b0']);
     await bloc.close();
   });

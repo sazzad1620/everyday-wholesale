@@ -6,7 +6,10 @@ import {defineSecret} from "firebase-functions/params";
 import {setGlobalOptions} from "firebase-functions/v2";
 import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
 import {onSchedule} from "firebase-functions/v2/scheduler";
-import Stripe from "stripe";
+// Type-only: the Stripe library itself is loaded on first use (see
+// `stripeClient`), so functions that never touch payments — notably `ssr`, the
+// home page — do not pay ~0.2–0.5 s of cold start for loading it.
+import type Stripe from "stripe";
 
 import {seoHandlers} from "./seo/handlers";
 
@@ -27,8 +30,12 @@ setGlobalOptions({region: "asia-northeast1"});
 const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
 const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
 
-function stripeClient(): Stripe {
-  return new Stripe(stripeSecretKey.value());
+type StripeConstructor = new (secretKey: string) => Stripe;
+let stripeConstructor: StripeConstructor | undefined;
+
+async function stripeClient(): Promise<Stripe> {
+  stripeConstructor ??= (await import("stripe")).default as unknown as StripeConstructor;
+  return new stripeConstructor(stripeSecretKey.value());
 }
 
 /**
@@ -69,7 +76,7 @@ export const createPaymentIntent = onCall(
     // JPY is a zero-decimal currency in Stripe's API — the integer yen
     // amount is passed as-is, no ×100 conversion (matches how the app
     // already stores `total`, see PAYMENTS_PLAN.md §2).
-    const paymentIntent = await stripeClient().paymentIntents.create({
+    const paymentIntent = await (await stripeClient()).paymentIntents.create({
       amount,
       currency: "jpy",
       metadata: {orderId},
@@ -100,7 +107,7 @@ export const stripeWebhook = onRequest(
 
     let event: Stripe.Event;
     try {
-      event = stripeClient().webhooks.constructEvent(
+      event = (await stripeClient()).webhooks.constructEvent(
         req.rawBody,
         signature,
         stripeWebhookSecret.value()
@@ -189,7 +196,7 @@ export const reconcilePendingPayments = onSchedule(
 
     if (snapshot.empty) return;
 
-    const stripe = stripeClient();
+    const stripe = await stripeClient();
     const now = Date.now();
 
     for (const doc of snapshot.docs) {
@@ -329,6 +336,31 @@ export const sendOffer = onCall(async (request) => {
 
   return {offerId: offerRef.id, pushed};
 });
+
+/**
+ * Keeps the home-page function (`ssr`) from scaling to zero. With nobody
+ * asking for a page the CDN doesn't already have, the instance is shut down
+ * after a few idle minutes, and the next visitor who needs a fresh page then
+ * waits for a cold start (~3.5 s measured). A request every 5 minutes keeps
+ * one instance alive. It calls the function's own address (the public URL
+ * would just be answered by the CDN), costs nothing in practice (one
+ * scheduler job — three are free — and a few thousand cheap calls a month)
+ * and does not need a reserved instance. If it ever fails, nothing breaks:
+ * the site is simply as fast as before.
+ */
+export const keepSsrWarm = onSchedule(
+  {schedule: "every 5 minutes", timeoutSeconds: 60},
+  async () => {
+    const project = process.env.GCLOUD_PROJECT ?? "everyday-wholesale";
+    try {
+      const res = await fetch(`https://asia-northeast1-${project}.cloudfunctions.net/ssr/home`);
+      await res.arrayBuffer();
+      if (!res.ok) logger.warn(`keepSsrWarm: ssr answered ${res.status}`);
+    } catch (error) {
+      logger.warn("keepSsrWarm: could not reach ssr", error);
+    }
+  }
+);
 
 // Server-rendered storefront pages + sitemap for SEO and a fast first
 // paint — see src/seo/render.ts and docs/WEB_PERFORMANCE.md (R3-4).

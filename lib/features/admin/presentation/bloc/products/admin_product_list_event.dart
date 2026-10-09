@@ -19,3 +19,13 @@ class AdminProductDeleteRequested extends AdminProductListEvent {
   @override
   List<Object?> get props => [productId];
 }
+
+/// The admin typed in (or cleared) the search box above the product list.
+class AdminProductSearchChanged extends AdminProductListEvent {
+  const AdminProductSearchChanged(this.query);
+
+  final String query;
+
+  @override
+  List<Object?> get props => [query];
+}

@@ -6,6 +6,7 @@ import '../config/di/injection_container.dart';
 import '../config/routes/app_router.dart';
 import '../core/localization/app_locales.dart';
 import '../core/localization/japanese_font.dart';
+import '../core/localization/rebuild_on_locale_change.dart';
 import '../core/notifications/push_notification_service.dart';
 import '../features/auth/presentation/bloc/account_bloc.dart';
 import '../features/auth/presentation/bloc/account_state.dart';
@@ -42,14 +43,10 @@ class EverydayWholesaleApp extends StatelessWidget {
         if (target != null && target != context.locale) context.setLocale(target);
       },
       child: MaterialApp.router(
-        // Keyed on the locale so a language switch remounts the whole tree.
-        // Screens read their strings with a context-free `'key'.tr()`, which
-        // registers no inherited dependency — so the many `const` widgets
-        // below the router would otherwise keep showing the old language
-        // until something else happened to rebuild them. Remounting is safe:
-        // `appRouter` is a global and keeps the current location, and app
-        // state lives in `getIt` singletons rather than in widget state.
-        key: ValueKey(locale.languageCode),
+        // No per-language key here: re-keying the app on every switch destroyed
+        // and recreated everything (menu closed, state and data reloaded, a
+        // black flash on Android). `RebuildOnLocaleChange` below refreshes the
+        // text in place instead.
         debugShowCheckedModeBanner: false,
         title: 'Everyday Wholesale',
         theme: AppTheme.light(bodyFont: bodyFont),
@@ -62,15 +59,17 @@ class EverydayWholesaleApp extends StatelessWidget {
         // Cart changes show instantly and save in the background; if a save
         // fails (e.g. offline) CartBloc restores the real cart — say so,
         // whichever page the customer is on by then.
-        builder: (context, child) => BlocListener<CartBloc, CartState>(
-          bloc: getIt<CartBloc>(),
-          listenWhen: (previous, current) =>
-              current.syncErrorCount != previous.syncErrorCount && current.syncErrorKey != null,
-          listener: (context, state) {
-            final overlay = rootNavigatorKey.currentState?.overlay;
-            if (overlay != null) AppToast.showInOverlay(overlay, 'cart.sync_failed'.tr(), type: ToastType.error);
-          },
-          child: child!,
+        builder: (context, child) => RebuildOnLocaleChange(
+          child: BlocListener<CartBloc, CartState>(
+            bloc: getIt<CartBloc>(),
+            listenWhen: (previous, current) =>
+                current.syncErrorCount != previous.syncErrorCount && current.syncErrorKey != null,
+            listener: (context, state) {
+              final overlay = rootNavigatorKey.currentState?.overlay;
+              if (overlay != null) AppToast.showInOverlay(overlay, 'cart.sync_failed'.tr(), type: ToastType.error);
+            },
+            child: child!,
+          ),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/localization/localized_text.dart';
+import '../../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../../config/di/injection_container.dart';
 import '../../../../../config/routes/route_paths.dart';
 import '../../../../../shared/theme/app_colors.dart';
@@ -128,7 +129,7 @@ class _CategoryListView extends StatelessWidget {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
       itemCount: state.categories.length,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
       itemBuilder: (context, index) {
@@ -172,33 +173,47 @@ class _CategoryTile extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  child: Icon(iconForCategory(category.iconKey), color: AppColors.primary),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(context.localized(category.name), style: AppTextStyles.title),
-                      if (category.subcategories.isNotEmpty)
-                        Text(
-                          'admin.subcategory_count'.tr(namedArgs: {'count': '${category.subcategories.length}'}),
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-                        ),
-                    ],
-                  ),
-                ),
-                MissingJaBadge(text: category.name),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                  onPressed: onDelete,
-                ),
-              ],
+            // On a phone the "JA missing" tag sits under the name rather than
+            // beside it (beside it, it cut the name short); with room to spare
+            // (tablet/desktop) it stays on the right.
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final tagBeside = constraints.maxWidth >= AppBreakpoints.mobile;
+                final missingJa = !category.name.hasJa;
+                return Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      child: Icon(iconForCategory(category.iconKey), color: AppColors.primary),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(context.localized(category.name), style: AppTextStyles.title),
+                          if (category.subcategories.isNotEmpty)
+                            Text(
+                              'admin.subcategory_count'.tr(namedArgs: {'count': '${category.subcategories.length}'}),
+                              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                            ),
+                          if (!tagBeside && missingJa)
+                            Padding(
+                              padding: const EdgeInsets.only(top: AppSpacing.xs),
+                              child: MissingJaBadge(text: category.name, margin: EdgeInsets.zero),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (tagBeside) MissingJaBadge(text: category.name),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                      onPressed: onDelete,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

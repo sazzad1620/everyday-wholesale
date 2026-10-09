@@ -24,12 +24,6 @@ abstract final class AppLocales {
     _ => 'English',
   };
 
-  /// Compact label for the header toggle (`EN | 日本語`).
-  static String shortLabel(Locale locale) => switch (locale.languageCode) {
-    'ja' => '日本語',
-    _ => 'EN',
-  };
-
   /// Bundled English body font (see `pubspec.yaml`), the same on Android,
   /// iOS and web instead of each platform's own default.
   static const String latinFontFamily = 'PlusJakartaSans';

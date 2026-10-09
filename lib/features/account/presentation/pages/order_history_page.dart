@@ -25,6 +25,7 @@ import '../../../payment/presentation/widgets/retry_payment_button.dart';
 import '../widgets/desktop_account_body.dart';
 import '../widgets/desktop_account_nav.dart';
 import 'account_page.dart';
+import '../../../../shared/widgets/loaders/skeletons.dart';
 
 /// Full-screen order-history page, reached from [AccountPage]. Pushed on the
 /// root navigator the same way [AccountPage] is (see `app_router.dart`), but
@@ -67,7 +68,7 @@ class _OrderHistoryView extends StatelessWidget {
                   builder: (context, state) {
                     return switch (state) {
                       OrderHistoryInitial() || OrderHistoryInProgress() =>
-                        const Center(child: CircularProgressIndicator()),
+                        const CardListSkeleton(count: 4, lines: 3),
                       OrderHistoryFailure(:final message) => ComingSoonView(
                         icon: Icons.error_outline_rounded,
                         title: 'common.generic_error'.tr(),

@@ -50,3 +50,79 @@ const List<int> _halfWidthKatakana = [
   0x30E9, 0x30EA, 0x30EB, 0x30EC, 0x30ED, // ﾗﾘﾙﾚﾛ
   0x30EF, 0x30F3, // ﾜﾝ
 ];
+
+// ---------------------------------------------------------------------------
+// Product search matching
+// ---------------------------------------------------------------------------
+
+/// Anything that is not a letter or digit separates words (space, `-`, `/`,
+/// `&`, brackets, commas…).
+final RegExp _wordSeparators = RegExp(r'[^\p{L}\p{N}]+', unicode: true);
+
+/// Hiragana/katakana/kanji (and half-width katakana). Japanese has no spaces
+/// between words, so "begins a word" has no meaning there.
+final RegExp _japanese = RegExp(r'[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uFF66-\uFF9F]');
+
+List<String> _words(String normalized) => normalized.split(_wordSeparators).where((w) => w.isNotEmpty).toList();
+
+/// How well [names] (a product's name in every language) match [query], or
+/// `null` when they don't match. **Lower is better** — sort ascending.
+///
+/// Word-wise, not substring: every word you type must be the *beginning* of
+/// a word in the name. For "Indian Basmati Rice": `indi`, `ric`, `bas ric`
+/// and `rice indian` match; `ndi`, `asmati` and `ic` do not. Words may be
+/// typed in any order.
+///
+/// Japanese text has no word boundaries, so a query containing kana or kanji
+/// matches anywhere in the name (still after [normalizeForSearch], so
+/// `ライス`, `らいす` and `ﾗｲｽ` are the same). An empty query matches
+/// everything with rank 0.
+int? searchRank(String query, Iterable<String> names) {
+  final tokens = _words(normalizeForSearch(query));
+  if (tokens.isEmpty) return 0;
+
+  int? best;
+  for (final name in names) {
+    final rank = _rankInName(tokens, normalizeForSearch(name));
+    if (rank != null && (best == null || rank < best)) best = rank;
+  }
+  return best;
+}
+
+/// Convenience for call sites that only need yes/no.
+bool matchesSearch(String query, Iterable<String> names) => searchRank(query, names) != null;
+
+int? _rankInName(List<String> tokens, String name) {
+  final words = _words(name);
+  var position = 0;
+  for (final token in tokens) {
+    final int index;
+    if (_japanese.hasMatch(token)) {
+      index = name.indexOf(token);
+    } else {
+      index = words.indexWhere((word) => word.startsWith(token));
+    }
+    if (index < 0) return null;
+    // Matches earlier in the name rank higher ("rice" beats "…basmati rice").
+    position += index;
+  }
+  // Shorter names win ties, so the closest match comes first.
+  return position * 1000 + (name.length < 999 ? name.length : 999);
+}
+
+/// Keeps the items whose names match [query] and orders them best-first;
+/// equal ranks keep their original order. Returns [items] untouched for an
+/// empty query.
+List<T> filterBySearch<T>(List<T> items, String query, Iterable<String> Function(T item) namesOf) {
+  if (_words(normalizeForSearch(query)).isEmpty) return items;
+  final ranked = <(int, int, T)>[];
+  for (var i = 0; i < items.length; i++) {
+    final rank = searchRank(query, namesOf(items[i]));
+    if (rank != null) ranked.add((rank, i, items[i]));
+  }
+  ranked.sort((a, b) {
+    final byRank = a.$1.compareTo(b.$1);
+    return byRank != 0 ? byRank : a.$2.compareTo(b.$2);
+  });
+  return [for (final r in ranked) r.$3];
+}

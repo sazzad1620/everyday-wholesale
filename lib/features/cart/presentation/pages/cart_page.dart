@@ -10,7 +10,6 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
-import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../account/presentation/pages/account_page.dart';
 import '../bloc/cart_bloc.dart';
@@ -40,27 +39,9 @@ class CartPage extends StatelessWidget {
             ),
             Expanded(
               child: DesktopBody(
-                // Breadcrumb lives inside the content column, not spanning
-                // the full page above the sidebar — so the sidebar starts
-                // right below the header on every page, same as Home's.
-                child: Column(
-                  children: [
-                    BreadcrumbBar(
-                      items: [
-                        BreadcrumbItem(
-                          label: 'cart.title'.tr(),
-                          onTap: () {},
-                          isCurrent: true,
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: BlocBuilder<CartBloc, CartState>(
-                        bloc: getIt<CartBloc>(),
-                        builder: (context, state) => _CartBody(state: state),
-                      ),
-                    ),
-                  ],
+                child: BlocBuilder<CartBloc, CartState>(
+                  bloc: getIt<CartBloc>(),
+                  builder: (context, state) => _CartBody(state: state),
                 ),
               ),
             ),

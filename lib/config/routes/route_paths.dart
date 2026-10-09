@@ -1,6 +1,13 @@
 abstract final class RoutePaths {
-  static const String splash = '/';
-  static const String home = '/home';
+  /// Mobile start-up screen only: on the web the app opens straight on [home].
+  static const String splash = '/splash';
+
+  /// The storefront home. (Used to be `/home`; that address now redirects here.)
+  static const String home = '/';
+
+  /// Where the catalogue pages live: `/home/category/...` - kept as it was so
+  /// every link already shared or indexed keeps working.
+  static const String catalogue = '/home';
   static const String account = '/account';
   static const String admin = '/admin';
   static const String adminAccount = '/admin/account';
@@ -21,11 +28,11 @@ abstract final class RoutePaths {
   static const String checkout = '/checkout';
   static const String orderConfirmation = '/order-confirmation';
 
-  static String categoryProducts(String categoryId) => '$home/category/$categoryId';
+  static String categoryProducts(String categoryId) => '$catalogue/category/$categoryId';
 
   static String subcategoryProducts(String categoryId, String subcategoryId) =>
-      '$home/category/$categoryId/browse/$subcategoryId';
+      '$catalogue/category/$categoryId/browse/$subcategoryId';
 
   static String productDetail(String categoryId, String productId) =>
-      '$home/category/$categoryId/product/$productId';
+      '$catalogue/category/$categoryId/product/$productId';
 }

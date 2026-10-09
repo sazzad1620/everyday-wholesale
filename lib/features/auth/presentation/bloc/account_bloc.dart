@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/admin_session_hint.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/is_phone_registered_usecase.dart';
@@ -41,7 +42,10 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     this._updateNameUseCase,
     this._updatePreferredLocaleUseCase,
   ) : super(const AccountState.initial()) {
-    on<AccountAuthStateChanged>((event, emit) => emit(AccountState(user: event.user)));
+    on<AccountAuthStateChanged>((event, emit) {
+      AdminSessionHint.record(isAdmin: event.user?.isAdmin ?? false);
+      emit(AccountState(user: event.user));
+    });
     on<AccountSignInRequested>(_onSignInRequested);
     on<AccountSignUpRequested>(_onSignUpRequested);
     on<AccountSignOutRequested>(_onSignOutRequested);

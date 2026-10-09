@@ -86,7 +86,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     // are already on screen while they load.
     final categories = loadedCategories;
     if (kHomeShowsCategoryRows && categories != null) {
-      final rows = await _loadCategoryRows(categories);
+      // Rows come from the real categories only. A leftover document with the
+      // reserved Most Everyday id (old seed data) is hidden from the category
+      // lists by `withMostPopular`; it must not get its own row either — the
+      // real Most Everyday row is already the first one on the page.
+      final rows = await _loadCategoryRows(categories.where((c) => c.id != mostPopularCategoryId).toList());
       if (!emit.isDone) {
         emit(
           HomeLoaded(

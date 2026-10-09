@@ -42,11 +42,17 @@ export async function loadPageData(db: Firestore, route: Route): Promise<PageDat
     };
   }
   case "product": {
-    const product = await db.collection("products").doc(route.productId).get();
+    // The URL already names the category, so read it alongside the product
+    // instead of after it. Only if the product turns out to belong to a
+    // different category (a mistyped URL) is a second read needed.
+    const [product, urlCategory] = await Promise.all([
+      db.collection("products").doc(route.productId).get(),
+      db.collection("categories").doc(route.categoryId).get(),
+    ]);
     if (!product.exists) return empty;
     const data = asDoc(product);
     const categoryId = typeof data.categoryId === "string" ? data.categoryId : "";
-    const category = categoryId ? await db.collection("categories").doc(categoryId).get() : null;
+    const category = !categoryId ? null : categoryId === route.categoryId ? urlCategory : await db.collection("categories").doc(categoryId).get();
     return {...empty, product: data, categories: category?.exists ? [asDoc(category)] : []};
   }
   default:

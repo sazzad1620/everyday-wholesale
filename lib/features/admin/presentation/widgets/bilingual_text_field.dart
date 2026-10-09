@@ -128,15 +128,19 @@ class _LanguageTag extends StatelessWidget {
 /// glance which products/categories still need a Japanese name without
 /// opening each one.
 class MissingJaBadge extends StatelessWidget {
-  const MissingJaBadge({super.key, required this.text});
+  const MissingJaBadge({super.key, required this.text, this.margin = const EdgeInsets.only(right: AppSpacing.sm)});
 
   final LocalizedText text;
+
+  /// Space around the badge — the default suits a badge sitting at the end of
+  /// a row; pass [EdgeInsets.zero] when it lives in a `Wrap`.
+  final EdgeInsetsGeometry margin;
 
   @override
   Widget build(BuildContext context) {
     if (text.hasJa) return const SizedBox.shrink();
     return Container(
-      margin: const EdgeInsets.only(right: AppSpacing.sm),
+      margin: margin,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.secondary.withValues(alpha: 0.15),

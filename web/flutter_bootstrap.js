@@ -22,6 +22,38 @@
   });
 })();
 
+// Start the app download right away instead of after its helper module.
+//
+// Flutter's loader fetches `main.dart.wasm` only once `main.dart.mjs` has
+// been downloaded *and run* (`(await import(mjs)).compileStreaming(fetch(wasm))`),
+// so the ~1 MB download waited for a tiny module — about one extra round trip
+// on every first visit. A preload hint lets both travel at once; the loader's
+// own fetch then reuses the response. Only for browsers that will pick the
+// Wasm build (Chromium with WasmGC — the same test the loader makes, narrowed
+// to Chromium so Safari/Firefox, which use the JS build, never download a
+// file they won't run). Anything unexpected here just skips the hint.
+(function () {
+  try {
+    var brands = (navigator.userAgentData && navigator.userAgentData.brands) || [];
+    var chromium = brands.some(function (b) { return b.brand === 'Chromium'; });
+    // Smallest module containing a WasmGC struct type (wasm-feature-detect).
+    var wasmGc = WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 95, 1, 120, 0]));
+    if (!chromium || !wasmGc) return;
+    var wasmBuild = _flutter.buildConfig.builds.filter(function (b) {
+      return b.compileTarget === 'dart2wasm' && b.mainWasmPath;
+    })[0];
+    if (!wasmBuild) return;
+    var link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'fetch';
+    link.crossOrigin = 'anonymous';
+    link.href = wasmBuild.mainWasmPath;
+    document.head.appendChild(link);
+  } catch (e) {
+    // Optional optimisation only.
+  }
+})();
+
 // No service worker: Flutter's is deprecated, and it was only an extra
 // request on every load.
 _flutter.loader.load();

@@ -8,6 +8,7 @@ import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_spacing.dart';
 import '../../../../../shared/theme/app_text_styles.dart';
 import '../../../../../shared/utils/toast.dart';
+import '../../../../../shared/widgets/app_network_image.dart';
 import '../../../../../shared/widgets/coming_soon_view.dart';
 import '../../../../../shared/widgets/dialogs/confirm_dialog.dart';
 import '../../../../home/domain/entities/promo_banner_entity.dart';
@@ -203,9 +204,11 @@ class _BannerTile extends StatelessWidget {
               children: [
                 ColoredBox(
                   color: AppColors.primary.withValues(alpha: 0.06),
-                  child: Image.network(
+                  child: AppNetworkImage(
                     banner.imageUrl,
                     fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
                     errorBuilder: (context, error, stackTrace) =>
                         const Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.black26)),
                   ),

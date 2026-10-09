@@ -5,7 +5,6 @@
     "brand_secondary": "WHOLESALE"
   },
   "home": {
-    "search_hint": "商品を検索...",
     "explore_categories": "カテゴリーから探す",
     "most_popular": "エブリデイ定番",
     "view_all": "すべて見る"
@@ -303,6 +302,8 @@
     "password_reset_sent": "パスワード再設定用のリンクをメールでお送りしました。"
   },
   "search": {
+    "hint": "商品を検索...",
+    "clear": "検索をクリア",
     "empty_title": "該当する商品が見つかりませんでした"
   },
   "admin": {
@@ -365,6 +366,9 @@
     "delete_product_message": "「{name}」はカタログから完全に削除されます。",
     "products_empty_title": "商品はまだありません",
     "products_empty_message": "「商品を追加」をタップして最初の商品を作成してください。",
+    "products_search_count": "{total}件中{count}件",
+    "products_no_match_title": "一致する商品がありません",
+    "products_no_match_message": "「{query}」に一致する商品はありません。まだ登録されていない可能性があります。「商品を追加」から追加してください。",
     "orders_empty_title": "注文はまだありません",
     "orders_empty_message": "お客様からの注文がここに表示されます。",
     "payment_filter_all": "すべて",

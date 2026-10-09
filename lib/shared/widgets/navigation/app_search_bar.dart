@@ -12,9 +12,9 @@ import '../../../features/product/presentation/bloc/search_bloc.dart';
 import '../../../features/product/presentation/bloc/search_event.dart';
 import '../../../features/product/presentation/bloc/search_state.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_input_style.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
+import '../inputs/app_search_field.dart';
 import '../product_image.dart';
 
 /// Lives inside [AppHeader]. Types directly into the bar; matches trickle in
@@ -105,56 +105,15 @@ class _AppSearchBarState extends State<AppSearchBar> {
         onTapOutside: (_) => _removeOverlay(),
         child: CompositedTransformTarget(
           link: _layerLink,
-          child: Container(
-            key: _fieldKey,
-            decoration: AppInputStyle.boxDecoration(),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    onChanged: _onChanged,
-                    onTap: () {
-                      if (_controller.text.trim().isNotEmpty) _showOverlay();
-                    },
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: InputBorder.none,
-                      hintText: 'home.search_hint'.tr(),
-                      hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm + 2,
-                      ),
-                    ),
-                  ),
-                ),
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _controller,
-                  builder: (context, value, _) => value.text.isEmpty
-                      ? const SizedBox.shrink()
-                      : IconButton(
-                          icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary, size: 18),
-                          onPressed: () => _onChanged(''),
-                        ),
-                ),
-                Padding(
-                  // Sized (and inset from the edge) to sit clearly inside the
-                  // box's own fully-rounded corner instead of pushing past
-                  // its curve — a circle this close to the box's own radius
-                  // reads as part of the same shape rather than a separate,
-                  // oversized button dropped on top of it.
-                  padding: const EdgeInsets.only(right: 6),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                    child: const Icon(Icons.search_rounded, color: Colors.white, size: 15),
-                  ),
-                ),
-              ],
-            ),
+          // The same field the admin's product list uses (see AppSearchField).
+          child: AppSearchField(
+            fieldKey: _fieldKey,
+            controller: _controller,
+            focusNode: _focusNode,
+            onChanged: _onChanged,
+            onTap: () {
+              if (_controller.text.trim().isNotEmpty) _showOverlay();
+            },
           ),
         ),
       ),

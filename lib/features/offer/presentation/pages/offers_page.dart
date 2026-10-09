@@ -16,6 +16,7 @@ import '../bloc/offer_list_bloc.dart';
 import '../bloc/offer_list_event.dart';
 import '../bloc/offer_list_state.dart';
 import '../widgets/offer_card.dart';
+import '../../../../shared/widgets/loaders/skeletons.dart';
 
 /// Public customer-facing list of current offers — readable signed-out and
 /// by direct URL (web), same as the support page. Pushed on the root
@@ -59,7 +60,7 @@ class _OffersBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<OfferListBloc, OfferListState>(
       builder: (context, state) {
-        if (state.isLoading) return const Center(child: CircularProgressIndicator());
+        if (state.isLoading) return const CardListSkeleton(count: 3, header: 150, lines: 2, maxWidth: 720);
         if (state.errorMessage != null && state.offers.isEmpty) {
           return ComingSoonView(
             icon: Icons.error_outline_rounded,

@@ -9,7 +9,6 @@ import '../../../../core/localization/localized_text.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../../shared/widgets/product_grid.dart';
@@ -29,6 +28,7 @@ import '../widgets/category_grid.dart';
 import '../widgets/home_category_strip.dart';
 import '../widgets/home_product_row.dart';
 import '../widgets/home_promo_carousel.dart';
+import '../../../../shared/widgets/loaders/skeletons.dart';
 
 /// The home page previews this many Most Popular products; "View All" opens
 /// the full category.
@@ -85,7 +85,7 @@ class _HomeBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state is HomeLoading || state is HomeInitial) {
-      return const Center(child: AppLoader());
+      return const HomeSkeleton();
     }
 
     if (state is HomeError) {

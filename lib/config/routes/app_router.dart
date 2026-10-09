@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -29,9 +30,12 @@ import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/support/presentation/pages/support_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
 import '../../shared/widgets/navigation/main_shell.dart';
+import '../../core/utils/admin_session_hint.dart';
 import '../di/injection_container.dart';
+import 'admin_redirect.dart';
 import 'go_router_refresh_stream.dart';
 import 'route_paths.dart';
+import 'tab_reset.dart';
 
 /// Lets checkout/order-confirmation push on the root navigator instead of
 /// the shell's nested one, so they render full-screen without the bottom
@@ -40,32 +44,21 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: RoutePaths.splash,
+  // The web opens straight on the page in the address bar (`/` is the home
+  // page itself); only the mobile apps start on the splash screen.
+  initialLocation: kIsWeb ? null : RoutePaths.splash,
   // Re-evaluates `redirect` on every auth change, not just on navigation —
   // otherwise signing out while already on an admin page wouldn't kick you
   // out until the next tap.
   refreshListenable: GoRouterRefreshStream(getIt<AccountBloc>().stream),
   redirect: (context, state) {
-    final location = state.matchedLocation;
-    final isAdmin = getIt<AccountBloc>().state.user?.isAdmin ?? false;
-
-    if (location.startsWith(RoutePaths.admin)) {
-      return isAdmin ? null : RoutePaths.home;
-    }
-
-    // An admin should never land in the customer storefront (bottom-nav
-    // Home/Wishlist/Cart) — e.g. a stale link, the browser back button on
-    // web, or anything else outside the admin's own navigation. Bounce
-    // straight back to the dashboard instead.
-    final isCustomerShellRoute =
-        location == RoutePaths.home ||
-        location.startsWith('${RoutePaths.home}/') ||
-        location == RoutePaths.categories ||
-        location == RoutePaths.wishlist ||
-        location == RoutePaths.cart;
-    if (isAdmin && isCustomerShellRoute) return RoutePaths.admin;
-
-    return null;
+    final account = getIt<AccountBloc>().state;
+    return adminRedirect(
+      location: state.matchedLocation,
+      isInitializing: account.isInitializing,
+      userIsAdmin: account.user?.isAdmin ?? false,
+      rememberedAdmin: AdminSessionHint.isAdmin,
+    );
   },
   routes: [
     GoRoute(
@@ -77,49 +70,52 @@ final GoRouter appRouter = GoRouter(
       branches: [
         StatefulShellBranch(
           routes: [
+            GoRoute(path: RoutePaths.home, builder: (context, state) => const HomePage()),
+            // The old home address — anything bookmarked or shared lands on `/`.
+            GoRoute(path: RoutePaths.catalogue, redirect: (context, state) => RoutePaths.home),
             GoRoute(
-              path: RoutePaths.home,
-              builder: (context, state) => const HomePage(),
+              path: '${RoutePaths.catalogue}/category/:categoryId',
+              builder: (context, state) {
+                final extra = state.extra as CategoryProductsExtra?;
+                return HiddenWhileTabReset(
+                  child: ProductListPage(
+                    categoryId: state.pathParameters['categoryId']!,
+                    categoryName: extra?.categoryName,
+                    subcategories: extra?.subcategories ?? const [],
+                  ),
+                );
+              },
               routes: [
                 GoRoute(
-                  path: 'category/:categoryId',
+                  path: 'browse/:subcategoryId',
                   builder: (context, state) {
-                    final extra = state.extra as CategoryProductsExtra?;
-                    return ProductListPage(
-                      categoryId: state.pathParameters['categoryId']!,
-                      categoryName: extra?.categoryName,
-                      subcategories: extra?.subcategories ?? const [],
+                    final extra = state.extra as ProductListExtra?;
+                    return HiddenWhileTabReset(
+                      child: ProductListPage(
+                        categoryId: state.pathParameters['categoryId']!,
+                        categoryName: extra?.categoryName,
+                        subcategoryId: state.pathParameters['subcategoryId'],
+                        subcategoryName: extra?.subcategoryName,
+                        subcategories: extra?.subcategories ?? const [],
+                      ),
                     );
                   },
-                  routes: [
-                    GoRoute(
-                      path: 'browse/:subcategoryId',
-                      builder: (context, state) {
-                        final extra = state.extra as ProductListExtra?;
-                        return ProductListPage(
-                          categoryId: state.pathParameters['categoryId']!,
-                          categoryName: extra?.categoryName,
-                          subcategoryId: state.pathParameters['subcategoryId'],
-                          subcategoryName: extra?.subcategoryName,
-                          subcategories: extra?.subcategories ?? const [],
-                        );
-                      },
-                    ),
-                    GoRoute(
-                      path: 'product/:productId',
-                      builder: (context, state) {
-                        final extra = state.extra as ProductDetailExtra?;
-                        return ProductDetailPage(
-                          categoryId: state.pathParameters['categoryId']!,
-                          productId: state.pathParameters['productId']!,
-                          categoryName: extra?.categoryName,
-                          subcategoryId: extra?.subcategoryId,
-                          subcategoryName: extra?.subcategoryName,
-                          subcategories: extra?.subcategories ?? const [],
-                        );
-                      },
-                    ),
-                  ],
+                ),
+                GoRoute(
+                  path: 'product/:productId',
+                  builder: (context, state) {
+                    final extra = state.extra as ProductDetailExtra?;
+                    return HiddenWhileTabReset(
+                      child: ProductDetailPage(
+                        categoryId: state.pathParameters['categoryId']!,
+                        productId: state.pathParameters['productId']!,
+                        categoryName: extra?.categoryName,
+                        subcategoryId: extra?.subcategoryId,
+                        subcategoryName: extra?.subcategoryName,
+                        subcategories: extra?.subcategories ?? const [],
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

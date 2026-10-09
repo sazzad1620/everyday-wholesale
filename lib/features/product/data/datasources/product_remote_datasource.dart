@@ -48,19 +48,44 @@ class ProductRemoteDatasourceImpl implements ProductRemoteDatasource {
     return ProductModel.fromMap(doc.data()!, id: doc.id);
   }
 
+  /// The whole catalogue, shared by every search. Searching used to re-read
+  /// every product document on each (debounced) keystroke; now the first
+  /// search loads it and later ones filter the same list. Kept for
+  /// [_catalogTtl], so an edit made by an admin shows up within that window.
+  Future<List<ProductModel>>? _catalogRequest;
+  DateTime? _catalogLoadedAt;
+  static const _catalogTtl = Duration(minutes: 2);
+
+  Future<List<ProductModel>> _catalog() {
+    final loadedAt = _catalogLoadedAt;
+    final request = _catalogRequest;
+    if (request != null && loadedAt != null && DateTime.now().difference(loadedAt) < _catalogTtl) {
+      return request;
+    }
+    _catalogLoadedAt = DateTime.now();
+    return _catalogRequest = _loadCatalog();
+  }
+
+  Future<List<ProductModel>> _loadCatalog() async {
+    try {
+      final snapshot = await _firestore.collection(_productsCollection).get();
+      return snapshot.docs.map((doc) => ProductModel.fromMap(doc.data(), id: doc.id)).toList();
+    } catch (_) {
+      // Don't cache a failure — the next keystroke should try again.
+      _catalogRequest = null;
+      _catalogLoadedAt = null;
+      rethrow;
+    }
+  }
+
   @override
   Future<List<ProductModel>> searchProducts(String query) async {
-    // Firestore has no case-insensitive substring query, and the catalog is
-    // small enough (tens of products) that fetching everything and filtering
-    // client-side is simpler and cheap enough — no search index service
-    // needed at this scale. Both sides go through `normalizeForSearch` and
-    // every stored language is checked, so "rice", "ライス" and "らいす" all
-    // find the same product.
-    final snapshot = await _firestore.collection(_productsCollection).get();
-    final normalizedQuery = normalizeForSearch(query);
-    return snapshot.docs
-        .map((doc) => ProductModel.fromMap(doc.data(), id: doc.id))
-        .where((product) => product.name.values.any((name) => normalizeForSearch(name).contains(normalizedQuery)))
-        .toList();
+    // Firestore has no case-insensitive text search, and the catalogue is
+    // small enough (tens to a few hundred products) that filtering
+    // client-side is simpler and cheap — no search index service needed.
+    // Matching is word-wise (every word typed must begin a word of the name,
+    // in either language; see `searchRank`) and the best matches come first.
+    final products = await _catalog();
+    return filterBySearch<ProductModel>(products, query, (product) => product.name.values);
   }
 }

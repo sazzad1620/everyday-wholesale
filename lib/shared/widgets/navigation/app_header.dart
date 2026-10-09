@@ -220,6 +220,7 @@ class _WideHeaderRow extends StatelessWidget {
               builder: (context, state) => _HeaderNavAction(
                 icon: Icons.notifications_none_rounded,
                 label: 'nav.offers'.tr(),
+                labelWidth: _offersLabelWidth,
                 showDot: state.hasUnseen,
                 onTap: () => context.push(RoutePaths.offers),
               ),
@@ -229,6 +230,7 @@ class _WideHeaderRow extends StatelessWidget {
           _HeaderNavAction(
             icon: Icons.favorite_border_rounded,
             label: 'nav.wishlist'.tr(),
+            labelWidth: _wishlistLabelWidth,
             onTap: () => context.go(RoutePaths.wishlist),
           ),
           const SizedBox(width: AppSpacing.xs),
@@ -237,6 +239,7 @@ class _WideHeaderRow extends StatelessWidget {
             builder: (context, state) => _HeaderNavAction(
               icon: Icons.shopping_cart_outlined,
               label: 'nav.cart'.tr(),
+              labelWidth: _cartLabelWidth,
               badgeCount: state.itemCount,
               onTap: () => context.go(RoutePaths.cart),
             ),
@@ -302,6 +305,14 @@ class _BrandMark extends StatelessWidget {
   }
 }
 
+// Width of each header entry's label slot: the wider of its English and
+// Japanese label (12 px text: お得情報 48, お気に入り 60, カート 36, アカウント 60;
+// "Wishlist" and "Account" are narrower than that) plus a little slack.
+const double _offersLabelWidth = 52;
+const double _wishlistLabelWidth = 64;
+const double _cartLabelWidth = 40;
+const double _accountLabelWidth = 64;
+
 /// Wishlist/Cart/Account header entry — icon-over-label so all three share
 /// the same size and weight (a bare icon next to labeled ones reads as
 /// smaller even at equal icon size).
@@ -309,6 +320,7 @@ class _HeaderNavAction extends StatelessWidget {
   const _HeaderNavAction({
     required this.icon,
     required this.label,
+    required this.labelWidth,
     required this.onTap,
     this.badgeCount,
     this.showDot = false,
@@ -316,6 +328,7 @@ class _HeaderNavAction extends StatelessWidget {
 
   final IconData icon;
   final String label;
+  final double labelWidth;
   final VoidCallback onTap;
   final int? badgeCount;
 
@@ -335,6 +348,7 @@ class _HeaderNavAction extends StatelessWidget {
         child: _HeaderNavIconLabel(
           icon: icon,
           label: label,
+          labelWidth: labelWidth,
           badgeCount: badgeCount,
           showDot: showDot,
         ),
@@ -351,12 +365,17 @@ class _HeaderNavIconLabel extends StatelessWidget {
   const _HeaderNavIconLabel({
     required this.icon,
     required this.label,
+    required this.labelWidth,
     this.badgeCount,
     this.showDot = false,
   });
 
   final IconData icon;
   final String label;
+
+  /// The entry is always this wide, in English and in Japanese, so a language
+  /// switch never moves the language toggle or anything else in the header.
+  final double labelWidth;
   final int? badgeCount;
   final bool showDot;
 
@@ -369,16 +388,24 @@ class _HeaderNavIconLabel extends StatelessWidget {
       iconWidget = Badge(smallSize: 9, child: iconWidget);
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        iconWidget,
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
-        ),
-      ],
+    return SizedBox(
+      width: labelWidth,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          iconWidget,
+          const SizedBox(height: 2),
+          // Shrinks (never wraps or overflows) at very large text sizes.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -404,6 +431,7 @@ class _AccountHeaderAction extends StatelessWidget {
           return _HeaderNavAction(
             icon: Icons.person_outline_rounded,
             label: 'nav.account'.tr(),
+            labelWidth: _accountLabelWidth,
             onTap: onAccountTap,
           );
         }
@@ -466,6 +494,7 @@ class _AccountPopupButton extends StatelessWidget {
         child: _HeaderNavIconLabel(
           icon: Icons.person_outline_rounded,
           label: 'nav.account'.tr(),
+          labelWidth: _accountLabelWidth,
         ),
       ),
     );

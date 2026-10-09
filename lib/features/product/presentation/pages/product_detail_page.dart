@@ -9,7 +9,6 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/loaders/app_loader.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
@@ -20,6 +19,7 @@ import '../bloc/product_detail_event.dart';
 import '../bloc/product_detail_state.dart';
 import '../widgets/category_context_resolver.dart';
 import '../widgets/product_detail_content.dart';
+import '../../../../shared/widgets/loaders/skeletons.dart';
 
 /// What `extra` carries on the `product/:productId` route — display-only
 /// data needed to reconstruct the breadcrumb trail, since the URL only
@@ -145,7 +145,7 @@ class _ProductDetailBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state is ProductDetailLoading || state is ProductDetailInitial) {
-      return const Center(child: AppLoader());
+      return const ProductDetailSkeleton();
     }
 
     if (state is ProductDetailError) {

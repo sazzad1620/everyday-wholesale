@@ -20,6 +20,7 @@ import '../bloc/my_reviews_event.dart';
 import '../bloc/my_reviews_state.dart';
 import '../widgets/review_history_tile.dart';
 import '../widgets/reviewable_item_card.dart';
+import '../../../../shared/widgets/loaders/skeletons.dart';
 
 /// Reached from Account > My Reviews. Two tabs: products from completed
 /// orders still waiting for a star rating, and every rating the customer has
@@ -101,9 +102,7 @@ class _MyReviewsView extends StatelessWidget {
                           ),
                           builder: (context, state) {
                             if (state.isLoading) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
+                              return const CardListSkeleton(count: 4, lines: 2);
                             }
                             return TabBarView(
                               children: [

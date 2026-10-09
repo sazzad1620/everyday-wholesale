@@ -65,6 +65,8 @@ class BannerImagePicker extends StatelessWidget {
                       : AppNetworkImage(
                           url,
                           fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
                           errorBuilder: (_, _, _) => const ColoredBox(color: AppColors.inputFill),
                         ),
                 ),

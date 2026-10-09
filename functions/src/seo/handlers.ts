@@ -41,27 +41,41 @@ function originOf(forwardedHost: string | undefined): string {
   return ALLOWED_HOSTS.has(host) ? `https://${host}` : SITE_URL;
 }
 
-// Hosting's CDN keeps each rendered page for 5 minutes, so Firestore is read
-// at most a few times per page per hour; browsers always re-check (the page
-// embeds the current app version, which changes on every deploy).
-const PAGE_CACHE = "public, max-age=0, s-maxage=300";
+// Hosting's CDN keeps each rendered page for 30 minutes, and for a day after
+// that may still serve the old copy instantly while it fetches a fresh one in
+// the background (stale-while-revalidate) — so a visitor only waits for the
+// function when a page hasn't been requested for over a day (or right after a
+// deploy, which purges the CDN). The embedded data is just the first-paint
+// snapshot: the app refreshes from Firestore right after. Browsers always
+// re-check (the page embeds the current app version).
+const PAGE_CACHE = "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400";
 
 export function seoHandlers(db: Firestore) {
   /** Public storefront pages: `/`, `/home`, `/home/category/**`. */
-  const ssr = onRequest({memory: "256MiB", timeoutSeconds: 30}, async (req, res) => {
+  // A full vCPU (and 512 MiB, the minimum that allows it) instead of the
+  // default 0.17 vCPU: a cold start is almost all CPU-bound work (loading the
+  // Firebase SDK) — measured at ~3.5 s for a first request — and the page
+  // render is CPU work too. It is billed only while a request is running, so
+  // with a CDN in front it costs cents. `keepSsrWarm` (index.ts) pings this
+  // function so it rarely goes cold at all, at no extra cost.
+  const ssr = onRequest({memory: "512MiB", cpu: 1, timeoutSeconds: 30}, async (req, res) => {
     const origin = originOf(req.get("x-forwarded-host"));
-    let template: string;
-    try {
-      template = await appShell(origin);
-    } catch (e) {
-      logger.error("ssr: could not load app shell", e);
+    const route = parseRoute(req.path);
+
+    // The app shell and the page data are independent, so fetch them together
+    // instead of one after the other (that sequence was most of a cache miss).
+    const [shell, data] = await Promise.allSettled([appShell(origin), loadPageData(db, route)]);
+
+    if (shell.status === "rejected") {
+      logger.error("ssr: could not load app shell", shell.reason);
       res.status(502).set("Cache-Control", "no-store").send("Temporarily unavailable, please reload.");
       return;
     }
+    const template = shell.value;
 
-    const route = parseRoute(req.path);
     try {
-      const page = renderPage(template, await loadPageData(db, route));
+      if (data.status === "rejected") throw data.reason;
+      const page = renderPage(template, data.value);
       res.status(page.status).set("Cache-Control", PAGE_CACHE).type("html").send(page.html);
     } catch (e) {
       // Never let a data problem take the storefront down: serve the plain

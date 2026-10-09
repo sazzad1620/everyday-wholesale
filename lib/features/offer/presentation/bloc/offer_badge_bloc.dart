@@ -40,7 +40,12 @@ class OfferBadgeBloc extends Bloc<OfferBadgeEvent, OfferBadgeState> {
   OfferBadgeBloc(this._hasUnseenOffersUseCase, this._markOffersSeenUseCase) : super(const OfferBadgeState()) {
     on<OfferBadgeRefreshed>(_onRefreshed);
     on<OfferBadgeSeen>(_onSeen);
-    add(const OfferBadgeRefreshed());
+    // Not at construction: that is the first frame of the app, when the home
+    // data and images are what the network should be busy with. The dot is a
+    // hint, so a few seconds' delay is invisible.
+    Future<void>.delayed(const Duration(seconds: 4), () {
+      if (!isClosed) add(const OfferBadgeRefreshed());
+    });
   }
 
   final HasUnseenOffersUseCase _hasUnseenOffersUseCase;
