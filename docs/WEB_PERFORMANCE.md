@@ -491,3 +491,13 @@ The app only starts requesting photos once it is running (~3.4 s warm, later on 
 - **Thumbnail while the full photo loads:** the product page (`ProductImageGallery` → `ProductImage.placeholderUrl`) shows the card thumbnail (already cached) until the full photo has its first frame, instead of an empty shimmer tile. This is the part that helps phones most; it adds no download.
 - **Verified in a local release build:** hovering a card fetched the full photo (1.5 s from Bangladesh); opening the product afterwards, the page's own request for it took **2 ms** (from the browser cache); no console errors. `flutter analyze` clean, 117 tests pass.
 - **Not verified:** the touch-down path on a real phone, and how the thumbnail→photo swap looks on a slow link (this pane doesn't render frames on its own).
+
+## 17. Language switch: no more wrong-font flash (2026-10-15 — not yet deployed)
+
+**Symptom:** switching Japanese → English (and back) showed the new text for a moment in the old language's font, then it jumped to the right one.
+
+**Cause (reproduced in a widget test):** `themeAnimationDuration: Duration.zero` (already set in `app.dart`) only stops the *theme* animation. Every `Material` (each Scaffold/Card) also animates its inherited text style over 200 ms, and a font family can't be blended — it flips at the halfway point. So plain `Text` under a Scaffold kept the old family at +20 ms and had the new one only by +220 ms. Same on Android/iOS and web.
+
+**Fix:** the body font no longer depends on the language (`AppLocales.bodyFontFor`): Plus Jakarta Sans first, Noto Sans JP as its fallback in **both** languages. The Latin font has no kana/kanji, so those come from Noto Sans JP; a switch changes only the text, never the font, so there is nothing to flip. Visible change: in Japanese mode, Latin letters and digits (e.g. "Beans and Dal", prices) are now Plus Jakarta Sans like in English mode (they were Noto Sans JP). Verified in a release build: Japanese mode renders kana/kanji correctly, no console errors. Tests: `test/shared/theme_font_switch_test.dart` (same font for both languages; plain Text keeps one font at +0/20/100/220 ms after a switch).
+
+**Not verified:** the flash itself on screen (the browser pane here doesn't capture in-between frames) and Android/iOS — check a quick switch both ways on a phone after release.

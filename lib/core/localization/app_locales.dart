@@ -28,15 +28,19 @@ abstract final class AppLocales {
   /// iOS and web instead of each platform's own default.
   static const String latinFontFamily = 'PlusJakartaSans';
 
-  /// The body font for [locale].
+  /// The body font — the **same for every language**.
   ///
-  /// English uses [latinFontFamily]. Japanese switches the whole text theme
-  /// to Noto Sans JP (see [JapaneseFont], which must be loaded for it) so
-  /// kana/kanji render in one consistent face on every platform — without
-  /// this, web mixes the engine's CJK fallback with the Latin font, and
-  /// desktop browsers can show mismatched weights.
-  static TextStyle? bodyFontFor(Locale locale) => switch (locale.languageCode) {
-    'ja' => const TextStyle(fontFamily: JapaneseFont.family),
-    _ => const TextStyle(fontFamily: latinFontFamily),
-  };
+  /// Plus Jakarta Sans first, with Noto Sans JP (see [JapaneseFont], loaded when
+  /// Japanese is in use) as its fallback: the Latin font has no kana/kanji, so
+  /// those come from Noto Sans JP, and English letters and digits look the same
+  /// in both languages.
+  ///
+  /// It must not depend on [locale]. Material widgets (every Scaffold and Card)
+  /// animate a change of their inherited text style over 200 ms, and a font
+  /// family cannot be blended — it flips at the halfway point, so the new
+  /// language's text was drawn in the old language's font for ~100 ms before
+  /// jumping. With one constant font setting a language switch changes only the
+  /// text, never the font. (Android/iOS and web alike.)
+  static TextStyle? bodyFontFor(Locale locale) =>
+      const TextStyle(fontFamily: latinFontFamily, fontFamilyFallback: [JapaneseFont.family]);
 }
