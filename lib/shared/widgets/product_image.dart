@@ -16,9 +16,14 @@ import 'image_fade_in.dart';
 /// trimmed and have plain backgrounds whitened (see `ProductImageCleaner`),
 /// which is what makes that padding the *only* margin around a product.
 class ProductImage extends StatelessWidget {
-  const ProductImage({super.key, required this.imageUrl, this.radius = 0, this.bordered = false});
+  const ProductImage({super.key, required this.imageUrl, this.placeholderUrl, this.radius = 0, this.bordered = false});
 
   final String? imageUrl;
+
+  /// A small version of the same photo (the card thumbnail), shown instead of
+  /// the shimmer while the full-size [imageUrl] downloads. It is already in the
+  /// cache from the card that opened this page, so the tile is never empty.
+  final String? placeholderUrl;
 
   /// Corner radius of the tile. Leave `0` where the tile is flush inside a
   /// card that already supplies its own rounding and clipping.
@@ -52,7 +57,11 @@ class ProductImage extends StatelessWidget {
               null => const _Placeholder(),
               // Real admin uploads will be `https://` (Firebase Storage) URLs;
               // a bundled asset path is only ever a local demo stand-in.
-              final url when url.startsWith('http') => _TilePhoto(url: url, inset: inset),
+              final url when url.startsWith('http') => _TilePhoto(
+                url: url,
+                placeholderUrl: placeholderUrl,
+                inset: inset,
+              ),
               final url => Padding(
                 padding: EdgeInsets.all(inset),
                 child: Image.asset(url, fit: BoxFit.contain, width: double.infinity, height: double.infinity),
@@ -69,8 +78,10 @@ class _Placeholder extends StatelessWidget {
   const _Placeholder();
 
   @override
-  Widget build(BuildContext context) =>
-      const ColoredBox(color: AppColors.surface, child: Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.black26)));
+  Widget build(BuildContext context) => const ColoredBox(
+    color: AppColors.surface,
+    child: Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.black26)),
+  );
 }
 
 /// A downloaded product photo. While it loads, a soft shimmer covers the
@@ -78,9 +89,10 @@ class _Placeholder extends StatelessWidget {
 /// same shape as the tile the photo ends up on; the photo then fades in over
 /// it as the shimmer fades out.
 class _TilePhoto extends StatefulWidget {
-  const _TilePhoto({required this.url, required this.inset});
+  const _TilePhoto({required this.url, required this.inset, this.placeholderUrl});
 
   final String url;
+  final String? placeholderUrl;
   final double inset;
 
   @override
@@ -99,15 +111,23 @@ class _TilePhotoState extends State<_TilePhoto> {
 
   @override
   Widget build(BuildContext context) {
+    final placeholder = widget.placeholderUrl;
+    final hasPlaceholder = placeholder != null && placeholder != widget.url;
     return Stack(
       fit: StackFit.expand,
       children: [
+        // The thumbnail, until the full photo has its first frame.
+        if (hasPlaceholder && !_loaded)
+          Padding(
+            padding: EdgeInsets.all(widget.inset),
+            child: AppNetworkImage(placeholder, fit: BoxFit.contain, width: double.infinity, height: double.infinity),
+          ),
         Positioned.fill(
           child: IgnorePointer(
             child: AnimatedOpacity(
               opacity: _loaded ? 0 : 1,
               duration: const Duration(milliseconds: 300),
-              child: _loaded ? const SizedBox.expand() : const ImageShimmer(fill: false),
+              child: (_loaded || hasPlaceholder) ? const SizedBox.expand() : const ImageShimmer(fill: false),
             ),
           ),
         ),

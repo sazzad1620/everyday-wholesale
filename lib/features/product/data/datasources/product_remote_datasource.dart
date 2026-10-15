@@ -24,6 +24,15 @@ class ProductRemoteDatasourceImpl implements ProductRemoteDatasource {
 
   @override
   Future<List<ProductModel>> getProductsByCategory(String categoryId, {String? subcategoryId, int? limit}) async {
+    // Home-page rows ask for the first few products of *every* category. On
+    // web each Firestore query costs a round trip over the database channel
+    // (~0.2–0.3 s from Bangladesh), and a dozen of them made the rows arrive in
+    // waves for several seconds. They all read from the one shared catalogue
+    // load instead (same document order as the per-category query).
+    if (limit != null && subcategoryId == null) {
+      final catalog = await _catalog();
+      return catalog.where((p) => p.categoryId == categoryId).take(limit).toList();
+    }
     Query<Map<String, dynamic>> query = _firestore
         .collection(_productsCollection)
         .where('categoryId', isEqualTo: categoryId);

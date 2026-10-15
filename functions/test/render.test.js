@@ -72,3 +72,29 @@ test("sitemap lists home, categories and products", () => {
   assert.match(xml, /most_popular/);
   assert.match(xml, /\/home\/category\/rice_grains\/product\/p1/);
 });
+
+test("home preloads banners, phone-only category pictures and product photos, first in <head>", () => {
+  const popular = Array.from({length: 8}, (_, i) => ({
+    ...product, id: `p${i}`, isMostPopular: true, thumbnails: [`https://img/t${i}.jpg`],
+  }));
+  const banners = [0, 1, 2].map((i) => ({id: `b${i}`, imageUrl: `https://img/banner${i}.jpg`, order: i}));
+  const categories = Array.from({length: 8}, (_, i) => ({id: `c${i}`, name: {en: `C${i}`, ja: ""}, imageUrl: i === 1 ? "" : `https://img/c${i}.jpg`}));
+  const {html} = page({kind: "home"}, {popular, banners, categories});
+  const links = [...html.matchAll(/<link rel="preload" as="fetch" href="([^"]+)" crossorigin="anonymous" fetchpriority="low"(?: media="([^"]+)")?>/g)]
+    .map((m) => m[2] ? `${m[1]} @${m[2]}` : m[1]);
+  const phone = "(max-width: 599px)", wide = "(min-width: 600px)";
+  assert.deepEqual(links, [
+    "https://img/banner0.jpg",
+    // first 6 categories, the one without a picture skipped; phones only
+    ...[0, 2, 3, 4, 5].map((i) => `https://img/c${i}.jpg @${phone}`),
+    "https://img/t0.jpg", "https://img/t1.jpg", "https://img/t2.jpg",
+    "https://img/banner1.jpg",
+    // cards a phone does not show without scrolling: wide screens only
+    ...[3, 4, 5].map((i) => `https://img/t${i}.jpg @${wide}`),
+  ]);
+  assert.ok(html.indexOf("rel=\"preload\"") < html.indexOf("<title>"), "before everything else in the head");
+  // Other pages, and non-https URLs, get none.
+  assert.ok(!page({kind: "category", categoryId: "rice_grains"}, {products: [product]}).html.includes("rel=\"preload\""));
+  const odd = page({kind: "home"}, {banners: [{id: "b", imageUrl: "javascript:alert(1)", order: 0}]}).html;
+  assert.ok(!odd.includes("rel=\"preload\""));
+});

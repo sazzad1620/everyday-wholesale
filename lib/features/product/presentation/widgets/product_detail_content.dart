@@ -56,7 +56,7 @@ class _ProductDetailContentState extends State<ProductDetailContent> {
   Widget build(BuildContext context) {
     final product = widget.product;
 
-    final image = ProductImageGallery(images: product.images);
+    final image = ProductImageGallery(images: product.images, thumbnails: product.thumbnails);
 
     final infoBlock = _ProductInfoBlock(
       product: product,

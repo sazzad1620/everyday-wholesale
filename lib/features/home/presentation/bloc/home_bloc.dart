@@ -51,6 +51,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       );
     }
 
+    // The rows only need the category ids, which the embedded/cached data
+    // already has — start loading them now instead of after the Firestore
+    // category refresh below (a full round trip earlier on a slow link).
+    List<CategoryEntity> rowCategoriesOf(List<CategoryEntity> all) =>
+        all.where((c) => c.id != mostPopularCategoryId).toList();
+    final earlyRowCategories = (kHomeShowsCategoryRows && initial != null) ? rowCategoriesOf(initial.categories) : null;
+    final earlyRowsFuture = earlyRowCategories == null ? null : _loadCategoryRows(earlyRowCategories);
+
     final categoriesFuture = _getCategoriesUseCase(const NoParams());
     final bannersFuture = _getPromoBannersUseCase(const NoParams());
     final popularFuture = _getMostPopularProductsUseCase(const NoParams());
@@ -90,7 +98,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       // reserved Most Everyday id (old seed data) is hidden from the category
       // lists by `withMostPopular`; it must not get its own row either — the
       // real Most Everyday row is already the first one on the page.
-      final rows = await _loadCategoryRows(categories.where((c) => c.id != mostPopularCategoryId).toList());
+      final rowCategories = rowCategoriesOf(categories);
+      final sameCategories =
+          earlyRowCategories != null &&
+          earlyRowCategories.length == rowCategories.length &&
+          [for (var i = 0; i < rowCategories.length; i++) earlyRowCategories[i].id == rowCategories[i].id].every((s) => s);
+      // Same categories in the same order as the early load: reuse it instead
+      // of querying again.
+      final rows = sameCategories ? await earlyRowsFuture! : await _loadCategoryRows(rowCategories);
       if (!emit.isDone) {
         emit(
           HomeLoaded(

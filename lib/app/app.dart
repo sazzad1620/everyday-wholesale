@@ -52,6 +52,12 @@ class EverydayWholesaleApp extends StatelessWidget {
         theme: AppTheme.light(bodyFont: bodyFont),
         darkTheme: AppTheme.dark(bodyFont: bodyFont),
         themeMode: ThemeMode.light,
+        // The theme only ever changes with the language (its body font). Flutter
+        // animates a theme change over 200 ms, but a font family can't be blended:
+        // it flips at the halfway point — so the new language's text was drawn in
+        // the OLD font for ~100 ms, then jumped. No animation: text and font change
+        // together, in one frame.
+        themeAnimationDuration: Duration.zero,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,

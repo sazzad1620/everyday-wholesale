@@ -116,6 +116,15 @@
         ]
       },
       {
+        "source": "/assets/{FontManifest.json,AssetManifest.bin.json,assets/translations/*.json}",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=300"
+          }
+        ]
+      },
+      {
         "source": "/assets/assets/fonts/**",
         "headers": [
           {

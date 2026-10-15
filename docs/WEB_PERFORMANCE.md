@@ -451,3 +451,43 @@ Checked against the **live site** (page load log from a clean browser profile, `
 ### 15b. Header no longer shifts when the language changes (2026-10-09)
 
 In Japanese the header's labels (お得情報, お気に入り, カート, アカウント) are wider than "Offers / Wishlist / Cart / Account", so the right-aligned group grew to the left and pushed the language toggle (and the search bar) with it. Each header entry now has a **fixed-width label slot** (`_offersLabelWidth` 52, `_wishlistLabelWidth` 64, `_cartLabelWidth` 40, `_accountLabelWidth` 64 — the wider of the two languages plus slack; the label scales down instead of wrapping at huge text sizes), so the group is the same width in both languages. Checked in a release build at desktop width: the toggle's left edge and the four icons are at the same x in English and Japanese. The product page and home page were compared in both languages and showed no other layout shifts; the language menu row on phones already has a fixed-size toggle.
+
+## 16. Round 4 — what the live waterfall showed, and the fixes (2026-10-15 — not yet deployed)
+
+Measured on the live site from Bangladesh (browser resource timing, `curl` for CDN headers). The first frame was fast (1.2–2 s warm) but the page wasn't *usable* until 5–7 s. Findings:
+
+| Finding | Evidence |
+|---|---|
+| `no-cache` startup files are never CDN-cached | `FontManifest.json`, `en.json`, `AssetManifest.bin.json`, `flutter_bootstrap.js`: `X-Cache: MISS` on every request; 0.28–0.4 s first byte on a warm edge, 1.25 s on a cold one |
+| They form a serial chain before the first frame | FontManifest → fonts → `en.json` → AssetManifest, each waiting for the previous (live log: first frame only after `AssetManifest.bin.json`) |
+| ~40 Firestore `Listen/channel` requests on the home page | One query per category row (+ categories, banners, Most Everyday); on web every query is a round trip over the database channel (~0.2–0.3 s each from Bangladesh), so rows arrived in waves from 3.6 s to ~7 s |
+| Stripe.js (~250 KB) downloaded at ~4–6 s | Competed with data and images, though only checkout needs it |
+
+**Changed**
+- `web/index.html`: `preload` hints for `FontManifest.json`, `AssetManifest.bin.json`, `en.json` and the 6 bundled fonts, so the chain downloads in parallel with the app (the engine reuses the responses — checked: no duplicate downloads). Keep the font list in sync with `pubspec.yaml`.
+- `firebase.json`: those three JSON files now `public, max-age=300` (was `no-cache`) so the CDN can serve them from the edge. Trade-off: for up to 5 minutes after a deploy a returning visitor may use the old translations/manifest.
+- `product_remote_datasource.dart`: home-row calls (`limit` set, no subcategory) filter the shared 2-minute catalogue read (the same one search uses) instead of one query per category. Local build: **6 Listen requests instead of ~40**. Category pages (no `limit`) still query directly.
+- `home_bloc.dart`: rows start loading from the embedded/cached categories at once, instead of after the Firestore category refresh; reused when the refreshed categories are identical.
+- Stripe: no longer warmed up on web at startup (`bootstrap.dart`); `CheckoutPage` starts it when opened. Payment still awaits `StripeSetup.ensureReady()`.
+
+**Verify after deploy**
+1. `curl.exe -sI https://everydaywholesale.jp/assets/assets/translations/en.json` — expect `cache-control: public, max-age=300` (header precedence against `**/*.json` is by rule order; not testable locally, the Firebase emulator wouldn't start here) and `x-cache: HIT` on repeat.
+2. DevTools Network: no `js.stripe.com` request on the home page; one at checkout.
+3. Place a test payment (Stripe now loads from checkout).
+
+**Still open:** profile on a mid-range phone (CPU share of start-up unmeasured); Cloudflare Pages A/B test for a warmer CDN in South Asia; embedding the first rows' products in the server-rendered `#initial-data` (would remove the product query entirely).
+
+### 16b. First-screen image preloads (2026-10-15 — not yet deployed)
+
+The app only starts requesting photos once it is running (~3.4 s warm, later on a slow link), then each Storage photo has a ~0.75 s first byte from Bangladesh. The `ssr` function now adds `<link rel="preload" as="fetch" crossorigin="anonymous" fetchpriority="low">` to the **home page** for the first 2 banners, the first 6 Most Everyday thumbnails (a desktop row shows 5–6) and the first 6 category pictures, placed first in `<head>`. Category pictures use `media="(max-width: 599px)"` (the strip is phone-only) and product cards 4–6 use `media="(min-width: 600px)"`, so no device downloads pictures it won't show (`render.ts`: `PRELOAD_IMAGE_COUNT`, switch `PRELOAD_FIRST_SCREEN_IMAGES`; https URLs only; test in `functions/test/render.test.js`).
+
+- **Verified:** a preloaded Storage URL is fetched once (1.9 s cold), and the app's later XHR for the same URL took 0 ms with no second network request — the app's image loader reuses it.
+- **Not verified (be honest):** whether these ~0.3 MB compete with the app download enough to delay the first frame on a slow link — this pane only renders frames after a screenshot, so my timing runs were not reliable, and the throttled local server doesn't throttle Storage. Docs §6.4 found plain `<img>` tags made the first frame worse (11 MB); this is ~30× smaller and low priority, but measure it.
+- **Check after `firebase deploy --only functions:ssr,hosting`:** DevTools → Network, disable cache, throttle "Fast 3G"/"Slow 4G": compare first-frame time and when the banner appears with `PRELOAD_FIRST_SCREEN_IMAGES` true vs false. If the first frame gets later by more than the image gain, set it to `false` and redeploy functions.
+
+### 16c. Product photos start on intent, and the page opens on the thumbnail (2026-10-15 — not yet deployed)
+
+- **Prefetch on intent (web only):** `ProductCard` starts downloading the product's first full-size photo when the mouse enters the card or a finger/mouse goes down on it (`lib/core/web/image_prefetch*.dart`; each URL once per session; no-op on Android/iOS, which have a disk cache). Clicking *after* the page opens would gain nothing — the product page asks for the photo at that moment — so a phone's head start is only the touch-down → release gap (~50–150 ms); desktop hover usually gives more.
+- **Thumbnail while the full photo loads:** the product page (`ProductImageGallery` → `ProductImage.placeholderUrl`) shows the card thumbnail (already cached) until the full photo has its first frame, instead of an empty shimmer tile. This is the part that helps phones most; it adds no download.
+- **Verified in a local release build:** hovering a card fetched the full photo (1.5 s from Bangladesh); opening the product afterwards, the page's own request for it took **2 ms** (from the browser cache); no console errors. `flutter analyze` clean, 117 tests pass.
+- **Not verified:** the touch-down path on a real phone, and how the thumbnail→photo swap looks on a slow link (this pane doesn't render frames on its own).

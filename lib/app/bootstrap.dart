@@ -49,14 +49,11 @@ Future<void> bootstrap() async {
   // with Google", so neither holds up the first frame any more: they start
   // in the background and the payment / sign-in code awaits
   // `StripeSetup.ensureReady()` / `GoogleSignInSetup.ensureReady()` first.
-  // On web Stripe waits a few seconds so Stripe.js (a network download)
-  // doesn't compete with the app's own startup requests; web signs in via
-  // Firebase's popup, so Google Sign-In isn't initialized there at all.
-  if (kIsWeb) {
-    unawaited(
-      Future<void>.delayed(const Duration(seconds: 4), StripeSetup.ensureReady).catchError((_) {}),
-    );
-  } else {
+  // On web Stripe.js (a ~250 KB download) is not started here at all: it
+  // competed with the home page's data and images, and checkout warms it up
+  // when it opens (see CheckoutPage). Web signs in via Firebase's popup, so
+  // Google Sign-In isn't initialized there either.
+  if (!kIsWeb) {
     unawaited(StripeSetup.ensureReady().catchError((_) {}));
     unawaited(GoogleSignInSetup.ensureReady().catchError((_) {}));
     unawaited(PushNotificationService.init());

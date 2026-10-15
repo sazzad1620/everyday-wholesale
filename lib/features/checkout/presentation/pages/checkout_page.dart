@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/di/injection_container.dart';
 import '../../../../config/routes/route_paths.dart';
 import '../../../../core/utils/responsive/breakpoints.dart';
+import '../../../../core/utils/stripe_setup.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/utils/toast.dart';
@@ -56,6 +59,15 @@ class _CheckoutView extends StatefulWidget {
 
 class _CheckoutViewState extends State<_CheckoutView> {
   PaymentMethodOption? _paymentMethod;
+
+  @override
+  void initState() {
+    super.initState();
+    // Stripe.js (~250 KB on web) is only downloaded now that the customer is
+    // actually about to pay; start it while they pick an address / method.
+    // Payment still awaits `ensureReady()`, so a failure here just retries.
+    unawaited(StripeSetup.ensureReady().catchError((_) {}));
+  }
 
   Future<void> _pickPaymentMethod(BuildContext context) async {
     final picked = await showPaymentMethodSheet(

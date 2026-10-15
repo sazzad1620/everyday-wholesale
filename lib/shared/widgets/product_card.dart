@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/localization/localized_text.dart';
+import '../../core/web/image_prefetch.dart';
 import '../../config/di/injection_container.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../features/cart/presentation/add_to_cart.dart';
@@ -65,6 +66,14 @@ class ProductCard extends StatelessWidget {
   /// price/rating row up with them.
   static double _nameBoxHeight(TextScaler scaler) => 2 * _lineHeight(scaler, _nameStyle) + 1;
 
+  /// The photo the detail page opens on. Fetched as soon as a visitor shows
+  /// intent (mouse over, or finger down on a phone) so it is usually already
+  /// downloaded by the time the page asks for it. Web only; see [prefetchImage].
+  void _prefetchDetailImage() {
+    final images = product.images;
+    if (images.isNotEmpty) prefetchImage(images.first);
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartBloc = getIt<CartBloc>();
@@ -79,6 +88,13 @@ class ProductCard extends StatelessWidget {
     // height (card width, since it's a 1:1 square) so the button can be
     // positioned in the *outer* Stack, which is sized by the full card and
     // has no such gap.
+    return MouseRegion(
+      onEnter: (_) => _prefetchDetailImage(),
+      child: Listener(onPointerDown: (_) => _prefetchDetailImage(), child: _card(context, cartBloc, wishlistBloc)),
+    );
+  }
+
+  Widget _card(BuildContext context, CartBloc cartBloc, WishlistBloc wishlistBloc) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final imageHeight = constraints.maxWidth;

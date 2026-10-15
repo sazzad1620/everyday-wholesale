@@ -69,6 +69,24 @@
   <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js" crossorigin>
   <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js" crossorigin>
 
+  <!--
+    Small startup files the engine/app fetch one after another once the Wasm
+    has compiled (FontManifest → fonts → translations → AssetManifest, each
+    waiting for the one before: measured 0.3–1.2 s per link on a cold CDN edge
+    from Bangladesh). Fetching them now, in parallel with the app download,
+    takes that chain off the critical path; the engine's own requests reuse the
+    responses. Keep in sync with pubspec.yaml `fonts:` and AppLocales.start.
+  -->
+  <link rel="preload" as="fetch" href="assets/FontManifest.json" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/AssetManifest.bin.json" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/assets/translations/en.json" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/assets/fonts/PlusJakartaSans-Regular.ttf" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/assets/fonts/PlusJakartaSans-Medium.ttf" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/assets/fonts/PlusJakartaSans-SemiBold.ttf" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/assets/fonts/PlusJakartaSans-Bold.ttf" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/assets/fonts/Oswald-Light.ttf" crossorigin="anonymous">
+  <link rel="preload" as="fetch" href="assets/assets/fonts/Oswald-SemiBold.ttf" crossorigin="anonymous">
+
   <style>
     html, body { margin: 0; height: 100%; background: #FFFFFF; }
     /* Shown instantly by the browser, before Flutter has downloaded — laid

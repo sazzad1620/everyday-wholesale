@@ -18,6 +18,23 @@ export const SITE_URL = "https://everydaywholesale.jp";
 const STORE_NAME = "Everyday Wholesale";
 const MOST_POPULAR_ID = "most_popular";
 const LOGO_URL = `${SITE_URL}/icons/Icon-512.png`;
+/**
+ * How many product photos the home page preloads (a desktop row shows 5–6).
+ * The app only starts requesting photos once it is running (~3 s on a slow
+ * link), so these arrive from the browser cache instead. Kept small and
+ * low-priority: plain <img> tags were measured to slow the app download.
+ */
+const PRELOAD_IMAGE_COUNT = 6;
+/** How many banners (from the first) the home page preloads. */
+const PRELOAD_BANNER_COUNT = 2;
+/** Category pictures preloaded for phones (the home category strip). */
+const PRELOAD_CATEGORY_COUNT = 6;
+/** Width (px) at which the app switches from the phone layout; same as the home rows (600). */
+const PHONE_MAX_WIDTH = 599;
+/** Product cards visible on a phone before scrolling; the rest are preloaded on wider screens only. */
+const PHONE_VISIBLE_PRODUCTS = 3;
+/** Set to false to turn the image preloads off (e.g. if they ever slow the first frame). */
+const PRELOAD_FIRST_SCREEN_IMAGES = true;
 
 /** A Firestore document as plain data, with its id. */
 export type Doc = {id: string} & Record<string, unknown>;
@@ -27,6 +44,12 @@ export type Route =
   | {kind: "category"; categoryId: string; subcategoryId?: string}
   | {kind: "product"; categoryId: string; productId: string}
   | {kind: "other"};
+
+/** An image to fetch early; `media` limits it to some screen sizes. */
+interface Preload {
+  url: string;
+  media?: string;
+}
 
 export interface PageData {
   route: Route;
@@ -101,6 +124,10 @@ function num(v: unknown): number {
   return typeof v === "number" && isFinite(v) ? v : 0;
 }
 
+function isHttpsUrl(u: string): boolean {
+  return u.startsWith("https://");
+}
+
 function strList(v: unknown): string[] {
   return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 }
@@ -159,6 +186,8 @@ interface Meta {
   jsonLd: unknown[];
   body: string;
   initialData?: unknown;
+  /** Image URLs the app will show first; fetched early at low priority. */
+  preloadImages?: Preload[];
 }
 
 /** Renders [data] into the Flutter app shell [template]. */
@@ -214,7 +243,32 @@ function homeMeta(data: PageData): Meta {
     // Exactly the Firestore shape the app's models read (see
     // lib/core/web/initial_data.dart).
     initialData: {categories: data.categories, banners: data.banners, popular},
+    // The photos on the first screen: the first banner and the first
+    // Most Everyday cards. See PRELOAD_IMAGE_COUNT.
+    preloadImages: !PRELOAD_FIRST_SCREEN_IMAGES ? [] : homePreloads(data, popular),
   };
+}
+
+/**
+ * The photos on the home page's first screen, in the order the app needs them.
+ * Category pictures are phone-only (the strip is hidden on wide screens, where
+ * the sidebar lists categories by name), and a phone shows only the first few
+ * product cards, so those parts are limited by media query and a desktop never
+ * downloads the phone-only pictures.
+ */
+function homePreloads(data: PageData, popular: Doc[]): Preload[] {
+  const phone = `(max-width: ${PHONE_MAX_WIDTH}px)`;
+  const wide = `(min-width: ${PHONE_MAX_WIDTH + 1}px)`;
+  const banners = data.banners.slice(0, PRELOAD_BANNER_COUNT).map((b) => str(b.imageUrl));
+  const categories = data.categories.slice(0, PRELOAD_CATEGORY_COUNT).map((c) => str(c.imageUrl));
+  const products = popular.slice(0, PRELOAD_IMAGE_COUNT).map((p) => thumb(p) ?? "");
+  return [
+    {url: banners[0]},
+    ...categories.map((url) => ({url, media: phone})),
+    ...products.slice(0, PHONE_VISIBLE_PRODUCTS).map((url) => ({url})),
+    {url: banners[1]},
+    ...products.slice(PHONE_VISIBLE_PRODUCTS).map((url) => ({url, media: wide})),
+  ].filter((p): p is Preload => !!p.url);
 }
 
 function categoryMeta(data: PageData, category: Doc, subcategoryId?: string): Meta {
@@ -415,6 +469,14 @@ function inject(template: string, meta: Meta): string {
     ...meta.jsonLd.map((ld) => `<script type="application/ld+json">${scriptJson(ld)}</script>`),
   ].join("\n  ");
 
+  // `as=fetch` + anonymous CORS matches the app's own image requests, which
+  // then come straight from the browser cache (Storage serves the files
+  // `immutable`); `low` keeps them behind the app's own download. Placed as
+  // the very first thing in <head> so the downloads start as early as possible.
+  const preloads = (meta.preloadImages ?? []).filter((p) => isHttpsUrl(p.url)).map((p) =>
+    `<link rel="preload" as="fetch" href="${escapeHtml(p.url)}" crossorigin="anonymous" fetchpriority="low"` +
+    `${p.media ? ` media="${p.media}"` : ""}>`).join("\n  ");
+
   const body = SSR_STYLE +
     "<div id=\"ssr-content\">" +
     `<header class="ssr-head"><a href="/"><img src="/icons/loader-logo.webp" alt="${STORE_NAME}" width="40" height="37"></a>` +
@@ -422,7 +484,8 @@ function inject(template: string, meta: Meta): string {
     meta.body + "</div>" +
     (meta.initialData ? `<script type="application/json" id="initial-data">${scriptJson(meta.initialData)}</script>` : "");
 
-  return template
+  const withHead = preloads ? template.replace(/<head>/, `<head>\n  ${preloads}`) : template;
+  return withHead
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(meta.title)}</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escapeHtml(meta.description)}">`)
     .replace("</head>", `  ${head}\n</head>`)
