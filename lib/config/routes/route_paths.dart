@@ -25,6 +25,10 @@ abstract final class RoutePaths {
   static const String wishlist = '/wishlist';
   static const String cart = '/cart';
   static const String support = '/support';
+  static const String about = '/about';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsConditions = '/terms-conditions';
+  static const String refundPolicy = '/refund-policy';
   static const String checkout = '/checkout';
   static const String orderConfirmation = '/order-confirmation';
 

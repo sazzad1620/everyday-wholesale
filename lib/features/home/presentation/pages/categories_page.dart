@@ -5,6 +5,7 @@ import '../../../../core/utils/responsive/breakpoints.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widgets/navigation/app_footer.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/categories_cache.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
@@ -54,9 +55,16 @@ class _CategoriesBody extends StatelessWidget {
         if (categories.isEmpty) {
           return Center(child: Text('common.generic_error'.tr(), style: AppTextStyles.body));
         }
+        final wide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
         return ResponsiveContentContainer(
           child: ListView(
-            padding: EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.lg + MediaQuery.paddingOf(context).bottom),
+            // No floating bottom nav to clear at this width on desktop/tablet,
+            // so that space would just be dead scroll room below AppFooter.
+            padding: EdgeInsets.only(
+              top: AppSpacing.md,
+              bottom: wide ? 0 : AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -65,13 +73,12 @@ class _CategoriesBody extends StatelessWidget {
                 // headline only makes sense with a desktop's room.
                 child: Text(
                   'drawer.category_title'.tr(),
-                  style: MediaQuery.sizeOf(context).width < AppBreakpoints.mobile
-                      ? AppTextStyles.title
-                      : AppTextStyles.headline,
+                  style: wide ? AppTextStyles.headline : AppTextStyles.title,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
               CategoryGrid(categories: categories, onCategoryTap: (category) => navigateToCategory(context, category)),
+              const AppFooter(),
             ],
           ),
         );

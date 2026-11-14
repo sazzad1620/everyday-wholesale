@@ -21,6 +21,10 @@ import '../../features/checkout/presentation/pages/order_confirmation_page.dart'
 import '../../features/home/domain/entities/category_entity.dart';
 import '../../features/home/presentation/pages/categories_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/legal/presentation/pages/about_page.dart';
+import '../../features/legal/presentation/pages/privacy_policy_page.dart';
+import '../../features/legal/presentation/pages/refund_policy_page.dart';
+import '../../features/legal/presentation/pages/terms_page.dart';
 import '../../features/order/domain/entities/order_entity.dart';
 import '../../features/product/domain/entities/product_entity.dart';
 import '../../features/product/presentation/pages/product_detail_page.dart';
@@ -210,6 +214,26 @@ final GoRouter appRouter = GoRouter(
       path: RoutePaths.support,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const SupportPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.about,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const AboutPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.privacyPolicy,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const PrivacyPolicyPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.termsConditions,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const TermsPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.refundPolicy,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const RefundPolicyPage(),
     ),
     GoRoute(
       path: RoutePaths.checkout,

@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../config/routes/route_paths.dart';
 import '../../../features/home/domain/entities/category_entity.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -50,10 +52,10 @@ class DesktopSidebar extends StatelessWidget {
               ),
             ),
             divider,
-            _FooterLink(label: 'drawer.about'.tr(), onTap: () => showComingSoonToast(context, 'drawer.about'.tr())),
+            _FooterLink(label: 'drawer.about'.tr(), onTap: () => context.push(RoutePaths.about)),
             _FooterLink(
               label: 'drawer.terms_privacy'.tr(),
-              onTap: () => showComingSoonToast(context, 'drawer.terms_privacy'.tr()),
+              onTap: () => context.push(RoutePaths.privacyPolicy),
             ),
             _FooterLink(
               label: 'drawer.rate_app'.tr(),

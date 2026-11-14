@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../config/routes/route_paths.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
@@ -29,12 +31,12 @@ class MainMenuDrawer extends StatelessWidget {
             _MenuTile(
               icon: Icons.info_outline_rounded,
               label: 'drawer.about'.tr(),
-              onTap: () => showComingSoonToast(context, 'drawer.about'.tr()),
+              onTap: () => context.push(RoutePaths.about),
             ),
             _MenuTile(
               icon: Icons.policy_outlined,
               label: 'drawer.terms_privacy'.tr(),
-              onTap: () => showComingSoonToast(context, 'drawer.terms_privacy'.tr()),
+              onTap: () => context.push(RoutePaths.privacyPolicy),
             ),
             _MenuTile(
               icon: Icons.star_outline_rounded,

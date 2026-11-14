@@ -9,6 +9,7 @@ import '../../../../core/localization/localized_text.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widgets/navigation/app_footer.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
 import '../../../../shared/widgets/product_grid.dart';
@@ -117,13 +118,17 @@ class _HomeBody extends StatelessWidget {
     final loaded = state as HomeLoaded;
     if (kHomeShowsCategoryRows) return _CategoryRowsHome(loaded: loaded);
 
+    final wide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
     return ResponsiveContentContainer(
       child: ListView(
         // Extra bottom space = the floating bottom nav (+ system bar), so the
         // last row scrolls clear of it while content still passes behind it.
+        // No floating nav at this width to clear on desktop/tablet, so that
+        // space would just be dead scroll room below AppFooter instead.
         padding: EdgeInsets.only(
           top: AppSpacing.md,
-          bottom: AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
+          bottom: wide ? 0 : AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
         ),
         children: [
           if (loaded.promoBanners.isNotEmpty) ...[
@@ -183,6 +188,7 @@ class _HomeBody extends StatelessWidget {
               ),
             ),
           ],
+          const AppFooter(),
         ],
       ),
     );
@@ -221,9 +227,13 @@ class _CategoryRowsHome extends StatelessWidget {
 
     return ResponsiveContentContainer(
       child: ListView(
+        // Bottom space clears the floating bottom nav (+ system bar) on
+        // phone; there's no floating nav at this width to clear on
+        // desktop/tablet, so that space would just be dead scroll room below
+        // AppFooter instead.
         padding: EdgeInsets.only(
           top: AppSpacing.md,
-          bottom: AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
+          bottom: wide ? 0 : AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
         ),
         children: [
           if (loaded.promoBanners.isNotEmpty) ...[
@@ -263,6 +273,7 @@ class _CategoryRowsHome extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
           ],
+          const AppFooter(),
         ],
       ),
     );

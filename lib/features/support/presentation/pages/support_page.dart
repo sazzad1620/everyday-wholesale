@@ -13,6 +13,12 @@ import '../../../account/presentation/pages/account_page.dart';
 
 const String kSupportEmail = 'everydaywholesale.jp@gmail.com';
 
+/// [email] with a zero-width space after the "@" — so if it has to wrap in a
+/// narrow spot (the footer's contact column, say), it breaks cleanly between
+/// the local part and the domain instead of splitting a word like "gmail.com"
+/// mid-letter. Display only; never pass this to Clipboard or a mailto link.
+String displayEmail(String email) => email.replaceFirst('@', '@​');
+
 /// Public customer-support page (also the "Customer support URL" registered
 /// with Stripe, so it must render for signed-out visitors and when opened
 /// directly by URL). Pushed on the root navigator, outside the shell, like the
