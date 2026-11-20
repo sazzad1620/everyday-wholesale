@@ -14,6 +14,7 @@ import '../features/cart/presentation/bloc/cart_bloc.dart';
 import '../features/cart/presentation/bloc/cart_state.dart';
 import '../shared/theme/app_theme.dart';
 import '../shared/utils/toast.dart';
+import '../shared/widgets/contact_fab.dart';
 
 class EverydayWholesaleApp extends StatelessWidget {
   const EverydayWholesaleApp({super.key});
@@ -74,7 +75,7 @@ class EverydayWholesaleApp extends StatelessWidget {
               final overlay = rootNavigatorKey.currentState?.overlay;
               if (overlay != null) AppToast.showInOverlay(overlay, 'cart.sync_failed'.tr(), type: ToastType.error);
             },
-            child: child!,
+            child: ContactFabOverlay(child: child!),
           ),
         ),
       ),

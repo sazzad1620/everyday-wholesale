@@ -50,9 +50,16 @@ dependencies:
   firebase_storage: ^13.0.6
   google_sign_in: ^7.2.0
   image_picker: ^1.2.0
-  flutter_stripe: ^15.0.0
+  # Pinned exact, not `^14.0.0`: flutter_stripe_web 8.2.0's switch over
+  # PaymentIntentsFutureUsage only handles OffSession/OnSession — written
+  # against stripe_platform_interface 14.1.0's version of that enum.
+  # 14.2.0 added a third case (None), which makes that switch non-exhaustive
+  # and fails the web build. Revisit this pin once flutter_stripe_web ships
+  # a fix (or once the Flutter SDK here is back to >=3.47, which unlocks
+  # flutter_stripe_web ^9.0.0 instead).
+  flutter_stripe: 14.1.0
   cloud_functions: ^6.4.0
-  flutter_stripe_web: ^9.0.0
+  flutter_stripe_web: ^8.2.0
   image: ^4.10.1
   web: ^1.1.1
   cached_network_image: ^4.0.2
@@ -60,6 +67,7 @@ dependencies:
   shared_preferences: ^2.5.5
   flutter_local_notifications: ^22.3.1
   url_launcher: ^6.3.1
+  flutter_svg: ^2.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -72,6 +80,14 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   injectable_generator: ^3.1.3
   build_runner: ^2.15.1
+
+# flutter_stripe 14.1.0 (pinned above) still floats its own
+# stripe_platform_interface constraint (^14.1.0), which pub would otherwise
+# resolve to the newest 14.2.0 — reintroducing the exhaustive-switch build
+# failure that pinning flutter_stripe was meant to avoid. Forced down to
+# 14.1.0 here too, for the same reason.
+dependency_overrides:
+  stripe_platform_interface: 14.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

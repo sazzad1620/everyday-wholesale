@@ -9,6 +9,8 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../core/utils/responsive/breakpoints.dart';
+import '../../../../shared/widgets/navigation/app_footer.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
@@ -136,6 +138,8 @@ class _ProductListPageState extends State<ProductListPage> {
     final subcategories = ctx.subcategories;
     final selectedName = _selectedName(ctx);
 
+    final wide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
+
     final breadcrumbItems = _subcategoryId == null
         ? [BreadcrumbItem(label: categoryLabel, onTap: () {}, isCurrent: true)]
         : [
@@ -174,12 +178,13 @@ class _ProductListPageState extends State<ProductListPage> {
                         child: ListView(
                           // Extra bottom space = the floating bottom nav
                           // (+ system bar), so the last row scrolls clear of
-                          // it while content still passes behind it.
+                          // it while content still passes behind it. No
+                          // floating nav to clear at this width on
+                          // desktop/tablet, so that space would just be dead
+                          // scroll room below AppFooter instead.
                           padding: EdgeInsets.only(
                             top: AppSpacing.md,
-                            bottom:
-                                AppSpacing.lg +
-                                MediaQuery.paddingOf(context).bottom,
+                            bottom: wide ? 0 : AppSpacing.lg + MediaQuery.paddingOf(context).bottom,
                           ),
                           children: [
                             if (subcategories.isNotEmpty) ...[
@@ -216,6 +221,7 @@ class _ProductListPageState extends State<ProductListPage> {
                                 subcategories,
                               ),
                             ),
+                            const AppFooter(),
                           ],
                         ),
                       ),

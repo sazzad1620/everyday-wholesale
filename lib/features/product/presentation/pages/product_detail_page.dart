@@ -9,6 +9,8 @@ import '../../../../config/routes/route_paths.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../core/utils/responsive/breakpoints.dart';
+import '../../../../shared/widgets/navigation/app_footer.dart';
 import '../../../../shared/widgets/navigation/app_header.dart';
 import '../../../../shared/widgets/navigation/breadcrumb_bar.dart';
 import '../../../../shared/widgets/navigation/desktop_body.dart';
@@ -166,11 +168,19 @@ class _ProductDetailBody extends StatelessWidget {
     }
 
     final loaded = state as ProductDetailLoaded;
+    final wide = MediaQuery.sizeOf(context).width >= AppBreakpoints.mobile;
 
     return SingleChildScrollView(
-      // Clears the floating bottom nav (+ system bar) at the end of the page.
-      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
-      child: ProductDetailContent(product: loaded.product, reviews: loaded.reviews),
+      // Clears the floating bottom nav (+ system bar) at the end of the
+      // page. No floating nav to clear at this width on desktop/tablet, so
+      // that space would just be dead scroll room below AppFooter instead.
+      padding: EdgeInsets.only(bottom: wide ? 0 : MediaQuery.paddingOf(context).bottom),
+      child: Column(
+        children: [
+          ProductDetailContent(product: loaded.product, reviews: loaded.reviews),
+          const AppFooter(),
+        ],
+      ),
     );
   }
 }

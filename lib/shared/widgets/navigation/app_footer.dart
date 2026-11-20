@@ -121,27 +121,65 @@ class _FaqTile extends StatelessWidget {
 }
 
 /// Brand / Shop / Company / Contact, laid out as a [Wrap] so it reflows from
-/// four columns down to two at tablet width instead of squeezing.
+/// four columns down to two (or one) at tablet width instead of squeezing.
 class _FooterColumns extends StatelessWidget {
   const _FooterColumns();
 
+  static const double _brandWidth = 260;
+  static const double _shopWidth = 160;
+  static const double _companyWidth = 190;
+  static const double _contactWidth = 260;
+  static const double _spacing = AppSpacing.xl;
+
+  /// The width the four columns need side by side in a single row — above
+  /// this, [Wrap] keeps them on one line; below it, [Wrap] drops at least
+  /// one down to a second row on its own. There's no way to ask a [Wrap]
+  /// after the fact whether it wrapped, so this mirrors its own math to
+  /// decide the same thing ahead of time, for [_BrandColumn]'s social
+  /// button below.
+  static const double _singleRowWidth = _brandWidth + _shopWidth + _companyWidth + _contactWidth + 3 * _spacing;
+
   @override
   Widget build(BuildContext context) {
-    return const Wrap(
-      spacing: AppSpacing.xl,
-      runSpacing: AppSpacing.lg,
-      children: [
-        SizedBox(width: 260, child: _BrandColumn()),
-        SizedBox(width: 160, child: _ShopColumn()),
-        SizedBox(width: 190, child: _CompanyColumn()),
-        SizedBox(width: 260, child: _ContactColumn()),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final singleRow = constraints.maxWidth >= _singleRowWidth;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: _spacing,
+              runSpacing: AppSpacing.lg,
+              children: [
+                SizedBox(width: _brandWidth, child: _BrandColumn(showSocial: singleRow)),
+                const SizedBox(width: _shopWidth, child: _ShopColumn()),
+                const SizedBox(width: _companyWidth, child: _CompanyColumn()),
+                const SizedBox(width: _contactWidth, child: _ContactColumn()),
+              ],
+            ),
+            // Tucked inside the brand column when everything fits on one
+            // row (it reads fine right under the blurb there), but moved
+            // below all four once they wrap to more than one row — left
+            // there, it would land awkwardly between whichever column
+            // follows the brand column and the row below it.
+            if (!singleRow) ...[
+              const SizedBox(height: AppSpacing.lg),
+              _SocialButton(label: 'footer.follow_us'.tr(), url: kFacebookPageUrl),
+            ],
+          ],
+        );
+      },
     );
   }
 }
 
 class _BrandColumn extends StatelessWidget {
-  const _BrandColumn();
+  const _BrandColumn({required this.showSocial});
+
+  /// False once [_FooterColumns] has moved the social button below all
+  /// four columns instead (see there) — this column just skips it then.
+  final bool showSocial;
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +214,10 @@ class _BrandColumn extends StatelessWidget {
           'footer.about_blurb'.tr(),
           style: AppTextStyles.body.copyWith(color: AppColors.textSecondary, height: 1.5),
         ),
-        const SizedBox(height: AppSpacing.md),
-        _SocialButton(label: 'footer.follow_us'.tr(), url: kFacebookPageUrl),
+        if (showSocial) ...[
+          const SizedBox(height: AppSpacing.md),
+          _SocialButton(label: 'footer.follow_us'.tr(), url: kFacebookPageUrl),
+        ],
       ],
     );
   }

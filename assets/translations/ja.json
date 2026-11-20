@@ -197,6 +197,10 @@
     "refunds_title": "返金・返品について",
     "refunds_body": "ご注文に問題がある場合は、注文番号と状況を簡単にご記入のうえメールでご連絡ください。内容を確認し、折り返しご連絡いたします。承認された返金は、元のカードへ返金されます。"
   },
+  "contact": {
+    "whatsapp_tooltip": "WhatsAppでチャット",
+    "messenger_tooltip": "Messengerでお問い合わせ"
+  },
   "footer": {
     "faq_title": "お困りですか？",
     "faq_subtitle": "よくある質問",
