@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show PointerDeviceKind;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -113,12 +112,17 @@ class _HomeProductRowState extends State<HomeProductRow> {
                     onNotification: (n) => _onMetrics(n.metrics),
                     child: NotificationListener<ScrollNotification>(
                       onNotification: (n) => _onMetrics(n.metrics),
-                      // Mouse drag scrolls the row on desktop web; the
-                      // default scrollbar is off — the buttons are the cue.
+                      // Touch/stylus drag only (Flutter's own default) — the
+                      // scrollbar is off and the arrow buttons are the cue
+                      // for mouse/trackpad instead. This row used to also
+                      // accept mouse/trackpad drag, but that meant a touch
+                      // or trackpad gesture starting on a card here competed
+                      // with the page's own vertical scroll for the same
+                      // pointer (nested perpendicular scrollables), making
+                      // the page scroll feel like it couldn't decide between
+                      // up/down and left/right.
                       child: ScrollConfiguration(
-                        behavior: ScrollConfiguration.of(
-                          context,
-                        ).copyWith(scrollbars: false, dragDevices: {...PointerDeviceKind.values}),
+                        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
                         child: ListView.separated(
                           controller: _controller,
                           scrollDirection: Axis.horizontal,
