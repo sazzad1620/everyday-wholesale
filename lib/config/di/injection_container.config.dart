@@ -229,6 +229,8 @@ import 'package:everyday_wholesale/features/review/data/repositories/review_repo
     as _i789;
 import 'package:everyday_wholesale/features/review/domain/repositories/review_repository.dart'
     as _i427;
+import 'package:everyday_wholesale/features/review/domain/usecases/delete_review_usecase.dart'
+    as _i235;
 import 'package:everyday_wholesale/features/review/domain/usecases/get_all_reviews_usecase.dart'
     as _i1071;
 import 'package:everyday_wholesale/features/review/domain/usecases/get_my_reviews_usecase.dart'
@@ -508,6 +510,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1057.MarkOffersSeenUseCase>(
       () => _i1057.MarkOffersSeenUseCase(gh<_i250.OfferRepository>()),
     );
+    gh.factory<_i235.DeleteReviewUseCase>(
+      () => _i235.DeleteReviewUseCase(gh<_i427.ReviewRepository>()),
+    );
     gh.factory<_i1071.GetAllReviewsUseCase>(
       () => _i1071.GetAllReviewsUseCase(gh<_i427.ReviewRepository>()),
     );
@@ -578,14 +583,17 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i1031.GetDashboardStatsUseCase(gh<_i444.AdminDashboardRepository>()),
     );
-    gh.factory<_i831.AdminReviewListBloc>(
-      () => _i831.AdminReviewListBloc(gh<_i1071.GetAllReviewsUseCase>()),
-    );
     gh.factory<_i902.DashboardBloc>(
       () => _i902.DashboardBloc(gh<_i1031.GetDashboardStatsUseCase>()),
     );
     gh.factory<_i419.OrderHistoryBloc>(
       () => _i419.OrderHistoryBloc(gh<_i191.GetOrderHistoryUseCase>()),
+    );
+    gh.factory<_i831.AdminReviewListBloc>(
+      () => _i831.AdminReviewListBloc(
+        gh<_i1071.GetAllReviewsUseCase>(),
+        gh<_i235.DeleteReviewUseCase>(),
+      ),
     );
     gh.factory<_i582.MyReviewsBloc>(
       () => _i582.MyReviewsBloc(

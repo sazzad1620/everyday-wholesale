@@ -23,4 +23,11 @@ abstract class ReviewRepository {
     required int rating,
     String? productImageUrl,
   });
+
+  /// Admin-only — Firestore rules reject this for anyone else.
+  Future<Either<Failure, void>> deleteReview({
+    required String reviewId,
+    required String productId,
+    required int rating,
+  });
 }

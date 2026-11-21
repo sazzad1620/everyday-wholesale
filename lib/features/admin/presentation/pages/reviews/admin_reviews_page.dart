@@ -9,6 +9,7 @@ import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_spacing.dart';
 import '../../../../../shared/theme/app_text_styles.dart';
 import '../../../../../shared/widgets/coming_soon_view.dart';
+import '../../../../../shared/widgets/dialogs/confirm_dialog.dart';
 import '../../../../../shared/widgets/product_image.dart';
 import '../../../../../shared/widgets/star_rating.dart';
 import '../../../../review/domain/entities/review_entity.dart';
@@ -16,8 +17,10 @@ import '../../bloc/reviews/admin_review_list_bloc.dart';
 import '../../bloc/reviews/admin_review_list_event.dart';
 import '../../bloc/reviews/admin_review_list_state.dart';
 
-/// Read-only listing of every review submitted across every product/customer
-/// — "who reviewed what". Last of the five admin sections.
+/// Listing of every review submitted across every product/customer — "who
+/// reviewed what" — with the ability to remove one (e.g. a test review),
+/// which also reverses its contribution to that product's aggregate rating.
+/// Last of the five admin sections.
 class AdminReviewsPage extends StatelessWidget {
   const AdminReviewsPage({super.key});
 
@@ -32,6 +35,23 @@ class AdminReviewsPage extends StatelessWidget {
 
 class _AdminReviewListView extends StatelessWidget {
   const _AdminReviewListView();
+
+  Future<void> _confirmDelete(BuildContext context, ReviewEntity review) async {
+    final bloc = context.read<AdminReviewListBloc>();
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'admin.delete_review_title'.tr(),
+      message: 'admin.delete_review_message'.tr(
+        namedArgs: {'name': review.reviewerName, 'product': context.localized(review.productName)},
+      ),
+      confirmLabel: 'admin.delete'.tr(),
+    );
+    if (confirmed) {
+      bloc.add(
+        AdminReviewDeleteRequested(reviewId: review.id, productId: review.productId, rating: review.rating),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +86,11 @@ class _AdminReviewListView extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                 itemCount: state.reviews.length,
                 separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, index) => _AdminReviewTile(review: state.reviews[index]),
+                itemBuilder: (context, index) => _AdminReviewTile(
+                  review: state.reviews[index],
+                  isDeleting: state.isDeleting,
+                  onDelete: () => _confirmDelete(context, state.reviews[index]),
+                ),
               );
             },
           ),
@@ -77,9 +101,15 @@ class _AdminReviewListView extends StatelessWidget {
 }
 
 class _AdminReviewTile extends StatelessWidget {
-  const _AdminReviewTile({required this.review});
+  const _AdminReviewTile({required this.review, required this.isDeleting, required this.onDelete});
 
   final ReviewEntity review;
+
+  /// Disables every tile's delete button while any delete is in flight —
+  /// simpler than tracking which row, and a delete is rare enough it isn't
+  /// worth the extra state.
+  final bool isDeleting;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +159,11 @@ class _AdminReviewTile extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            onPressed: isDeleting ? null : onDelete,
+            icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+            tooltip: 'admin.delete'.tr(),
           ),
         ],
       ),

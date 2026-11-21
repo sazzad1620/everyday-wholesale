@@ -327,6 +327,10 @@ class _ProductFormViewState extends State<_ProductFormView> {
                   initialValue: _origin,
                   hintText: 'admin.product_origin_hint'.tr(),
                   radius: 14,
+                  // ~195 countries — unusable as a plain scroll list, hence
+                  // the search box (see AppDropdownField.searchable).
+                  searchable: true,
+                  searchHintText: 'search.country_hint'.tr(),
                   items: [
                     for (final code in Countries.codes) AppDropdownItem(value: code, label: Countries.label(code)),
                   ],

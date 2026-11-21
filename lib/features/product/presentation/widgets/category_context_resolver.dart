@@ -48,6 +48,17 @@ class CategoryContextResolver extends StatelessWidget {
         subcategories: subcategories,
       ));
     }
+    // Checked synchronously first: a `FutureBuilder` delivers one "waiting"
+    // frame before its builder ever sees real data, even when the future is
+    // already resolved (Future callbacks always land on a microtask, never
+    // synchronously) — so on a server-rendered page, where the category list
+    // is sitting there from the first frame, it still flashed the raw id for
+    // a frame before swapping to the real name. Reading it synchronously
+    // skips that gap entirely.
+    final sync = initialCategoriesSync();
+    if (sync != null) {
+      return builder(context, _fromCategories(sync));
+    }
     return FutureBuilder<List<CategoryEntity>>(
       future: cachedCategories(),
       builder: (context, snapshot) => builder(context, _fromCategories(snapshot.data)),

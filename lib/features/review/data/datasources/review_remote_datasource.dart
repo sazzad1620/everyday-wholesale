@@ -13,6 +13,11 @@ abstract class ReviewRemoteDatasource {
   Future<List<ReviewModel>> getAllReviews();
 
   Future<void> submitReview(ReviewModel review);
+
+  /// Admin-only (enforced by Firestore rules, not here) — removes a review
+  /// and reverses its contribution to the product's aggregate rating in the
+  /// same batch, so the two never drift apart.
+  Future<void> deleteReview({required String reviewId, required String productId, required int rating});
 }
 
 @LazySingleton(as: ReviewRemoteDatasource)
@@ -66,6 +71,17 @@ class ReviewRemoteDatasourceImpl implements ReviewRemoteDatasource {
     batch.update(_firestore.collection(_productsCollection).doc(review.productId), {
       'ratingSum': FieldValue.increment(review.rating),
       'reviewCount': FieldValue.increment(1),
+    });
+    await batch.commit();
+  }
+
+  @override
+  Future<void> deleteReview({required String reviewId, required String productId, required int rating}) async {
+    final batch = _firestore.batch();
+    batch.delete(_firestore.collection(_reviewsCollection).doc(reviewId));
+    batch.update(_firestore.collection(_productsCollection).doc(productId), {
+      'ratingSum': FieldValue.increment(-rating),
+      'reviewCount': FieldValue.increment(-1),
     });
     await batch.commit();
   }

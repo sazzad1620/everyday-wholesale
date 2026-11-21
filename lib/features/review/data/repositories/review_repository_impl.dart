@@ -76,4 +76,18 @@ class ReviewRepositoryImpl implements ReviewRepository {
       return const Left(UnexpectedFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, void>> deleteReview({
+    required String reviewId,
+    required String productId,
+    required int rating,
+  }) async {
+    try {
+      await _datasource.deleteReview(reviewId: reviewId, productId: productId, rating: rating);
+      return const Right(null);
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
 }
