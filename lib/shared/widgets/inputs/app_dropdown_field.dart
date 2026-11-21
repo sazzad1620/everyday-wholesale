@@ -95,42 +95,39 @@ class _AppDropdownFieldViewState<T> extends State<_AppDropdownFieldView<T>> {
   final GlobalKey _fieldKey = GlobalKey();
 
   Future<void> _openMenu() async {
-    final button = _fieldKey.currentContext!.findRenderObject()! as RenderBox;
-    final overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
-    final position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset(0, button.size.height), ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
-      ),
-      Offset.zero & overlay.size,
-    );
-
     final T? selected;
     if (widget.searchable) {
-      // A single disabled item hosting its own stateful content: `enabled:
-      // false` drops PopupMenuItem's own tap/ink handling (which would
-      // otherwise swallow taps meant for the search field and option rows
-      // inside it) while still letting that content render and respond to
-      // its own gestures.
-      selected = await showMenu<T>(
+      // A modal bottom sheet, not a `showMenu` popup: that popup's position
+      // is computed once, up front, from the field's spot in the page as it
+      // looks *before* the keyboard opens — a fixed `RelativeRect` that
+      // doesn't adjust when the keyboard then shows and the page resizes
+      // under it, which is what made the whole thing visibly jump/overshoot
+      // once typing opened the keyboard. A bottom sheet manages its own
+      // keyboard-aware layout instead of being anchored to a stale rect.
+      selected = await showModalBottomSheet<T>(
         context: context,
-        position: position,
-        constraints: BoxConstraints.tightFor(width: button.size.width),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(widget.radius)),
-        color: AppColors.surface,
-        items: [
-          PopupMenuItem<T>(
-            enabled: false,
-            padding: EdgeInsets.zero,
-            child: _SearchableMenuContent<T>(
-              items: widget.items,
-              value: widget.value,
-              searchHintText: widget.searchHintText,
-            ),
-          ),
-        ],
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(widget.radius)),
+        ),
+        builder: (sheetContext) => _SearchableSheetContent<T>(
+          items: widget.items,
+          value: widget.value,
+          searchHintText: widget.searchHintText,
+        ),
       );
     } else {
+      final button = _fieldKey.currentContext!.findRenderObject()! as RenderBox;
+      final overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
+      final position = RelativeRect.fromRect(
+        Rect.fromPoints(
+          button.localToGlobal(Offset(0, button.size.height), ancestor: overlay),
+          button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+        ),
+        Offset.zero & overlay.size,
+      );
       selected = await showMenu<T>(
         context: context,
         position: position,
@@ -211,23 +208,25 @@ class _AppDropdownFieldViewState<T> extends State<_AppDropdownFieldView<T>> {
   }
 }
 
-/// The popup content for a [AppDropdownField.searchable] field: a filter box
-/// above a scrollable option list, both inside the one `enabled: false`
-/// [PopupMenuItem] that hosts this (see `_openMenu`). Each row pops the menu
-/// with its own value directly, same as tapping a plain [PopupMenuItem]
-/// would.
-class _SearchableMenuContent<T> extends StatefulWidget {
-  const _SearchableMenuContent({required this.items, required this.value, required this.searchHintText});
+/// The sheet content for a [AppDropdownField.searchable] field — a drag
+/// handle, a filter box, and the (filtered) option list, each row popping
+/// the sheet with its own value. Matching only the *start* of each label
+/// (not "contains") keeps it predictable for an alphabetical list: typing
+/// "ban" jumps to "Bangladesh" and stays there, rather than also pulling in
+/// every label that happens to contain "ban" somewhere in the middle
+/// (Al**ban**ia, Le**ban**on, ...).
+class _SearchableSheetContent<T> extends StatefulWidget {
+  const _SearchableSheetContent({required this.items, required this.value, required this.searchHintText});
 
   final List<AppDropdownItem<T>> items;
   final T? value;
   final String? searchHintText;
 
   @override
-  State<_SearchableMenuContent<T>> createState() => _SearchableMenuContentState<T>();
+  State<_SearchableSheetContent<T>> createState() => _SearchableSheetContentState<T>();
 }
 
-class _SearchableMenuContentState<T> extends State<_SearchableMenuContent<T>> {
+class _SearchableSheetContentState<T> extends State<_SearchableSheetContent<T>> {
   late List<AppDropdownItem<T>> _filtered = widget.items;
 
   void _onQueryChanged(String query) {
@@ -235,72 +234,91 @@ class _SearchableMenuContentState<T> extends State<_SearchableMenuContent<T>> {
     setState(() {
       _filtered = normalized.isEmpty
           ? widget.items
-          : widget.items.where((item) => item.label.toLowerCase().contains(normalized)).toList();
+          : widget.items.where((item) => item.label.toLowerCase().startsWith(normalized)).toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // The parent PopupMenuItem is `enabled: false` (see _openMenu) so it
-    // doesn't swallow taps meant for the search box and option rows — but
-    // that also merges a dimmed IconTheme (0.38 opacity) over this subtree,
-    // which would fade the search icon below. Reset it back to full opacity.
-    return IconTheme.merge(
-      data: const IconThemeData(opacity: 1),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.xs, AppSpacing.sm, AppSpacing.xs),
-            child: TextField(
-              autofocus: true,
-              onChanged: _onQueryChanged,
-              style: AppTextStyles.body,
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: widget.searchHintText,
-                prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textSecondary),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                filled: true,
-                fillColor: AppColors.inputFill,
-                contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final sheetHeight = MediaQuery.sizeOf(context).height * 0.75;
+
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 100),
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: SizedBox(
+        height: sheetHeight,
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: _DragHandle(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+              child: TextField(
+                autofocus: true,
+                onChanged: _onQueryChanged,
+                style: AppTextStyles.body,
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: widget.searchHintText,
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textSecondary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  filled: true,
+                  fillColor: AppColors.inputFill,
+                  contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                ),
               ),
             ),
-          ),
-          const Divider(height: 1),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 280),
-            child: _filtered.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Text('search.empty_title'.tr(), style: AppTextStyles.body),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                    itemCount: _filtered.length,
-                    itemBuilder: (context, index) {
-                      final item = _filtered[index];
-                      final selected = item.value == widget.value;
-                      return InkWell(
-                        onTap: () => Navigator.of(context).pop(item.value),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                          child: Text(
-                            item.label,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.body.copyWith(
-                              color: selected ? AppColors.primary : AppColors.textPrimary,
-                              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            const Divider(height: 1),
+            Expanded(
+              child: _filtered.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Text('search.empty_title'.tr(), style: AppTextStyles.body),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                      itemCount: _filtered.length,
+                      itemBuilder: (context, index) {
+                        final item = _filtered[index];
+                        final selected = item.value == widget.value;
+                        return InkWell(
+                          onTap: () => Navigator.of(context).pop(item.value),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                            child: Text(
+                              item.label,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.body.copyWith(
+                                color: selected ? AppColors.primary : AppColors.textPrimary,
+                                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DragHandle extends StatelessWidget {
+  const _DragHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 4,
+      decoration: BoxDecoration(
+        color: AppColors.textSecondary.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(2),
       ),
     );
   }
