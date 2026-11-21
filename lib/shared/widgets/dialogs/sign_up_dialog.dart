@@ -147,6 +147,7 @@ class _SignUpDialogState extends State<SignUpDialog> {
                   TextFormField(
                     controller: _nameController,
                     autofillHints: const [AutofillHints.name],
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(hintText: 'auth.name_hint'.tr(), radius: 14),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'auth.error_name_required'.tr();
@@ -158,6 +159,7 @@ class _SignUpDialogState extends State<SignUpDialog> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(hintText: 'auth.email_hint'.tr(), radius: 14),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'auth.error_email_required'.tr();
@@ -170,6 +172,7 @@ class _SignUpDialogState extends State<SignUpDialog> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     autofillHints: const [AutofillHints.newPassword],
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'auth.password_hint'.tr(),
                       radius: 14,
@@ -197,6 +200,7 @@ class _SignUpDialogState extends State<SignUpDialog> {
                   PhoneNumberStep(
                     leading: TextField(
                       controller: _nameController,
+                      scrollPadding: AppInputStyle.fieldScrollPadding,
                       decoration: AppInputStyle.decoration(hintText: 'auth.name_hint'.tr(), radius: 14),
                     ),
                     phoneController: _phoneController,

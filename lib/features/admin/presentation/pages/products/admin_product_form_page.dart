@@ -259,6 +259,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
                       child: TextFormField(
                         controller: _priceController,
                         keyboardType: TextInputType.number,
+                        scrollPadding: AppInputStyle.fieldScrollPadding,
                         decoration: AppInputStyle.decoration(hintText: 'admin.product_price_hint'.tr(), radius: 14),
                         validator: (value) {
                           final parsed = int.tryParse(value?.trim() ?? '');
@@ -271,6 +272,7 @@ class _ProductFormViewState extends State<_ProductFormView> {
                     Expanded(
                       child: TextFormField(
                         controller: _unitController,
+                        scrollPadding: AppInputStyle.fieldScrollPadding,
                         decoration: AppInputStyle.decoration(hintText: 'admin.product_unit_hint'.tr(), radius: 14),
                         validator: (value) =>
                             (value == null || value.trim().isEmpty) ? 'admin.error_product_unit_required'.tr() : null,

@@ -33,6 +33,7 @@ class CartVoucherCard extends StatelessWidget {
               Expanded(
                 child: TextField(
                   style: const TextStyle(fontSize: 14),
+                  scrollPadding: AppInputStyle.fieldScrollPadding,
                   decoration: AppInputStyle.decoration(hintText: 'cart.voucher_hint'.tr(), radius: 14),
                 ),
               ),

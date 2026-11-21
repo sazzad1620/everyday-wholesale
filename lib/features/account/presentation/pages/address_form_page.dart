@@ -138,6 +138,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
                   final receiverName = TextFormField(
                     controller: _receiverNameController,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.receiver_name_hint'.tr(),
                       radius: 14,
@@ -150,6 +151,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   final phone = TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.phone_hint'.tr(),
                       radius: 14,
@@ -161,6 +163,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   );
                   final postalCode = TextFormField(
                     controller: _postalCodeController,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.postal_code_hint'.tr(),
                       radius: 14,
@@ -172,6 +175,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   );
                   final stateField = TextFormField(
                     controller: _stateController,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.state_hint'.tr(),
                       radius: 14,
@@ -183,6 +187,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   );
                   final city = TextFormField(
                     controller: _cityController,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.city_hint'.tr(),
                       radius: 14,
@@ -194,6 +199,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   );
                   final street = TextFormField(
                     controller: _streetController,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.street_hint'.tr(),
                       radius: 14,
@@ -205,6 +211,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   );
                   final chomeBanchiGo = TextFormField(
                     controller: _chomeBanchiGoController,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.chome_banchi_go_hint'.tr(),
                       radius: 14,
@@ -216,6 +223,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   );
                   final buildingName = TextFormField(
                     controller: _buildingNameController,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'address.building_hint'.tr(),
                       radius: 14,

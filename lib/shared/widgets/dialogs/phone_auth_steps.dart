@@ -41,6 +41,7 @@ class PhoneNumberStep extends StatelessWidget {
         TextField(
           controller: phoneController,
           keyboardType: TextInputType.phone,
+          scrollPadding: AppInputStyle.fieldScrollPadding,
           decoration: AppInputStyle.decoration(
             hintText: 'auth.phone_hint'.tr(),
             prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.textSecondary),
@@ -225,6 +226,7 @@ class _OtpCodeBoxesState extends State<_OtpCodeBoxes> {
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     maxLength: 1,
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     style: AppTextStyles.headline.copyWith(fontSize: 20),
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: const InputDecoration(

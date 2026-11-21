@@ -112,6 +112,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           const SizedBox(height: AppSpacing.lg),
                           TextFormField(
                             controller: _nameController,
+                            scrollPadding: AppInputStyle.fieldScrollPadding,
                             decoration: AppInputStyle.decoration(
                               hintText: 'account.name_hint'.tr(),
                               radius: 14,

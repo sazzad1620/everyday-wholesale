@@ -62,7 +62,7 @@
     }
   },
   "country": {
-    "UNKNOWN": "Unknown / Not specified",
+    "UNKNOWN": "Not Specified",
     "AF": "Afghanistan",
     "AL": "Albania",
     "DZ": "Algeria",

@@ -152,6 +152,7 @@ class _SignInDialogState extends State<SignInDialog> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(hintText: 'auth.email_hint'.tr(), radius: 14),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'auth.error_email_required'.tr();
@@ -164,6 +165,7 @@ class _SignInDialogState extends State<SignInDialog> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     autofillHints: const [AutofillHints.password],
+                    scrollPadding: AppInputStyle.fieldScrollPadding,
                     decoration: AppInputStyle.decoration(
                       hintText: 'auth.password_hint'.tr(),
                       radius: 14,

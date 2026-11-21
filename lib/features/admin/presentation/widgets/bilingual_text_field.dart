@@ -58,6 +58,7 @@ class BilingualTextField extends StatelessWidget {
     final en = TextFormField(
       controller: controller.en,
       maxLines: maxLines,
+      scrollPadding: AppInputStyle.fieldScrollPadding,
       decoration: _decoration('EN', 'admin.field_en'.tr(namedArgs: {'field': hintText})),
       validator: requiredError == null
           ? null
@@ -66,6 +67,7 @@ class BilingualTextField extends StatelessWidget {
     final ja = TextFormField(
       controller: controller.ja,
       maxLines: maxLines,
+      scrollPadding: AppInputStyle.fieldScrollPadding,
       decoration: _decoration('JA', 'admin.field_ja'.tr(namedArgs: {'field': hintText})),
     );
 
